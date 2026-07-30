@@ -1,0 +1,22 @@
+import 'dotenv/config';
+
+export const envs = {
+  // Configuración de las Bases de Datos (MongoDB)
+  mongo: {
+    authUri: process.env.MONGO_URI || 'mongodb://localhost:27017/store_auth',
+    productsUri: process.env.MONGO_URI || 'mongodb://localhost:27017/store_products',
+    ordersUri: process.env.MONGO_URI || 'mongodb://localhost:27017/store_orders',
+  },
+  
+  // Configuración del Message Broker (Redis)
+  redis: {
+    host: process.env.REDIS_HOST || 'localhost',
+    port: parseInt(process.env.REDIS_PORT || '6379', 10),
+  },
+
+  // Configuración de Seguridad
+  jwt: {
+    secret: process.env.JWT_SECRET || 'mi-clave-secreta-super-dificil-1234',
+    expiresIn: (process.env.JWT_EXPIRES_IN || '1h') as any,
+  }
+};
