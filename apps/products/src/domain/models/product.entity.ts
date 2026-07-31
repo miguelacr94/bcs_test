@@ -1,3 +1,5 @@
+import { DomainException } from '@app/shared/exceptions/domain.exception';
+
 export class Product {
   constructor(
     public readonly id: string,
@@ -17,11 +19,11 @@ export class Product {
   // Regla de negocio: El nombre no puede estar vacío
   private validateName(): void {
     if (!this.name || this.name.trim().length === 0) {
-      throw new Error('El nombre del producto no puede estar vacío.');
+      throw new DomainException('El nombre del producto no puede estar vacío.');
     }
 
     if (this.name.length < 3) {
-      throw new Error(
+      throw new DomainException(
         'El nombre del producto debe tener al menos 3 caracteres.',
       );
     }
@@ -30,14 +32,16 @@ export class Product {
   // Regla de negocio: El precio debe ser mayor o igual a 0
   private validatePrice(): void {
     if (this.price < 0) {
-      throw new Error('El precio del producto no puede ser menor a 0.');
+      throw new DomainException(
+        'El precio del producto no puede ser menor a 0.',
+      );
     }
   }
 
   // Regla de negocio: El stock debe ser mayor o igual a 0
   private validateStock(): void {
     if (this.stock < 0) {
-      throw new Error(
+      throw new DomainException(
         'El inventario (stock) del producto no puede ser negativo.',
       );
     }

@@ -2,10 +2,18 @@ import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { OrdersController } from './orders.controller';
-import { OrderDocument, OrderSchema } from './infrastructure/schemas/order.schema';
+import {
+  OrderDocument,
+  OrderSchema,
+} from './infrastructure/schemas/order.schema';
 import { MongooseOrderRepository } from './infrastructure/adapters/mongoose-order.repository';
 import { RedisProductServiceAdapter } from './infrastructure/adapters/redis-product-service.adapter';
-import { CreateOrderUseCase, GetUserOrdersUseCase } from './application/use-cases';
+import {
+  CancelOrderUseCase,
+  CreateOrderUseCase,
+  GetUserOrdersUseCase,
+  GetOrderUseCase,
+} from './application/use-cases';
 import { envs } from '@app/shared/config/envs';
 
 @Module({
@@ -29,6 +37,8 @@ import { envs } from '@app/shared/config/envs';
   providers: [
     CreateOrderUseCase,
     GetUserOrdersUseCase,
+    CancelOrderUseCase,
+    GetOrderUseCase,
 
     // Inversión de Control: Vinculamos el Puerto de negocio de órdenes con el Adaptador de Mongoose
     {

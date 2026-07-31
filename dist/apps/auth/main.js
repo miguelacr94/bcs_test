@@ -24,13 +24,13 @@ const common_1 = __webpack_require__(3);
 const mongoose_1 = __webpack_require__(4);
 const auth_controller_1 = __webpack_require__(5);
 const auth_service_1 = __webpack_require__(10);
-const user_schema_1 = __webpack_require__(26);
-const mongoose_user_repository_1 = __webpack_require__(28);
-const bcrypt_hasher_adapter_1 = __webpack_require__(30);
-const jwt_1 = __webpack_require__(32);
-const jwt_token_adapter_1 = __webpack_require__(33);
+const user_schema_1 = __webpack_require__(27);
+const mongoose_user_repository_1 = __webpack_require__(29);
+const bcrypt_hasher_adapter_1 = __webpack_require__(31);
+const jwt_1 = __webpack_require__(33);
+const jwt_token_adapter_1 = __webpack_require__(34);
 const use_cases_1 = __webpack_require__(12);
-const envs_1 = __webpack_require__(34);
+const envs_1 = __webpack_require__(35);
 let AuthModule = class AuthModule {
 };
 exports.AuthModule = AuthModule;
@@ -100,6 +100,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
+var AuthController_1;
 var _a, _b, _c, _d, _e, _f, _g, _h, _j;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.AuthController = void 0;
@@ -109,7 +110,7 @@ const auth_service_1 = __webpack_require__(10);
 const microservices_1 = __webpack_require__(11);
 const use_cases_1 = __webpack_require__(12);
 const dtos_1 = __webpack_require__(20);
-let AuthController = class AuthController {
+let AuthController = AuthController_1 = class AuthController {
     authService;
     registerUserUseCase;
     loginUserUseCase;
@@ -128,8 +129,9 @@ let AuthController = class AuthController {
         this.tokenService = tokenService;
         this.userRepository = userRepository;
     }
+    logger = new common_1.Logger(AuthController_1.name);
     async registerUser(dto) {
-        console.log('Microservicio Auth: Procesando registro para el correo:', dto.email);
+        this.logger.log(`Microservicio Auth: Procesando registro para el correo: ${dto.email}`);
         try {
             const user = await this.registerUserUseCase.execute(dto);
             return {
@@ -141,22 +143,22 @@ let AuthController = class AuthController {
             };
         }
         catch (error) {
-            console.error('Microservicio Auth Error:', error.message);
+            this.logger.error(`Microservicio Auth Error: ${error.message}`);
             throw new microservices_1.RpcException(error.message);
         }
     }
     async loginUser(dto) {
-        console.log('Microservicio Auth: Procesando inicio de sesión para el correo:', dto.email);
+        this.logger.log(`Microservicio Auth: Procesando inicio de sesión para el correo: ${dto.email}`);
         try {
             return await this.loginUserUseCase.execute(dto);
         }
         catch (error) {
-            console.error('Microservicio Auth Login Error:', error.message);
+            this.logger.error(`Microservicio Auth Login Error: ${error.message}`);
             throw new microservices_1.RpcException(error.message);
         }
     }
     async validateToken(data) {
-        console.log('Recibida petición de validación de token:', data.token);
+        this.logger.log(`Recibida petición de validación de token: ${data.token}`);
         try {
             const decoded = await this.tokenService.verifyToken(data.token);
             const userId = decoded.sub;
@@ -174,7 +176,7 @@ let AuthController = class AuthController {
             };
         }
         catch (error) {
-            console.error('Error al validar token:', error.message);
+            this.logger.error(`Error al validar token: ${error.message}`);
             return {
                 isValid: false,
                 error: 'Token inválido o expirado.',
@@ -182,32 +184,32 @@ let AuthController = class AuthController {
         }
     }
     async refreshToken(data) {
-        console.log('Microservicio Auth: Refrescando token...');
+        this.logger.log('Microservicio Auth: Refrescando token...');
         try {
             return await this.refreshTokenUseCase.execute(data.refreshToken);
         }
         catch (error) {
-            console.error('Microservicio Auth Refresh Error:', error.message);
+            this.logger.error(`Microservicio Auth Refresh Error: ${error.message}`);
             throw new microservices_1.RpcException(error.message);
         }
     }
     async logout(data) {
-        console.log('Microservicio Auth: Cerrando sesión para usuario:', data.userId);
+        this.logger.log(`Microservicio Auth: Cerrando sesión para usuario: ${data.userId}`);
         try {
             return await this.logoutUseCase.execute(data.userId);
         }
         catch (error) {
-            console.error('Microservicio Auth Logout Error:', error.message);
+            this.logger.error(`Microservicio Auth Logout Error: ${error.message}`);
             throw new microservices_1.RpcException(error.message);
         }
     }
     async updateUserProfile(dto) {
-        console.log('Microservicio Auth: Actualizando perfil para el usuario:', dto.userId);
+        this.logger.log(`Microservicio Auth: Actualizando perfil para el usuario: ${dto.userId}`);
         try {
             return await this.updateUserUseCase.execute(dto);
         }
         catch (error) {
-            console.error('Microservicio Auth Update Profile Error:', error.message);
+            this.logger.error(`Microservicio Auth Update Profile Error: ${error.message}`);
             throw new microservices_1.RpcException(error.message);
         }
     }
@@ -255,7 +257,7 @@ __decorate([
     __metadata("design:paramtypes", [typeof (_j = typeof dtos_1.UpdateUserDto !== "undefined" && dtos_1.UpdateUserDto) === "function" ? _j : Object]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "updateUserProfile", null);
-exports.AuthController = AuthController = __decorate([
+exports.AuthController = AuthController = AuthController_1 = __decorate([
     (0, common_1.Controller)(),
     __param(6, (0, common_1.Inject)('TokenServicePort')),
     __param(7, (0, common_1.Inject)('UserRepositoryPort')),
@@ -315,6 +317,7 @@ var OrderStatus;
     OrderStatus["PENDING"] = "PENDING";
     OrderStatus["PAID"] = "PAID";
     OrderStatus["CANCELLED"] = "CANCELLED";
+    OrderStatus["COMPLETED"] = "COMPLETED";
 })(OrderStatus || (exports.OrderStatus = OrderStatus = {}));
 
 
@@ -342,11 +345,16 @@ var ProductPattern;
     ProductPattern["UPDATE_PRODUCT"] = "update_product";
     ProductPattern["DELETE_PRODUCT"] = "delete_product";
     ProductPattern["REDUCE_STOCK"] = "reduce_stock";
+    ProductPattern["RESTORE_STOCK"] = "restore_stock";
+    ProductPattern["GET_PRODUCTS_BY_CATEGORY"] = "get_products_by_category";
+    ProductPattern["ACTIVATE_PRODUCT"] = "activate_product";
 })(ProductPattern || (exports.ProductPattern = ProductPattern = {}));
 var OrderPattern;
 (function (OrderPattern) {
     OrderPattern["CREATE_ORDER"] = "create_order";
     OrderPattern["GET_USER_ORDERS"] = "get_user_orders";
+    OrderPattern["CANCEL_ORDER"] = "cancel_order";
+    OrderPattern["GET_ORDER_BY_ID"] = "get_order_by_id";
 })(OrderPattern || (exports.OrderPattern = OrderPattern = {}));
 
 
@@ -799,7 +807,7 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 __exportStar(__webpack_require__(21), exports);
 __exportStar(__webpack_require__(24), exports);
-__exportStar(__webpack_require__(25), exports);
+__exportStar(__webpack_require__(26), exports);
 
 
 /***/ }),
@@ -872,6 +880,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.RegisterUserDto = void 0;
+const is_strong_password_validator_1 = __webpack_require__(25);
 const swagger_1 = __webpack_require__(22);
 const class_validator_1 = __webpack_require__(23);
 class RegisterUserDto {
@@ -904,6 +913,7 @@ __decorate([
         minLength: 6,
     }),
     (0, class_validator_1.IsString)(),
+    (0, is_strong_password_validator_1.IsStrongPassword)(),
     (0, class_validator_1.MinLength)(6, { message: 'La contraseña debe tener al menos 6 caracteres.' }),
     (0, class_validator_1.IsNotEmpty)({ message: 'La contraseña es obligatoria.' }),
     __metadata("design:type", String)
@@ -912,6 +922,49 @@ __decorate([
 
 /***/ }),
 /* 25 */
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.IsStrongPasswordConstraint = void 0;
+exports.IsStrongPassword = IsStrongPassword;
+const class_validator_1 = __webpack_require__(23);
+let IsStrongPasswordConstraint = class IsStrongPasswordConstraint {
+    validate(password, args) {
+        if (!password)
+            return false;
+        const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/;
+        return regex.test(password);
+    }
+    defaultMessage(args) {
+        return 'La contraseña debe contener al menos una mayúscula, una minúscula y un número.';
+    }
+};
+exports.IsStrongPasswordConstraint = IsStrongPasswordConstraint;
+exports.IsStrongPasswordConstraint = IsStrongPasswordConstraint = __decorate([
+    (0, class_validator_1.ValidatorConstraint)({ async: false })
+], IsStrongPasswordConstraint);
+function IsStrongPassword(validationOptions) {
+    return function (object, propertyName) {
+        (0, class_validator_1.registerDecorator)({
+            target: object.constructor,
+            propertyName: propertyName,
+            options: validationOptions,
+            constraints: [],
+            validator: IsStrongPasswordConstraint,
+        });
+    };
+}
+
+
+/***/ }),
+/* 26 */
 /***/ ((__unused_webpack_module, exports) => {
 
 
@@ -925,7 +978,7 @@ exports.UpdateUserDto = UpdateUserDto;
 
 
 /***/ }),
-/* 26 */
+/* 27 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 
@@ -942,7 +995,7 @@ var _a;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.UserSchema = exports.UserDocument = void 0;
 const mongoose_1 = __webpack_require__(4);
-const mongoose_2 = __webpack_require__(27);
+const mongoose_2 = __webpack_require__(28);
 let UserDocument = class UserDocument extends mongoose_2.Document {
     name;
     email;
@@ -983,13 +1036,13 @@ exports.UserSchema = mongoose_1.SchemaFactory.createForClass(UserDocument);
 
 
 /***/ }),
-/* 27 */
+/* 28 */
 /***/ ((module) => {
 
 module.exports = require("mongoose");
 
 /***/ }),
-/* 28 */
+/* 29 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 
@@ -1010,9 +1063,9 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.MongooseUserRepository = void 0;
 const common_1 = __webpack_require__(3);
 const mongoose_1 = __webpack_require__(4);
-const mongoose_2 = __webpack_require__(27);
-const user_schema_1 = __webpack_require__(26);
-const user_mapper_1 = __webpack_require__(29);
+const mongoose_2 = __webpack_require__(28);
+const user_schema_1 = __webpack_require__(27);
+const user_mapper_1 = __webpack_require__(30);
 let MongooseUserRepository = class MongooseUserRepository {
     userModel;
     constructor(userModel) {
@@ -1054,7 +1107,7 @@ exports.MongooseUserRepository = MongooseUserRepository = __decorate([
 
 
 /***/ }),
-/* 29 */
+/* 30 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -1080,7 +1133,7 @@ exports.UserMapper = UserMapper;
 
 
 /***/ }),
-/* 30 */
+/* 31 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 
@@ -1126,7 +1179,7 @@ var __importStar = (this && this.__importStar) || (function () {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.BcryptHasherAdapter = void 0;
 const common_1 = __webpack_require__(3);
-const bcrypt = __importStar(__webpack_require__(31));
+const bcrypt = __importStar(__webpack_require__(32));
 let BcryptHasherAdapter = class BcryptHasherAdapter {
     saltRounds = 10;
     async hash(password) {
@@ -1143,19 +1196,19 @@ exports.BcryptHasherAdapter = BcryptHasherAdapter = __decorate([
 
 
 /***/ }),
-/* 31 */
+/* 32 */
 /***/ ((module) => {
 
 module.exports = require("bcrypt");
 
 /***/ }),
-/* 32 */
+/* 33 */
 /***/ ((module) => {
 
 module.exports = require("@nestjs/jwt");
 
 /***/ }),
-/* 33 */
+/* 34 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 
@@ -1172,7 +1225,7 @@ var _a;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.JwtTokenAdapter = void 0;
 const common_1 = __webpack_require__(3);
-const jwt_1 = __webpack_require__(32);
+const jwt_1 = __webpack_require__(33);
 let JwtTokenAdapter = class JwtTokenAdapter {
     jwtService;
     constructor(jwtService) {
@@ -1193,13 +1246,13 @@ exports.JwtTokenAdapter = JwtTokenAdapter = __decorate([
 
 
 /***/ }),
-/* 34 */
+/* 35 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.envs = void 0;
-__webpack_require__(35);
+__webpack_require__(36);
 exports.envs = {
     mongo: {
         authUri: process.env.MONGO_URI || 'mongodb://localhost:27017/store_auth',
@@ -1218,7 +1271,7 @@ exports.envs = {
 
 
 /***/ }),
-/* 35 */
+/* 36 */
 /***/ ((module) => {
 
 module.exports = require("dotenv/config");
@@ -1260,7 +1313,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core_1 = __webpack_require__(1);
 const auth_module_1 = __webpack_require__(2);
 const microservices_1 = __webpack_require__(11);
-const envs_1 = __webpack_require__(34);
+const envs_1 = __webpack_require__(35);
 async function bootstrap() {
     const app = await core_1.NestFactory.createMicroservice(auth_module_1.AuthModule, {
         transport: microservices_1.Transport.REDIS,

@@ -1,9 +1,6 @@
 import { Request } from 'express';
+import { CurrentUserInterface } from './current-user.interface';
 
 export interface AuthenticatedRequest extends Request {
-  user: {
-    id: string;
-    email?: string;
-    roles?: string[];
-  };
+  user: CurrentUserInterface;
 }

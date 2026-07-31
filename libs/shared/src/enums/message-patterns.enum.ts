@@ -14,6 +14,7 @@ export enum ProductPattern {
   UPDATE_PRODUCT = 'update_product',
   DELETE_PRODUCT = 'delete_product',
   REDUCE_STOCK = 'reduce_stock',
+  RESTORE_STOCK = 'restore_stock',
   GET_PRODUCTS_BY_CATEGORY = 'get_products_by_category',
   ACTIVATE_PRODUCT = 'activate_product',
 }
@@ -21,4 +22,6 @@ export enum ProductPattern {
 export enum OrderPattern {
   CREATE_ORDER = 'create_order',
   GET_USER_ORDERS = 'get_user_orders',
+  CANCEL_ORDER = 'cancel_order',
+  GET_ORDER_BY_ID = 'get_order_by_id',
 }

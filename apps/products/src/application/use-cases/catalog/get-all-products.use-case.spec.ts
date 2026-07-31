@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/unbound-method */
 import { Test, TestingModule } from '@nestjs/testing';
 import { GetAllProductsUseCase } from './get-all-products.use-case';
-import { ProductRepositoryPort } from '../../domain/ports/product-repository.port';
-import { Product } from '../../domain/models/product.entity';
+import { ProductRepositoryPort } from '../../../domain/ports/product-repository.port';
+import { Product } from '../../../domain/models/product.entity';
 import { PaginationDto } from '@app/shared/dtos';
 
 describe('GetAllProductsUseCase (Unit Testing)', () => {
@@ -19,6 +19,7 @@ describe('GetAllProductsUseCase (Unit Testing)', () => {
         save: jest.fn(),
         findById: jest.fn(),
         delete: jest.fn(),
+        findByCategory: jest.fn(),
       },
     };
 
@@ -40,6 +41,7 @@ describe('GetAllProductsUseCase (Unit Testing)', () => {
         'Zapatos',
         'Rojos',
         100,
+
         10,
         'Laptops',
         true,
@@ -49,7 +51,10 @@ describe('GetAllProductsUseCase (Unit Testing)', () => {
     ];
 
     // Le enseñamos al Mock qué debe responder cuando alguien llame a findAll()
-    mockRepository.findAll.mockResolvedValue(fakeProductsArray);
+    mockRepository.findAll.mockResolvedValue({
+      data: fakeProductsArray,
+      total: 2,
+    });
 
     // --- 2. Act (Actuación / Ejecución) ---
     // Ejecutamos el caso de uso tal como lo haría el Controlador
@@ -58,8 +63,8 @@ describe('GetAllProductsUseCase (Unit Testing)', () => {
     // --- 3. Assert (Afirmaciones / Verificaciones) ---
     // A. Verificamos que no explote y que la respuesta sea correcta
     expect(result).toBeDefined();
-    expect(result).toEqual(fakeProductsArray);
-    expect(result.length).toBe(2);
+    expect(result.data).toEqual(fakeProductsArray);
+    expect(result.meta.totalItems).toBe(2);
 
     // B. Verificación Arquitectónica Crítica:
     // Nos aseguramos que el Caso de Uso sí le pasó la paginación a la Base de Datos

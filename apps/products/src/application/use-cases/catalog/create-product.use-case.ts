@@ -1,8 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
 import * as crypto from 'crypto';
-import type { ProductRepositoryPort } from '../../domain/ports/product-repository.port';
-import { Product } from '../../domain/models/product.entity';
-import { CreateProductDto } from './dtos/create-product.dto';
+import type { ProductRepositoryPort } from '../../../domain/ports/product-repository.port';
+import { Product } from '../../../domain/models/product.entity';
+import { CreateProductDto } from '../dtos/create-product.dto';
 
 @Injectable()
 export class CreateProductUseCase {

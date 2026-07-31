@@ -1,3 +1,4 @@
+import { IsStrongPassword } from '@app/shared/validators/is-strong-password.validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEmail, IsNotEmpty, IsString, MinLength } from 'class-validator';
 
@@ -14,7 +15,10 @@ export class RegisterUserDto {
     description: 'Correo electrónico único del usuario',
     example: 'miguel@example.com',
   })
-  @IsEmail({}, { message: 'El correo electrónico provisto no tiene un formato válido.' })
+  @IsEmail(
+    {},
+    { message: 'El correo electrónico provisto no tiene un formato válido.' },
+  )
   readonly email!: string;
 
   @ApiProperty({
@@ -23,6 +27,7 @@ export class RegisterUserDto {
     minLength: 6,
   })
   @IsString()
+  @IsStrongPassword()
   @MinLength(6, { message: 'La contraseña debe tener al menos 6 caracteres.' })
   @IsNotEmpty({ message: 'La contraseña es obligatoria.' })
   readonly password!: string;

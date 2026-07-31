@@ -1,20 +1,25 @@
 import { Inject, Injectable } from '@nestjs/common';
-import type { ProductRepositoryPort } from '../../domain/ports/product-repository.port';
-import { Product } from '../../domain/models/product.entity';
+import type { ProductRepositoryPort } from '../../../domain/ports/product-repository.port';
+import { Product } from '../../../domain/models/product.entity';
 import { PaginationDto } from '@app/shared/dtos';
-
 import { PaginatedResponse } from '@app/shared/interfaces';
 
 @Injectable()
-export class GetAllProductsUseCase {
+export class GetProductsByCategoryUseCase {
   constructor(
     @Inject('ProductRepositoryPort')
     private readonly productRepository: ProductRepositoryPort,
   ) {}
 
-  async execute(paginationDto: PaginationDto): Promise<PaginatedResponse<Product>> {
+  async execute(
+    categoryId: string,
+    paginationDto: PaginationDto,
+  ): Promise<PaginatedResponse<Product>> {
     const { page = 1, limit = 10 } = paginationDto;
-    const { data, total } = await this.productRepository.findAll(paginationDto);
+    const { data, total } = await this.productRepository.findByCategory(
+      categoryId,
+      paginationDto,
+    );
 
     return {
       data,

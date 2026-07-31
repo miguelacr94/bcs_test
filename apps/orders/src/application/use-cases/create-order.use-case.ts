@@ -56,7 +56,17 @@ export class CreateOrderUseCase {
       throw new Error('No se pudo reducir el inventario para procesar la orden.');
     }
 
-    // 6. Persistir usando el puerto de órdenes
-    return await this.orderRepository.save(newOrder);
+    // 6. El Patrón Saga: Intentar persistir, y si falla, COMPENSAR
+    try {
+      return await this.orderRepository.save(newOrder);
+    } catch (error) {
+      // ACCIÓN COMPENSATORIA (Saga de Reversa)
+      console.error('SAGA: Falló al guardar la orden. Devolviendo inventario a Products...');
+      await this.productService.restoreStock(
+        dto.items.map(item => ({ productId: item.productId, quantity: item.quantity }))
+      );
+      
+      throw new Error('SAGA: Orden abortada, inventario restaurado.');
+    }
   }
 }

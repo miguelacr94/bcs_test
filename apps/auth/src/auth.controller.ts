@@ -1,4 +1,4 @@
-import { Controller, Inject } from '@nestjs/common';
+import { Controller, Inject, Logger } from '@nestjs/common';
 import { AuthPattern } from '@app/shared/enums';
 import type { TokenServicePort } from './domain/ports/token-service.port';
 import type { UserRepositoryPort } from './domain/ports/user-repository.port';
@@ -28,10 +28,12 @@ export class AuthController {
     private readonly userRepository: UserRepositoryPort,
   ) {}
 
+  private readonly logger = new Logger(AuthController.name);
+
   // Patrón de mensaje para registrar un nuevo usuario
   @MessagePattern({ cmd: AuthPattern.REGISTER_USER })
   async registerUser(@Payload() dto: RegisterUserDto) {
-    console.log('Microservicio Auth: Procesando registro para el correo:', dto.email);
+    this.logger.log(`Microservicio Auth: Procesando registro para el correo: ${dto.email}`);
     try {
       const user = await this.registerUserUseCase.execute(dto);
       return {
@@ -42,7 +44,7 @@ export class AuthController {
         createdAt: user.createdAt,
       };
     } catch (error: any) {
-      console.error('Microservicio Auth Error:', error.message);
+      this.logger.error(`Microservicio Auth Error: ${error.message}`);
       throw new RpcException(error.message);
     }
   }
@@ -50,11 +52,11 @@ export class AuthController {
   // Patrón de mensaje para iniciar sesión de un usuario
   @MessagePattern({ cmd: AuthPattern.LOGIN_USER })
   async loginUser(@Payload() dto: LoginUserDto) {
-    console.log('Microservicio Auth: Procesando inicio de sesión para el correo:', dto.email);
+    this.logger.log(`Microservicio Auth: Procesando inicio de sesión para el correo: ${dto.email}`);
     try {
       return await this.loginUserUseCase.execute(dto);
     } catch (error: any) {
-      console.error('Microservicio Auth Login Error:', error.message);
+      this.logger.error(`Microservicio Auth Login Error: ${error.message}`);
       throw new RpcException(error.message);
     }
   }
@@ -62,7 +64,7 @@ export class AuthController {
   // Escucha mensajes en el patrón de comando 'validate_token' a través de Redis
   @MessagePattern({ cmd: AuthPattern.VALIDATE_TOKEN })
   async validateToken(@Payload() data: { token: string }) {
-    console.log('Recibida petición de validación de token:', data.token);
+    this.logger.log(`Recibida petición de validación de token: ${data.token}`);
     try {
       // 1. Verificar firma y expiración usando el puerto de tokens
       const decoded = await this.tokenService.verifyToken(data.token);
@@ -85,7 +87,7 @@ export class AuthController {
         },
       };
     } catch (error: any) {
-      console.error('Error al validar token:', error.message);
+      this.logger.error(`Error al validar token: ${error.message}`);
       return {
         isValid: false,
         error: 'Token inválido o expirado.',
@@ -96,11 +98,11 @@ export class AuthController {
   // Patrón de mensaje para refrescar tokens
   @MessagePattern({ cmd: AuthPattern.REFRESH_TOKEN })
   async refreshToken(@Payload() data: { refreshToken: string }) {
-    console.log('Microservicio Auth: Refrescando token...');
+    this.logger.log('Microservicio Auth: Refrescando token...');
     try {
       return await this.refreshTokenUseCase.execute(data.refreshToken);
     } catch (error: any) {
-      console.error('Microservicio Auth Refresh Error:', error.message);
+      this.logger.error(`Microservicio Auth Refresh Error: ${error.message}`);
       throw new RpcException(error.message);
     }
   }
@@ -108,11 +110,11 @@ export class AuthController {
   // Patrón de mensaje para cerrar sesión
   @MessagePattern({ cmd: AuthPattern.LOGOUT })
   async logout(@Payload() data: { userId: string }) {
-    console.log('Microservicio Auth: Cerrando sesión para usuario:', data.userId);
+    this.logger.log(`Microservicio Auth: Cerrando sesión para usuario: ${data.userId}`);
     try {
       return await this.logoutUseCase.execute(data.userId);
     } catch (error: any) {
-      console.error('Microservicio Auth Logout Error:', error.message);
+      this.logger.error(`Microservicio Auth Logout Error: ${error.message}`);
       throw new RpcException(error.message);
     }
   }
@@ -120,11 +122,11 @@ export class AuthController {
   // Patrón de mensaje para actualizar el perfil del usuario
   @MessagePattern({ cmd: AuthPattern.UPDATE_USER_PROFILE })
   async updateUserProfile(@Payload() dto: UpdateUserDto) {
-    console.log('Microservicio Auth: Actualizando perfil para el usuario:', dto.userId);
+    this.logger.log(`Microservicio Auth: Actualizando perfil para el usuario: ${dto.userId}`);
     try {
       return await this.updateUserUseCase.execute(dto);
     } catch (error: any) {
-      console.error('Microservicio Auth Update Profile Error:', error.message);
+      this.logger.error(`Microservicio Auth Update Profile Error: ${error.message}`);
       throw new RpcException(error.message);
     }
   }

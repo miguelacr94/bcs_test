@@ -22,11 +22,11 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.ProductsModule = void 0;
 const common_1 = __webpack_require__(3);
 const mongoose_1 = __webpack_require__(4);
-const products_controller_1 = __webpack_require__(5);
-const product_schema_1 = __webpack_require__(30);
-const mongoose_product_repository_1 = __webpack_require__(32);
-const use_cases_1 = __webpack_require__(16);
-const envs_1 = __webpack_require__(34);
+const controllers_1 = __webpack_require__(5);
+const product_schema_1 = __webpack_require__(34);
+const mongoose_product_repository_1 = __webpack_require__(36);
+const use_cases_1 = __webpack_require__(17);
+const envs_1 = __webpack_require__(38);
 let ProductsModule = class ProductsModule {
 };
 exports.ProductsModule = ProductsModule;
@@ -38,7 +38,7 @@ exports.ProductsModule = ProductsModule = __decorate([
                 { name: product_schema_1.ProductDocument.name, schema: product_schema_1.ProductSchema },
             ]),
         ],
-        controllers: [products_controller_1.ProductsController],
+        controllers: [controllers_1.ProductsCatalogController, controllers_1.ProductsInventoryController],
         providers: [
             use_cases_1.CreateProductUseCase,
             use_cases_1.GetAllProductsUseCase,
@@ -48,6 +48,7 @@ exports.ProductsModule = ProductsModule = __decorate([
             use_cases_1.ReduceStockUseCase,
             use_cases_1.GetProductsByCategoryUseCase,
             use_cases_1.ActivateProductUseCase,
+            use_cases_1.RestoreStockUseCase,
             {
                 provide: 'ProductRepositoryPort',
                 useClass: mongoose_product_repository_1.MongooseProductRepository,
@@ -74,6 +75,30 @@ module.exports = require("@nestjs/mongoose");
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+__exportStar(__webpack_require__(6), exports);
+__exportStar(__webpack_require__(33), exports);
+
+
+/***/ }),
+/* 6 */
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -86,37 +111,34 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
-var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k;
+var _a, _b, _c, _d, _e, _f, _g, _h, _j;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.ProductsController = void 0;
+exports.ProductsCatalogController = void 0;
 const common_1 = __webpack_require__(3);
-const dtos_1 = __webpack_require__(6);
-const enums_1 = __webpack_require__(11);
-const microservices_1 = __webpack_require__(15);
-const use_cases_1 = __webpack_require__(16);
-const dtos_2 = __webpack_require__(27);
-const activate_product_use_case_1 = __webpack_require__(26);
-let ProductsController = class ProductsController {
+const dtos_1 = __webpack_require__(7);
+const enums_1 = __webpack_require__(12);
+const microservices_1 = __webpack_require__(16);
+const use_cases_1 = __webpack_require__(17);
+const dtos_2 = __webpack_require__(30);
+let ProductsCatalogController = class ProductsCatalogController {
     createProductUseCase;
     getAllProductsUseCase;
     getProductUseCase;
     updateProductUseCase;
     deleteProductUseCase;
-    reduceStockUseCase;
     getProductsByCategoryUseCase;
     activateProductUseCase;
-    constructor(createProductUseCase, getAllProductsUseCase, getProductUseCase, updateProductUseCase, deleteProductUseCase, reduceStockUseCase, getProductsByCategoryUseCase, activateProductUseCase) {
+    constructor(createProductUseCase, getAllProductsUseCase, getProductUseCase, updateProductUseCase, deleteProductUseCase, getProductsByCategoryUseCase, activateProductUseCase) {
         this.createProductUseCase = createProductUseCase;
         this.getAllProductsUseCase = getAllProductsUseCase;
         this.getProductUseCase = getProductUseCase;
         this.updateProductUseCase = updateProductUseCase;
         this.deleteProductUseCase = deleteProductUseCase;
-        this.reduceStockUseCase = reduceStockUseCase;
         this.getProductsByCategoryUseCase = getProductsByCategoryUseCase;
         this.activateProductUseCase = activateProductUseCase;
     }
     async createProduct(dto) {
-        console.log('Microservicio Products (Hexagonal): Creando producto:', dto.name);
+        console.log('Microservicio Products (Catálogo): Creando producto:', dto.name);
         try {
             return await this.createProductUseCase.execute(dto);
         }
@@ -126,10 +148,9 @@ let ProductsController = class ProductsController {
         }
     }
     async getAllProducts(paginationDto) {
-        console.log('Microservicio Products (Hexagonal): Solicitando todos los productos con paginación...', paginationDto);
+        console.log('Microservicio Products (Catálogo): Solicitando todos los productos con paginación...', paginationDto);
         try {
-            const products = await this.getAllProductsUseCase.execute(paginationDto || { page: 1, limit: 10 });
-            return products;
+            return await this.getAllProductsUseCase.execute(paginationDto || { page: 1, limit: 10 });
         }
         catch (error) {
             console.error('Microservicio Products Error (FindAll):', error.message);
@@ -137,7 +158,7 @@ let ProductsController = class ProductsController {
         }
     }
     async getProductById(data) {
-        console.log('Microservicio Products (Hexagonal): Buscando producto con ID:', data.id);
+        console.log('Microservicio Products (Catálogo): Buscando producto con ID:', data.id);
         try {
             return await this.getProductUseCase.execute(data.id);
         }
@@ -147,7 +168,7 @@ let ProductsController = class ProductsController {
         }
     }
     async getProductsByCategory(data) {
-        console.log('Microservicio Products (Hexagonal): Buscando producto por categoria con ID:', data.id);
+        console.log('Microservicio Products (Catálogo): Buscando producto por categoria con ID:', data.id);
         try {
             return await this.getProductsByCategoryUseCase.execute(data.id, data.paginationDto);
         }
@@ -157,7 +178,7 @@ let ProductsController = class ProductsController {
         }
     }
     async updateProduct(data) {
-        console.log('Microservicio Products (Hexagonal): Actualizando producto con ID:', data.id);
+        console.log('Microservicio Products (Catálogo): Actualizando producto con ID:', data.id);
         try {
             return await this.updateProductUseCase.execute(data.id, data.dto);
         }
@@ -167,7 +188,7 @@ let ProductsController = class ProductsController {
         }
     }
     async activateProduct(data) {
-        console.log('Microservicio Products (Hexagonal): Activando producto con ID:', data.id);
+        console.log('Microservicio Products (Catálogo): Activando producto con ID:', data.id);
         try {
             return await this.activateProductUseCase.execute(data.id);
         }
@@ -177,7 +198,7 @@ let ProductsController = class ProductsController {
         }
     }
     async deleteProduct(data) {
-        console.log('Microservicio Products (Hexagonal): Eliminando producto con ID:', data.id);
+        console.log('Microservicio Products (Catálogo): Eliminando producto con ID:', data.id);
         try {
             return await this.deleteProductUseCase.execute(data.id);
         }
@@ -186,82 +207,65 @@ let ProductsController = class ProductsController {
             throw new microservices_1.RpcException(error.message);
         }
     }
-    async reduceStock(data) {
-        console.log('Microservicio Products: Petición de reducción de stock recibida por Redis...');
-        try {
-            return await this.reduceStockUseCase.execute(data.items);
-        }
-        catch (error) {
-            console.error('Microservicio Products Error (ReduceStock):', error.message);
-            throw new microservices_1.RpcException(error.message);
-        }
-    }
 };
-exports.ProductsController = ProductsController;
+exports.ProductsCatalogController = ProductsCatalogController;
 __decorate([
     (0, microservices_1.MessagePattern)({ cmd: enums_1.ProductPattern.CREATE_PRODUCT }),
     __param(0, (0, microservices_1.Payload)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [typeof (_j = typeof dtos_2.CreateProductDto !== "undefined" && dtos_2.CreateProductDto) === "function" ? _j : Object]),
+    __metadata("design:paramtypes", [typeof (_h = typeof dtos_2.CreateProductDto !== "undefined" && dtos_2.CreateProductDto) === "function" ? _h : Object]),
     __metadata("design:returntype", Promise)
-], ProductsController.prototype, "createProduct", null);
+], ProductsCatalogController.prototype, "createProduct", null);
 __decorate([
     (0, microservices_1.MessagePattern)({ cmd: enums_1.ProductPattern.GET_ALL_PRODUCTS }),
     __param(0, (0, microservices_1.Payload)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [typeof (_k = typeof dtos_1.PaginationDto !== "undefined" && dtos_1.PaginationDto) === "function" ? _k : Object]),
+    __metadata("design:paramtypes", [typeof (_j = typeof dtos_1.PaginationDto !== "undefined" && dtos_1.PaginationDto) === "function" ? _j : Object]),
     __metadata("design:returntype", Promise)
-], ProductsController.prototype, "getAllProducts", null);
+], ProductsCatalogController.prototype, "getAllProducts", null);
 __decorate([
     (0, microservices_1.MessagePattern)({ cmd: enums_1.ProductPattern.GET_PRODUCT_BY_ID }),
     __param(0, (0, microservices_1.Payload)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
-], ProductsController.prototype, "getProductById", null);
+], ProductsCatalogController.prototype, "getProductById", null);
 __decorate([
     (0, microservices_1.MessagePattern)({ cmd: enums_1.ProductPattern.GET_PRODUCTS_BY_CATEGORY }),
     __param(0, (0, microservices_1.Payload)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
-], ProductsController.prototype, "getProductsByCategory", null);
+], ProductsCatalogController.prototype, "getProductsByCategory", null);
 __decorate([
     (0, microservices_1.MessagePattern)({ cmd: enums_1.ProductPattern.UPDATE_PRODUCT }),
     __param(0, (0, microservices_1.Payload)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
-], ProductsController.prototype, "updateProduct", null);
+], ProductsCatalogController.prototype, "updateProduct", null);
 __decorate([
     (0, microservices_1.MessagePattern)({ cmd: enums_1.ProductPattern.ACTIVATE_PRODUCT }),
     __param(0, (0, microservices_1.Payload)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
-], ProductsController.prototype, "activateProduct", null);
+], ProductsCatalogController.prototype, "activateProduct", null);
 __decorate([
     (0, microservices_1.MessagePattern)({ cmd: enums_1.ProductPattern.DELETE_PRODUCT }),
     __param(0, (0, microservices_1.Payload)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
-], ProductsController.prototype, "deleteProduct", null);
-__decorate([
-    (0, microservices_1.MessagePattern)({ cmd: enums_1.ProductPattern.REDUCE_STOCK }),
-    __param(0, (0, microservices_1.Payload)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", Promise)
-], ProductsController.prototype, "reduceStock", null);
-exports.ProductsController = ProductsController = __decorate([
+], ProductsCatalogController.prototype, "deleteProduct", null);
+exports.ProductsCatalogController = ProductsCatalogController = __decorate([
     (0, common_1.Controller)(),
-    __metadata("design:paramtypes", [typeof (_a = typeof use_cases_1.CreateProductUseCase !== "undefined" && use_cases_1.CreateProductUseCase) === "function" ? _a : Object, typeof (_b = typeof use_cases_1.GetAllProductsUseCase !== "undefined" && use_cases_1.GetAllProductsUseCase) === "function" ? _b : Object, typeof (_c = typeof use_cases_1.GetProductUseCase !== "undefined" && use_cases_1.GetProductUseCase) === "function" ? _c : Object, typeof (_d = typeof use_cases_1.UpdateProductUseCase !== "undefined" && use_cases_1.UpdateProductUseCase) === "function" ? _d : Object, typeof (_e = typeof use_cases_1.DeleteProductUseCase !== "undefined" && use_cases_1.DeleteProductUseCase) === "function" ? _e : Object, typeof (_f = typeof use_cases_1.ReduceStockUseCase !== "undefined" && use_cases_1.ReduceStockUseCase) === "function" ? _f : Object, typeof (_g = typeof use_cases_1.GetProductsByCategoryUseCase !== "undefined" && use_cases_1.GetProductsByCategoryUseCase) === "function" ? _g : Object, typeof (_h = typeof activate_product_use_case_1.ActivateProductUseCase !== "undefined" && activate_product_use_case_1.ActivateProductUseCase) === "function" ? _h : Object])
-], ProductsController);
+    __metadata("design:paramtypes", [typeof (_a = typeof use_cases_1.CreateProductUseCase !== "undefined" && use_cases_1.CreateProductUseCase) === "function" ? _a : Object, typeof (_b = typeof use_cases_1.GetAllProductsUseCase !== "undefined" && use_cases_1.GetAllProductsUseCase) === "function" ? _b : Object, typeof (_c = typeof use_cases_1.GetProductUseCase !== "undefined" && use_cases_1.GetProductUseCase) === "function" ? _c : Object, typeof (_d = typeof use_cases_1.UpdateProductUseCase !== "undefined" && use_cases_1.UpdateProductUseCase) === "function" ? _d : Object, typeof (_e = typeof use_cases_1.DeleteProductUseCase !== "undefined" && use_cases_1.DeleteProductUseCase) === "function" ? _e : Object, typeof (_f = typeof use_cases_1.GetProductsByCategoryUseCase !== "undefined" && use_cases_1.GetProductsByCategoryUseCase) === "function" ? _f : Object, typeof (_g = typeof use_cases_1.ActivateProductUseCase !== "undefined" && use_cases_1.ActivateProductUseCase) === "function" ? _g : Object])
+], ProductsCatalogController);
 
 
 /***/ }),
-/* 6 */
+/* 7 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 
@@ -280,11 +284,11 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-__exportStar(__webpack_require__(7), exports);
+__exportStar(__webpack_require__(8), exports);
 
 
 /***/ }),
-/* 7 */
+/* 8 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 
@@ -299,9 +303,9 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.PaginationDto = void 0;
-const class_validator_1 = __webpack_require__(8);
-const class_transformer_1 = __webpack_require__(9);
-const swagger_1 = __webpack_require__(10);
+const class_validator_1 = __webpack_require__(9);
+const class_transformer_1 = __webpack_require__(10);
+const swagger_1 = __webpack_require__(11);
 class PaginationDto {
     page = 1;
     limit = 10;
@@ -324,25 +328,25 @@ __decorate([
 
 
 /***/ }),
-/* 8 */
+/* 9 */
 /***/ ((module) => {
 
 module.exports = require("class-validator");
 
 /***/ }),
-/* 9 */
+/* 10 */
 /***/ ((module) => {
 
 module.exports = require("class-transformer");
 
 /***/ }),
-/* 10 */
+/* 11 */
 /***/ ((module) => {
 
 module.exports = require("@nestjs/swagger");
 
 /***/ }),
-/* 11 */
+/* 12 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 
@@ -361,13 +365,13 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-__exportStar(__webpack_require__(12), exports);
 __exportStar(__webpack_require__(13), exports);
 __exportStar(__webpack_require__(14), exports);
+__exportStar(__webpack_require__(15), exports);
 
 
 /***/ }),
-/* 12 */
+/* 13 */
 /***/ ((__unused_webpack_module, exports) => {
 
 
@@ -382,7 +386,7 @@ var Role;
 
 
 /***/ }),
-/* 13 */
+/* 14 */
 /***/ ((__unused_webpack_module, exports) => {
 
 
@@ -393,11 +397,12 @@ var OrderStatus;
     OrderStatus["PENDING"] = "PENDING";
     OrderStatus["PAID"] = "PAID";
     OrderStatus["CANCELLED"] = "CANCELLED";
+    OrderStatus["COMPLETED"] = "COMPLETED";
 })(OrderStatus || (exports.OrderStatus = OrderStatus = {}));
 
 
 /***/ }),
-/* 14 */
+/* 15 */
 /***/ ((__unused_webpack_module, exports) => {
 
 
@@ -420,6 +425,7 @@ var ProductPattern;
     ProductPattern["UPDATE_PRODUCT"] = "update_product";
     ProductPattern["DELETE_PRODUCT"] = "delete_product";
     ProductPattern["REDUCE_STOCK"] = "reduce_stock";
+    ProductPattern["RESTORE_STOCK"] = "restore_stock";
     ProductPattern["GET_PRODUCTS_BY_CATEGORY"] = "get_products_by_category";
     ProductPattern["ACTIVATE_PRODUCT"] = "activate_product";
 })(ProductPattern || (exports.ProductPattern = ProductPattern = {}));
@@ -427,17 +433,19 @@ var OrderPattern;
 (function (OrderPattern) {
     OrderPattern["CREATE_ORDER"] = "create_order";
     OrderPattern["GET_USER_ORDERS"] = "get_user_orders";
+    OrderPattern["CANCEL_ORDER"] = "cancel_order";
+    OrderPattern["GET_ORDER_BY_ID"] = "get_order_by_id";
 })(OrderPattern || (exports.OrderPattern = OrderPattern = {}));
 
 
 /***/ }),
-/* 15 */
+/* 16 */
 /***/ ((module) => {
 
 module.exports = require("@nestjs/microservices");
 
 /***/ }),
-/* 16 */
+/* 17 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 
@@ -456,18 +464,19 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-__exportStar(__webpack_require__(17), exports);
-__exportStar(__webpack_require__(20), exports);
-__exportStar(__webpack_require__(21), exports);
+__exportStar(__webpack_require__(18), exports);
 __exportStar(__webpack_require__(22), exports);
 __exportStar(__webpack_require__(23), exports);
 __exportStar(__webpack_require__(24), exports);
 __exportStar(__webpack_require__(25), exports);
 __exportStar(__webpack_require__(26), exports);
+__exportStar(__webpack_require__(27), exports);
+__exportStar(__webpack_require__(28), exports);
+__exportStar(__webpack_require__(29), exports);
 
 
 /***/ }),
-/* 17 */
+/* 18 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 
@@ -519,8 +528,8 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.CreateProductUseCase = void 0;
 const common_1 = __webpack_require__(3);
-const crypto = __importStar(__webpack_require__(18));
-const product_entity_1 = __webpack_require__(19);
+const crypto = __importStar(__webpack_require__(19));
+const product_entity_1 = __webpack_require__(20);
 let CreateProductUseCase = class CreateProductUseCase {
     productRepository;
     constructor(productRepository) {
@@ -542,18 +551,19 @@ exports.CreateProductUseCase = CreateProductUseCase = __decorate([
 
 
 /***/ }),
-/* 18 */
+/* 19 */
 /***/ ((module) => {
 
 module.exports = require("crypto");
 
 /***/ }),
-/* 19 */
-/***/ ((__unused_webpack_module, exports) => {
+/* 20 */
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.Product = void 0;
+const domain_exception_1 = __webpack_require__(21);
 class Product {
     id;
     name;
@@ -578,17 +588,20 @@ class Product {
     }
     validateName() {
         if (!this.name || this.name.trim().length === 0) {
-            throw new Error('El nombre del producto no puede estar vacío.');
+            throw new domain_exception_1.DomainException('El nombre del producto no puede estar vacío.');
+        }
+        if (this.name.length < 3) {
+            throw new domain_exception_1.DomainException('El nombre del producto debe tener al menos 3 caracteres.');
         }
     }
     validatePrice() {
         if (this.price < 0) {
-            throw new Error('El precio del producto no puede ser menor a 0.');
+            throw new domain_exception_1.DomainException('El precio del producto no puede ser menor a 0.');
         }
     }
     validateStock() {
         if (this.stock < 0) {
-            throw new Error('El inventario (stock) del producto no puede ser negativo.');
+            throw new domain_exception_1.DomainException('El inventario (stock) del producto no puede ser negativo.');
         }
     }
     deactivate() {
@@ -602,7 +615,112 @@ exports.Product = Product;
 
 
 /***/ }),
-/* 20 */
+/* 21 */
+/***/ ((__unused_webpack_module, exports) => {
+
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.DomainException = void 0;
+class DomainException extends Error {
+    constructor(message) {
+        super(message);
+        this.name = 'DomainException';
+    }
+}
+exports.DomainException = DomainException;
+
+
+/***/ }),
+/* 22 */
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.GetAllProductsUseCase = void 0;
+const common_1 = __webpack_require__(3);
+let GetAllProductsUseCase = class GetAllProductsUseCase {
+    productRepository;
+    constructor(productRepository) {
+        this.productRepository = productRepository;
+    }
+    async execute(paginationDto) {
+        const { page = 1, limit = 10 } = paginationDto;
+        const { data, total } = await this.productRepository.findAll(paginationDto);
+        return {
+            data,
+            meta: {
+                totalItems: total,
+                itemCount: data.length,
+                itemsPerPage: limit,
+                totalPages: Math.ceil(total / limit),
+                currentPage: page,
+            },
+        };
+    }
+};
+exports.GetAllProductsUseCase = GetAllProductsUseCase;
+exports.GetAllProductsUseCase = GetAllProductsUseCase = __decorate([
+    (0, common_1.Injectable)(),
+    __param(0, (0, common_1.Inject)('ProductRepositoryPort')),
+    __metadata("design:paramtypes", [Object])
+], GetAllProductsUseCase);
+
+
+/***/ }),
+/* 23 */
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.GetProductUseCase = void 0;
+const common_1 = __webpack_require__(3);
+let GetProductUseCase = class GetProductUseCase {
+    productRepository;
+    constructor(productRepository) {
+        this.productRepository = productRepository;
+    }
+    async execute(id) {
+        const product = await this.productRepository.findById(id);
+        if (!product) {
+            throw new Error(`Producto con ID ${id} no encontrado.`);
+        }
+        return product;
+    }
+};
+exports.GetProductUseCase = GetProductUseCase;
+exports.GetProductUseCase = GetProductUseCase = __decorate([
+    (0, common_1.Injectable)(),
+    __param(0, (0, common_1.Inject)('ProductRepositoryPort')),
+    __metadata("design:paramtypes", [Object])
+], GetProductUseCase);
+
+
+/***/ }),
+/* 24 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 
@@ -645,135 +763,7 @@ exports.DeleteProductUseCase = DeleteProductUseCase = __decorate([
 
 
 /***/ }),
-/* 21 */
-/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
-
-
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-var __param = (this && this.__param) || function (paramIndex, decorator) {
-    return function (target, key) { decorator(target, key, paramIndex); }
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.GetAllProductsUseCase = void 0;
-const common_1 = __webpack_require__(3);
-let GetAllProductsUseCase = class GetAllProductsUseCase {
-    productRepository;
-    constructor(productRepository) {
-        this.productRepository = productRepository;
-    }
-    async execute(paginationDto) {
-        return await this.productRepository.findAll(paginationDto);
-    }
-};
-exports.GetAllProductsUseCase = GetAllProductsUseCase;
-exports.GetAllProductsUseCase = GetAllProductsUseCase = __decorate([
-    (0, common_1.Injectable)(),
-    __param(0, (0, common_1.Inject)('ProductRepositoryPort')),
-    __metadata("design:paramtypes", [Object])
-], GetAllProductsUseCase);
-
-
-/***/ }),
-/* 22 */
-/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
-
-
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-var __param = (this && this.__param) || function (paramIndex, decorator) {
-    return function (target, key) { decorator(target, key, paramIndex); }
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.GetProductUseCase = void 0;
-const common_1 = __webpack_require__(3);
-let GetProductUseCase = class GetProductUseCase {
-    productRepository;
-    constructor(productRepository) {
-        this.productRepository = productRepository;
-    }
-    async execute(id) {
-        const product = await this.productRepository.findById(id);
-        if (!product) {
-            throw new Error(`Producto con ID ${id} no encontrado.`);
-        }
-        return product;
-    }
-};
-exports.GetProductUseCase = GetProductUseCase;
-exports.GetProductUseCase = GetProductUseCase = __decorate([
-    (0, common_1.Injectable)(),
-    __param(0, (0, common_1.Inject)('ProductRepositoryPort')),
-    __metadata("design:paramtypes", [Object])
-], GetProductUseCase);
-
-
-/***/ }),
-/* 23 */
-/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
-
-
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-var __param = (this && this.__param) || function (paramIndex, decorator) {
-    return function (target, key) { decorator(target, key, paramIndex); }
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.ReduceStockUseCase = void 0;
-const common_1 = __webpack_require__(3);
-const product_entity_1 = __webpack_require__(19);
-let ReduceStockUseCase = class ReduceStockUseCase {
-    productRepository;
-    constructor(productRepository) {
-        this.productRepository = productRepository;
-    }
-    async execute(items) {
-        for (const item of items) {
-            const product = await this.productRepository.findById(item.productId);
-            if (!product) {
-                throw new Error(`Producto con ID ${item.productId} no fue encontrado para descontar inventario.`);
-            }
-            const newStock = product.stock - item.quantity;
-            if (newStock < 0) {
-                throw new Error(`Inventario insuficiente para el producto "${product.name}". Stock disponible: ${product.stock}, solicitado: ${item.quantity}`);
-            }
-            const updatedProduct = new product_entity_1.Product(product.id, product.name, product.description, product.price, newStock, product.categoryId, product.isActive, product.createdAt);
-            await this.productRepository.save(updatedProduct);
-        }
-        return true;
-    }
-};
-exports.ReduceStockUseCase = ReduceStockUseCase;
-exports.ReduceStockUseCase = ReduceStockUseCase = __decorate([
-    (0, common_1.Injectable)(),
-    __param(0, (0, common_1.Inject)('ProductRepositoryPort')),
-    __metadata("design:paramtypes", [Object])
-], ReduceStockUseCase);
-
-
-/***/ }),
-/* 24 */
+/* 25 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 
@@ -792,7 +782,7 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.UpdateProductUseCase = void 0;
 const common_1 = __webpack_require__(3);
-const product_entity_1 = __webpack_require__(19);
+const product_entity_1 = __webpack_require__(20);
 let UpdateProductUseCase = class UpdateProductUseCase {
     productRepository;
     constructor(productRepository) {
@@ -816,7 +806,7 @@ exports.UpdateProductUseCase = UpdateProductUseCase = __decorate([
 
 
 /***/ }),
-/* 25 */
+/* 26 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 
@@ -840,8 +830,19 @@ let GetProductsByCategoryUseCase = class GetProductsByCategoryUseCase {
     constructor(productRepository) {
         this.productRepository = productRepository;
     }
-    async execute(id, paginationDto) {
-        return await this.productRepository.findByCategory(id, paginationDto);
+    async execute(categoryId, paginationDto) {
+        const { page = 1, limit = 10 } = paginationDto;
+        const { data, total } = await this.productRepository.findByCategory(categoryId, paginationDto);
+        return {
+            data,
+            meta: {
+                totalItems: total,
+                itemCount: data.length,
+                itemsPerPage: limit,
+                totalPages: Math.ceil(total / limit),
+                currentPage: page,
+            },
+        };
     }
 };
 exports.GetProductsByCategoryUseCase = GetProductsByCategoryUseCase;
@@ -853,7 +854,7 @@ exports.GetProductsByCategoryUseCase = GetProductsByCategoryUseCase = __decorate
 
 
 /***/ }),
-/* 26 */
+/* 27 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 
@@ -896,7 +897,104 @@ exports.ActivateProductUseCase = ActivateProductUseCase = __decorate([
 
 
 /***/ }),
-/* 27 */
+/* 28 */
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.ReduceStockUseCase = void 0;
+const common_1 = __webpack_require__(3);
+const product_entity_1 = __webpack_require__(20);
+let ReduceStockUseCase = class ReduceStockUseCase {
+    productRepository;
+    constructor(productRepository) {
+        this.productRepository = productRepository;
+    }
+    async execute(items) {
+        for (const item of items) {
+            const product = await this.productRepository.findById(item.productId);
+            if (!product) {
+                throw new Error(`Producto con ID ${item.productId} no fue encontrado para descontar inventario.`);
+            }
+            const newStock = product.stock - item.quantity;
+            if (newStock < 0) {
+                throw new Error(`Inventario insuficiente para el producto "${product.name}". Stock disponible: ${product.stock}, solicitado: ${item.quantity}`);
+            }
+            const updatedProduct = new product_entity_1.Product(product.id, product.name, product.description, product.price, newStock, product.categoryId, product.isActive, product.createdAt);
+            await this.productRepository.save(updatedProduct);
+        }
+        return true;
+    }
+};
+exports.ReduceStockUseCase = ReduceStockUseCase;
+exports.ReduceStockUseCase = ReduceStockUseCase = __decorate([
+    (0, common_1.Injectable)(),
+    __param(0, (0, common_1.Inject)('ProductRepositoryPort')),
+    __metadata("design:paramtypes", [Object])
+], ReduceStockUseCase);
+
+
+/***/ }),
+/* 29 */
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.RestoreStockUseCase = void 0;
+const common_1 = __webpack_require__(3);
+const product_entity_1 = __webpack_require__(20);
+let RestoreStockUseCase = class RestoreStockUseCase {
+    productRepository;
+    constructor(productRepository) {
+        this.productRepository = productRepository;
+    }
+    async execute(items) {
+        for (const item of items) {
+            const product = await this.productRepository.findById(item.productId);
+            if (!product) {
+                throw new Error(`Producto con ID ${item.productId} no fue encontrado para restaurar inventario.`);
+            }
+            const newStock = product.stock + item.quantity;
+            const updatedProduct = new product_entity_1.Product(product.id, product.name, product.description, product.price, newStock, product.categoryId, product.isActive, product.createdAt);
+            await this.productRepository.save(updatedProduct);
+        }
+        return true;
+    }
+};
+exports.RestoreStockUseCase = RestoreStockUseCase;
+exports.RestoreStockUseCase = RestoreStockUseCase = __decorate([
+    (0, common_1.Injectable)(),
+    __param(0, (0, common_1.Inject)('ProductRepositoryPort')),
+    __metadata("design:paramtypes", [Object])
+], RestoreStockUseCase);
+
+
+/***/ }),
+/* 30 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 
@@ -915,12 +1013,12 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-__exportStar(__webpack_require__(28), exports);
-__exportStar(__webpack_require__(29), exports);
+__exportStar(__webpack_require__(31), exports);
+__exportStar(__webpack_require__(32), exports);
 
 
 /***/ }),
-/* 28 */
+/* 31 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 
@@ -935,8 +1033,8 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.CreateProductDto = void 0;
-const swagger_1 = __webpack_require__(10);
-const class_validator_1 = __webpack_require__(8);
+const swagger_1 = __webpack_require__(11);
+const class_validator_1 = __webpack_require__(9);
 class CreateProductDto {
     name;
     description;
@@ -1004,7 +1102,7 @@ __decorate([
 
 
 /***/ }),
-/* 29 */
+/* 32 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 
@@ -1019,8 +1117,8 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.UpdateProductDto = void 0;
-const swagger_1 = __webpack_require__(10);
-const class_validator_1 = __webpack_require__(8);
+const swagger_1 = __webpack_require__(11);
+const class_validator_1 = __webpack_require__(9);
 class UpdateProductDto {
     name;
     description;
@@ -1101,7 +1199,80 @@ __decorate([
 
 
 /***/ }),
-/* 30 */
+/* 33 */
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
+var _a, _b;
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.ProductsInventoryController = void 0;
+const common_1 = __webpack_require__(3);
+const enums_1 = __webpack_require__(12);
+const microservices_1 = __webpack_require__(16);
+const use_cases_1 = __webpack_require__(17);
+let ProductsInventoryController = class ProductsInventoryController {
+    reduceStockUseCase;
+    restoreStockUseCase;
+    constructor(reduceStockUseCase, restoreStockUseCase) {
+        this.reduceStockUseCase = reduceStockUseCase;
+        this.restoreStockUseCase = restoreStockUseCase;
+    }
+    async reduceStock(data) {
+        console.log('Microservicio Products (Inventario): Petición de reducción de stock recibida por Redis...');
+        try {
+            return await this.reduceStockUseCase.execute(data.items);
+        }
+        catch (error) {
+            console.error('Microservicio Products Error (ReduceStock):', error.message);
+            throw new microservices_1.RpcException(error.message);
+        }
+    }
+    async restoreStock(data) {
+        console.log('Microservicio Products (Inventario): Petición de restauración de stock recibida por Redis...');
+        try {
+            return await this.restoreStockUseCase.execute(data.items);
+        }
+        catch (error) {
+            console.error('Microservicio Products Error (RestoreStock):', error.message);
+            throw new microservices_1.RpcException(error.message);
+        }
+    }
+};
+exports.ProductsInventoryController = ProductsInventoryController;
+__decorate([
+    (0, microservices_1.MessagePattern)({ cmd: enums_1.ProductPattern.REDUCE_STOCK }),
+    __param(0, (0, microservices_1.Payload)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], ProductsInventoryController.prototype, "reduceStock", null);
+__decorate([
+    (0, microservices_1.MessagePattern)({ cmd: enums_1.ProductPattern.RESTORE_STOCK }),
+    __param(0, (0, microservices_1.Payload)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], ProductsInventoryController.prototype, "restoreStock", null);
+exports.ProductsInventoryController = ProductsInventoryController = __decorate([
+    (0, common_1.Controller)(),
+    __metadata("design:paramtypes", [typeof (_a = typeof use_cases_1.ReduceStockUseCase !== "undefined" && use_cases_1.ReduceStockUseCase) === "function" ? _a : Object, typeof (_b = typeof use_cases_1.RestoreStockUseCase !== "undefined" && use_cases_1.RestoreStockUseCase) === "function" ? _b : Object])
+], ProductsInventoryController);
+
+
+/***/ }),
+/* 34 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 
@@ -1118,7 +1289,7 @@ var _a;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.ProductSchema = exports.ProductDocument = void 0;
 const mongoose_1 = __webpack_require__(4);
-const mongoose_2 = __webpack_require__(31);
+const mongoose_2 = __webpack_require__(35);
 let ProductDocument = class ProductDocument extends mongoose_2.Document {
     name;
     description;
@@ -1164,13 +1335,13 @@ exports.ProductSchema = mongoose_1.SchemaFactory.createForClass(ProductDocument)
 
 
 /***/ }),
-/* 31 */
+/* 35 */
 /***/ ((module) => {
 
 module.exports = require("mongoose");
 
 /***/ }),
-/* 32 */
+/* 36 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 
@@ -1191,9 +1362,9 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.MongooseProductRepository = void 0;
 const common_1 = __webpack_require__(3);
 const mongoose_1 = __webpack_require__(4);
-const mongoose_2 = __webpack_require__(31);
-const product_schema_1 = __webpack_require__(30);
-const product_mapper_1 = __webpack_require__(33);
+const mongoose_2 = __webpack_require__(35);
+const product_schema_1 = __webpack_require__(34);
+const product_mapper_1 = __webpack_require__(37);
 let MongooseProductRepository = class MongooseProductRepository {
     productModel;
     constructor(productModel) {
@@ -1216,12 +1387,14 @@ let MongooseProductRepository = class MongooseProductRepository {
     async findAll(paginationDto) {
         const { page = 1, limit = 10 } = paginationDto;
         const skip = (page - 1) * limit;
-        const docs = await this.productModel
-            .find({ isActive: true })
-            .skip(skip)
-            .limit(limit)
-            .exec();
-        return docs.map((doc) => product_mapper_1.ProductMapper.toDomain(doc));
+        const [docs, total] = await Promise.all([
+            this.productModel.find({ isActive: true }).skip(skip).limit(limit).exec(),
+            this.productModel.countDocuments({ isActive: true }).exec(),
+        ]);
+        return {
+            data: docs.map((doc) => product_mapper_1.ProductMapper.toDomain(doc)),
+            total,
+        };
     }
     async findById(id) {
         if (!mongoose_2.Types.ObjectId.isValid(id)) {
@@ -1236,12 +1409,18 @@ let MongooseProductRepository = class MongooseProductRepository {
     async findByCategory(categoryId, paginationDto) {
         const { page = 1, limit = 10 } = paginationDto;
         const skip = (page - 1) * limit;
-        const docs = await this.productModel
-            .find({ categoryId })
-            .skip(skip)
-            .limit(limit)
-            .exec();
-        return docs.map((doc) => product_mapper_1.ProductMapper.toDomain(doc));
+        const [docs, total] = await Promise.all([
+            this.productModel
+                .find({ categoryId, isActive: true })
+                .skip(skip)
+                .limit(limit)
+                .exec(),
+            this.productModel.countDocuments({ categoryId, isActive: true }).exec(),
+        ]);
+        return {
+            data: docs.map((doc) => product_mapper_1.ProductMapper.toDomain(doc)),
+            total,
+        };
     }
     async delete(id) {
         if (!mongoose_2.Types.ObjectId.isValid(id)) {
@@ -1260,13 +1439,13 @@ exports.MongooseProductRepository = MongooseProductRepository = __decorate([
 
 
 /***/ }),
-/* 33 */
+/* 37 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.ProductMapper = void 0;
-const product_entity_1 = __webpack_require__(19);
+const product_entity_1 = __webpack_require__(20);
 class ProductMapper {
     static toDomain(document) {
         return new product_entity_1.Product(document._id.toString(), document.name, document.description, document.price, document.stock, document.categoryId, document.isActive !== undefined ? document.isActive : true, document.createdAt);
@@ -1286,13 +1465,13 @@ exports.ProductMapper = ProductMapper;
 
 
 /***/ }),
-/* 34 */
+/* 38 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.envs = void 0;
-__webpack_require__(35);
+__webpack_require__(39);
 exports.envs = {
     mongo: {
         authUri: process.env.MONGO_URI || 'mongodb://localhost:27017/store_auth',
@@ -1311,7 +1490,7 @@ exports.envs = {
 
 
 /***/ }),
-/* 35 */
+/* 39 */
 /***/ ((module) => {
 
 module.exports = require("dotenv/config");
@@ -1352,8 +1531,8 @@ var exports = __webpack_exports__;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core_1 = __webpack_require__(1);
 const products_module_1 = __webpack_require__(2);
-const microservices_1 = __webpack_require__(15);
-const envs_1 = __webpack_require__(34);
+const microservices_1 = __webpack_require__(16);
+const envs_1 = __webpack_require__(38);
 async function bootstrap() {
     const app = await core_1.NestFactory.createMicroservice(products_module_1.ProductsModule, {
         transport: microservices_1.Transport.REDIS,

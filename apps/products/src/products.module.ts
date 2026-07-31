@@ -1,6 +1,9 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { ProductsController } from './products.controller';
+import {
+  ProductsCatalogController,
+  ProductsInventoryController,
+} from './controllers';
 import {
   ProductDocument,
   ProductSchema,
@@ -15,6 +18,7 @@ import {
   ReduceStockUseCase,
   GetProductsByCategoryUseCase,
   ActivateProductUseCase,
+  RestoreStockUseCase,
 } from './application/use-cases';
 import { envs } from '@app/shared/config/envs';
 
@@ -25,7 +29,7 @@ import { envs } from '@app/shared/config/envs';
       { name: ProductDocument.name, schema: ProductSchema },
     ]),
   ],
-  controllers: [ProductsController],
+  controllers: [ProductsCatalogController, ProductsInventoryController],
   providers: [
     CreateProductUseCase,
     GetAllProductsUseCase,
@@ -35,6 +39,7 @@ import { envs } from '@app/shared/config/envs';
     ReduceStockUseCase,
     GetProductsByCategoryUseCase,
     ActivateProductUseCase,
+    RestoreStockUseCase,
 
     // Inversión de Control: Vinculamos el Puerto de negocio con el Adaptador de Mongoose
     {

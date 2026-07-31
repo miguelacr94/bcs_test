@@ -24,11 +24,11 @@ const common_1 = __webpack_require__(3);
 const mongoose_1 = __webpack_require__(4);
 const microservices_1 = __webpack_require__(5);
 const orders_controller_1 = __webpack_require__(6);
-const order_schema_1 = __webpack_require__(16);
-const mongoose_order_repository_1 = __webpack_require__(18);
-const redis_product_service_adapter_1 = __webpack_require__(20);
+const order_schema_1 = __webpack_require__(19);
+const mongoose_order_repository_1 = __webpack_require__(21);
+const redis_product_service_adapter_1 = __webpack_require__(23);
 const use_cases_1 = __webpack_require__(11);
-const envs_1 = __webpack_require__(22);
+const envs_1 = __webpack_require__(25);
 let OrdersModule = class OrdersModule {
 };
 exports.OrdersModule = OrdersModule;
@@ -54,6 +54,8 @@ exports.OrdersModule = OrdersModule = __decorate([
         providers: [
             use_cases_1.CreateOrderUseCase,
             use_cases_1.GetUserOrdersUseCase,
+            use_cases_1.CancelOrderUseCase,
+            use_cases_1.GetOrderUseCase,
             {
                 provide: 'OrderRepositoryPort',
                 useClass: mongoose_order_repository_1.MongooseOrderRepository,
@@ -102,37 +104,62 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
-var _a, _b;
+var OrdersController_1;
+var _a, _b, _c, _d;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.OrdersController = void 0;
 const common_1 = __webpack_require__(3);
 const enums_1 = __webpack_require__(7);
 const microservices_1 = __webpack_require__(5);
 const use_cases_1 = __webpack_require__(11);
-let OrdersController = class OrdersController {
+let OrdersController = OrdersController_1 = class OrdersController {
     createOrderUseCase;
+    cancelOrderUseCase;
     getUserOrdersUseCase;
-    constructor(createOrderUseCase, getUserOrdersUseCase) {
+    getOrderUseCase;
+    constructor(createOrderUseCase, cancelOrderUseCase, getUserOrdersUseCase, getOrderUseCase) {
         this.createOrderUseCase = createOrderUseCase;
+        this.cancelOrderUseCase = cancelOrderUseCase;
         this.getUserOrdersUseCase = getUserOrdersUseCase;
+        this.getOrderUseCase = getOrderUseCase;
     }
+    logger = new common_1.Logger(OrdersController_1.name);
     async createOrder(data) {
-        console.log('Microservicio Orders: Creando orden para usuario:', data.userId);
+        this.logger.log(`Microservicio Orders: Creando orden para usuario: ${data.userId}`);
         try {
             return await this.createOrderUseCase.execute(data.userId, data.dto);
         }
         catch (error) {
-            console.error('Microservicio Orders Error:', error.message);
+            this.logger.error(`Microservicio Orders Error (Create): ${error.message}`);
             throw new microservices_1.RpcException(error.message);
         }
     }
     async getUserOrders(data) {
-        console.log('Microservicio Orders: Consultando órdenes del usuario:', data.userId);
+        this.logger.log(`Microservicio Orders: Consultando órdenes del usuario: ${data.userId}`);
         try {
             return await this.getUserOrdersUseCase.execute(data.userId, data.paginationDto || { page: 1, limit: 10 });
         }
         catch (error) {
-            console.error('Microservicio Orders Error (GetUserOrders):', error.message);
+            this.logger.error(`Microservicio Orders Error (GetUserOrders): ${error.message}`);
+            throw new microservices_1.RpcException(error.message);
+        }
+    }
+    async getOrderById(data) {
+        this.logger.log(`Microservicio Orders: Buscando orden: ${data.orderId}`);
+        try {
+            return await this.getOrderUseCase.execute(data.orderId);
+        }
+        catch (error) {
+            throw new microservices_1.RpcException(error.message);
+        }
+    }
+    async cancelOrder(data) {
+        this.logger.log(`Microservicio Orders: Cancelando orden: ${data.orderId}`);
+        try {
+            return await this.cancelOrderUseCase.execute(data.orderId);
+        }
+        catch (error) {
+            this.logger.error(`Microservicio Orders Error (CancelOrder): ${error.message}`);
             throw new microservices_1.RpcException(error.message);
         }
     }
@@ -152,9 +179,23 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], OrdersController.prototype, "getUserOrders", null);
-exports.OrdersController = OrdersController = __decorate([
+__decorate([
+    (0, microservices_1.MessagePattern)({ cmd: enums_1.OrderPattern.GET_ORDER_BY_ID }),
+    __param(0, (0, microservices_1.Payload)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], OrdersController.prototype, "getOrderById", null);
+__decorate([
+    (0, microservices_1.MessagePattern)({ cmd: enums_1.OrderPattern.CANCEL_ORDER }),
+    __param(0, (0, microservices_1.Payload)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], OrdersController.prototype, "cancelOrder", null);
+exports.OrdersController = OrdersController = OrdersController_1 = __decorate([
     (0, common_1.Controller)(),
-    __metadata("design:paramtypes", [typeof (_a = typeof use_cases_1.CreateOrderUseCase !== "undefined" && use_cases_1.CreateOrderUseCase) === "function" ? _a : Object, typeof (_b = typeof use_cases_1.GetUserOrdersUseCase !== "undefined" && use_cases_1.GetUserOrdersUseCase) === "function" ? _b : Object])
+    __metadata("design:paramtypes", [typeof (_a = typeof use_cases_1.CreateOrderUseCase !== "undefined" && use_cases_1.CreateOrderUseCase) === "function" ? _a : Object, typeof (_b = typeof use_cases_1.CancelOrderUseCase !== "undefined" && use_cases_1.CancelOrderUseCase) === "function" ? _b : Object, typeof (_c = typeof use_cases_1.GetUserOrdersUseCase !== "undefined" && use_cases_1.GetUserOrdersUseCase) === "function" ? _c : Object, typeof (_d = typeof use_cases_1.GetOrderUseCase !== "undefined" && use_cases_1.GetOrderUseCase) === "function" ? _d : Object])
 ], OrdersController);
 
 
@@ -210,6 +251,7 @@ var OrderStatus;
     OrderStatus["PENDING"] = "PENDING";
     OrderStatus["PAID"] = "PAID";
     OrderStatus["CANCELLED"] = "CANCELLED";
+    OrderStatus["COMPLETED"] = "COMPLETED";
 })(OrderStatus || (exports.OrderStatus = OrderStatus = {}));
 
 
@@ -237,11 +279,16 @@ var ProductPattern;
     ProductPattern["UPDATE_PRODUCT"] = "update_product";
     ProductPattern["DELETE_PRODUCT"] = "delete_product";
     ProductPattern["REDUCE_STOCK"] = "reduce_stock";
+    ProductPattern["RESTORE_STOCK"] = "restore_stock";
+    ProductPattern["GET_PRODUCTS_BY_CATEGORY"] = "get_products_by_category";
+    ProductPattern["ACTIVATE_PRODUCT"] = "activate_product";
 })(ProductPattern || (exports.ProductPattern = ProductPattern = {}));
 var OrderPattern;
 (function (OrderPattern) {
     OrderPattern["CREATE_ORDER"] = "create_order";
     OrderPattern["GET_USER_ORDERS"] = "get_user_orders";
+    OrderPattern["CANCEL_ORDER"] = "cancel_order";
+    OrderPattern["GET_ORDER_BY_ID"] = "get_order_by_id";
 })(OrderPattern || (exports.OrderPattern = OrderPattern = {}));
 
 
@@ -267,6 +314,8 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 __exportStar(__webpack_require__(12), exports);
 __exportStar(__webpack_require__(15), exports);
+__exportStar(__webpack_require__(16), exports);
+__exportStar(__webpack_require__(18), exports);
 
 
 /***/ }),
@@ -349,7 +398,14 @@ let CreateOrderUseCase = class CreateOrderUseCase {
         if (!stockReduced) {
             throw new Error('No se pudo reducir el inventario para procesar la orden.');
         }
-        return await this.orderRepository.save(newOrder);
+        try {
+            return await this.orderRepository.save(newOrder);
+        }
+        catch (error) {
+            console.error('SAGA: Falló al guardar la orden. Devolviendo inventario a Products...');
+            await this.productService.restoreStock(dto.items.map(item => ({ productId: item.productId, quantity: item.quantity })));
+            throw new Error('SAGA: Orden abortada, inventario restaurado.');
+        }
     }
 };
 exports.CreateOrderUseCase = CreateOrderUseCase;
@@ -369,11 +425,12 @@ module.exports = require("crypto");
 
 /***/ }),
 /* 14 */
-/***/ ((__unused_webpack_module, exports) => {
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.Order = void 0;
+const enums_1 = __webpack_require__(7);
 class Order {
     id;
     userId;
@@ -400,6 +457,18 @@ class Order {
         if (this.totalAmount <= 0) {
             throw new Error('El monto total de la orden debe ser mayor a 0.');
         }
+    }
+    completeOrder() {
+        if (this.status === enums_1.OrderStatus.CANCELLED) {
+            throw new Error('No puedes completar una orden que ya fue cancelada.');
+        }
+        this.status = enums_1.OrderStatus.COMPLETED;
+    }
+    cancelOrder() {
+        if (this.status === enums_1.OrderStatus.COMPLETED) {
+            throw new Error('No puedes cancelar una orden que ya fue completada.');
+        }
+        this.status = enums_1.OrderStatus.CANCELLED;
     }
 }
 exports.Order = Order;
@@ -456,12 +525,115 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
+var _a;
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.CancelOrderUseCase = void 0;
+const common_1 = __webpack_require__(3);
+const product_service_port_1 = __webpack_require__(17);
+let CancelOrderUseCase = class CancelOrderUseCase {
+    orderRepository;
+    productService;
+    constructor(orderRepository, productService) {
+        this.orderRepository = orderRepository;
+        this.productService = productService;
+    }
+    async execute(id) {
+        const order = await this.orderRepository.findById(id);
+        if (!order) {
+            throw new Error(`Orden con ID ${id} no encontrada.`);
+        }
+        order.cancelOrder();
+        const res = await this.orderRepository.save(order);
+        if (res) {
+            await this.productService.restoreStock(order.items.map((item) => ({
+                productId: item.productId,
+                quantity: item.quantity,
+            })));
+        }
+        return { success: true };
+    }
+};
+exports.CancelOrderUseCase = CancelOrderUseCase;
+exports.CancelOrderUseCase = CancelOrderUseCase = __decorate([
+    (0, common_1.Injectable)(),
+    __param(0, (0, common_1.Inject)('OrderRepositoryPort')),
+    __param(1, (0, common_1.Inject)('ProductServicePort')),
+    __metadata("design:paramtypes", [Object, typeof (_a = typeof product_service_port_1.ProductServicePort !== "undefined" && product_service_port_1.ProductServicePort) === "function" ? _a : Object])
+], CancelOrderUseCase);
+
+
+/***/ }),
+/* 17 */
+/***/ ((__unused_webpack_module, exports) => {
+
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+
+
+/***/ }),
+/* 18 */
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.GetOrderUseCase = void 0;
+const common_1 = __webpack_require__(3);
+let GetOrderUseCase = class GetOrderUseCase {
+    orderRepository;
+    constructor(orderRepository) {
+        this.orderRepository = orderRepository;
+    }
+    async execute(id) {
+        const order = await this.orderRepository.findById(id);
+        if (!order) {
+            throw new Error(`Orden con ID ${id} no encontrada.`);
+        }
+        return order;
+    }
+};
+exports.GetOrderUseCase = GetOrderUseCase;
+exports.GetOrderUseCase = GetOrderUseCase = __decorate([
+    (0, common_1.Injectable)(),
+    __param(0, (0, common_1.Inject)('OrderRepositoryPort')),
+    __metadata("design:paramtypes", [Object])
+], GetOrderUseCase);
+
+
+/***/ }),
+/* 19 */
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
 var _a, _b;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.OrderSchema = exports.OrderDocument = exports.OrderItemSchema = exports.OrderItemDocument = void 0;
 const mongoose_1 = __webpack_require__(4);
 const enums_1 = __webpack_require__(7);
-const mongoose_2 = __webpack_require__(17);
+const mongoose_2 = __webpack_require__(20);
 let OrderItemDocument = class OrderItemDocument {
     productId;
     quantity;
@@ -519,13 +691,13 @@ exports.OrderSchema = mongoose_1.SchemaFactory.createForClass(OrderDocument);
 
 
 /***/ }),
-/* 17 */
+/* 20 */
 /***/ ((module) => {
 
 module.exports = require("mongoose");
 
 /***/ }),
-/* 18 */
+/* 21 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 
@@ -546,9 +718,9 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.MongooseOrderRepository = void 0;
 const common_1 = __webpack_require__(3);
 const mongoose_1 = __webpack_require__(4);
-const mongoose_2 = __webpack_require__(17);
-const order_schema_1 = __webpack_require__(16);
-const order_mapper_1 = __webpack_require__(19);
+const mongoose_2 = __webpack_require__(20);
+const order_schema_1 = __webpack_require__(19);
+const order_mapper_1 = __webpack_require__(22);
 let MongooseOrderRepository = class MongooseOrderRepository {
     orderModel;
     constructor(orderModel) {
@@ -598,7 +770,7 @@ exports.MongooseOrderRepository = MongooseOrderRepository = __decorate([
 
 
 /***/ }),
-/* 19 */
+/* 22 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -632,7 +804,7 @@ exports.OrderMapper = OrderMapper;
 
 
 /***/ }),
-/* 20 */
+/* 23 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 
@@ -653,7 +825,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.RedisProductServiceAdapter = void 0;
 const common_1 = __webpack_require__(3);
 const microservices_1 = __webpack_require__(5);
-const rxjs_1 = __webpack_require__(21);
+const rxjs_1 = __webpack_require__(24);
 const enums_1 = __webpack_require__(7);
 let RedisProductServiceAdapter = class RedisProductServiceAdapter {
     productsClient;
@@ -669,6 +841,16 @@ let RedisProductServiceAdapter = class RedisProductServiceAdapter {
             throw error;
         }
     }
+    async restoreStock(items) {
+        try {
+            const result = await (0, rxjs_1.firstValueFrom)(this.productsClient.send({ cmd: enums_1.ProductPattern.RESTORE_STOCK }, { items }));
+            return result;
+        }
+        catch (error) {
+            console.error('ERROR CRÍTICO: Falló la compensación de la Saga. Posible inconsistencia de datos.');
+            throw error;
+        }
+    }
 };
 exports.RedisProductServiceAdapter = RedisProductServiceAdapter;
 exports.RedisProductServiceAdapter = RedisProductServiceAdapter = __decorate([
@@ -679,19 +861,19 @@ exports.RedisProductServiceAdapter = RedisProductServiceAdapter = __decorate([
 
 
 /***/ }),
-/* 21 */
+/* 24 */
 /***/ ((module) => {
 
 module.exports = require("rxjs");
 
 /***/ }),
-/* 22 */
+/* 25 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.envs = void 0;
-__webpack_require__(23);
+__webpack_require__(26);
 exports.envs = {
     mongo: {
         authUri: process.env.MONGO_URI || 'mongodb://localhost:27017/store_auth',
@@ -710,7 +892,7 @@ exports.envs = {
 
 
 /***/ }),
-/* 23 */
+/* 26 */
 /***/ ((module) => {
 
 module.exports = require("dotenv/config");
@@ -752,7 +934,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core_1 = __webpack_require__(1);
 const orders_module_1 = __webpack_require__(2);
 const microservices_1 = __webpack_require__(5);
-const envs_1 = __webpack_require__(22);
+const envs_1 = __webpack_require__(25);
 async function bootstrap() {
     const app = await core_1.NestFactory.createMicroservice(orders_module_1.OrdersModule, {
         transport: microservices_1.Transport.REDIS,

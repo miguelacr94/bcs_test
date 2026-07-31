@@ -10,13 +10,37 @@ export class RedisProductServiceAdapter implements ProductServicePort {
     @Inject('PRODUCTS_SERVICE') private readonly productsClient: ClientProxy,
   ) {}
 
-  async reduceStock(items: { productId: string; quantity: number }[]): Promise<boolean> {
+  async reduceStock(
+    items: { productId: string; quantity: number }[],
+  ): Promise<boolean> {
     try {
       const result = await firstValueFrom(
-        this.productsClient.send({ cmd: ProductPattern.REDUCE_STOCK }, { items }),
+        this.productsClient.send(
+          { cmd: ProductPattern.REDUCE_STOCK },
+          { items },
+        ),
       );
       return result;
     } catch (error) {
+      throw error;
+    }
+  }
+
+  async restoreStock(
+    items: { productId: string; quantity: number }[],
+  ): Promise<boolean> {
+    try {
+      const result = await firstValueFrom(
+        this.productsClient.send(
+          { cmd: ProductPattern.RESTORE_STOCK },
+          { items },
+        ),
+      );
+      return result;
+    } catch (error) {
+      console.error(
+        'ERROR CRÍTICO: Falló la compensación de la Saga. Posible inconsistencia de datos.',
+      );
       throw error;
     }
   }

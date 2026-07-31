@@ -22,14 +22,17 @@ import {
 } from '@nestjs/swagger';
 import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
+import { timeout, retry } from 'rxjs/operators';
 import { AuthGuard } from '../../guards/auth.guard';
 import { RolesGuard } from '../../guards/roles.guard';
 import { Roles } from '../../decorators/roles.decorator';
 import { CreateProductDto } from '../../../../products/src/application/use-cases/dtos/create-product.dto';
 import { UpdateProductDto } from '../../../../products/src/application/use-cases/dtos/update-product.dto';
 import { ParseMongoIdPipe } from '@app/shared/pipes/parse-mongo-id.pipe';
+import { Public } from '@app/shared/decorator/public.decorator';
 
 @ApiTags('Productos')
+@UseGuards(AuthGuard, RolesGuard)
 @Controller('products')
 export class ProductsController {
   constructor(
@@ -44,7 +47,6 @@ export class ProductsController {
     status: 403,
     description: 'No tienes permisos suficientes (Solo administradores)',
   })
-  @UseGuards(AuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
   @Post()
   async createProduct(@Body() body: CreateProductDto) {
@@ -52,27 +54,31 @@ export class ProductsController {
       'Gateway: Enviando petición de creación de producto a Products por Redis...',
     );
     return await firstValueFrom(
-      this.productsClient.send({ cmd: ProductPattern.CREATE_PRODUCT }, body),
+      this.productsClient.send({ cmd: ProductPattern.CREATE_PRODUCT }, body).pipe(timeout(5000), retry(3)),
     );
   }
 
   @ApiOperation({ summary: 'Obtener la lista de todos los productos' })
   @ApiResponse({ status: 200, description: 'Lista de productos obtenida' })
+  @Public()
   @Get()
   async getAllProducts(@Query() paginationDto: PaginationDto) {
     this.logger.log(
       'Gateway: Solicitando todos los productos a Products por Redis...',
     );
     return await firstValueFrom(
-      this.productsClient.send(
-        { cmd: ProductPattern.GET_ALL_PRODUCTS },
-        paginationDto,
-      ),
+      this.productsClient
+        .send({ cmd: ProductPattern.GET_ALL_PRODUCTS }, paginationDto)
+        .pipe(
+          timeout(5000),
+          retry(3)
+        ),
     );
   }
 
   @ApiOperation({ summary: 'Obtener producto por categoria' })
   @ApiResponse({ status: 200, description: 'Lista de productos obtenida' })
+  @Public()
   @Get('category/:id')
   async getProductsByCategory(
     @Param('id', ParseMongoIdPipe) id: string,
@@ -85,13 +91,14 @@ export class ProductsController {
       this.productsClient.send(
         { cmd: ProductPattern.GET_PRODUCTS_BY_CATEGORY },
         { id, paginationDto },
-      ),
+      ).pipe(timeout(5000), retry(3)),
     );
   }
 
   @ApiOperation({ summary: 'Obtener el detalle de un producto por ID' })
   @ApiResponse({ status: 200, description: 'Detalle del producto retornado' })
   @ApiResponse({ status: 404, description: 'Producto no encontrado' })
+  @Public()
   @Get(':id')
   async getProductById(@Param('id', ParseMongoIdPipe) id: string) {
     this.logger.log('Gateway: Solicitando producto por ID:', id);
@@ -99,7 +106,7 @@ export class ProductsController {
       this.productsClient.send(
         { cmd: ProductPattern.GET_PRODUCT_BY_ID },
         { id },
-      ),
+      ).pipe(timeout(5000), retry(3)),
     );
   }
 
@@ -107,7 +114,6 @@ export class ProductsController {
   @ApiBearerAuth('JWT-auth')
   @ApiResponse({ status: 200, description: 'Producto actualizado con éxito' })
   @ApiResponse({ status: 403, description: 'No tienes permisos suficientes' })
-  @UseGuards(AuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
   @Put(':id')
   async updateProduct(
@@ -121,7 +127,7 @@ export class ProductsController {
       this.productsClient.send(
         { cmd: ProductPattern.UPDATE_PRODUCT },
         { id, dto: body },
-      ),
+      ).pipe(timeout(5000), retry(3)),
     );
   }
 
@@ -129,7 +135,6 @@ export class ProductsController {
   @ApiBearerAuth('JWT-auth')
   @ApiResponse({ status: 200, description: 'Producto activado con éxito' })
   @ApiResponse({ status: 403, description: 'No tienes permisos suficientes' })
-  @UseGuards(AuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
   @Patch(':id/activate')
   async activateProduct(@Param('id', ParseMongoIdPipe) id: string) {
@@ -140,7 +145,7 @@ export class ProductsController {
       this.productsClient.send(
         { cmd: ProductPattern.ACTIVATE_PRODUCT },
         { id },
-      ),
+      ).pipe(timeout(5000), retry(3)),
     );
   }
 
@@ -148,7 +153,6 @@ export class ProductsController {
   @ApiBearerAuth('JWT-auth')
   @ApiResponse({ status: 200, description: 'Producto eliminado con éxito' })
   @ApiResponse({ status: 403, description: 'No tienes permisos suficientes' })
-  @UseGuards(AuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
   @Delete(':id')
   async deleteProduct(@Param('id', ParseMongoIdPipe) id: string) {
@@ -156,7 +160,7 @@ export class ProductsController {
       'Gateway: Enviando petición de eliminación de producto por Redis...',
     );
     return await firstValueFrom(
-      this.productsClient.send({ cmd: ProductPattern.DELETE_PRODUCT }, { id }),
+      this.productsClient.send({ cmd: ProductPattern.DELETE_PRODUCT }, { id }).pipe(timeout(5000), retry(3)),
     );
   }
 }

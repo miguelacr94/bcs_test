@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
-import type { ProductRepositoryPort } from '../../domain/ports/product-repository.port';
-import { Product } from '../../domain/models/product.entity';
-import { UpdateProductDto } from './dtos/update-product.dto';
+import type { ProductRepositoryPort } from '../../../domain/ports/product-repository.port';
+import { Product } from '../../../domain/models/product.entity';
+import { UpdateProductDto } from '../dtos/update-product.dto';
 
 @Injectable()
 export class UpdateProductUseCase {

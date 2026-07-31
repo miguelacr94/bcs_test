@@ -1,8 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
-import type { ProductRepositoryPort } from '../../domain/ports/product-repository.port';
+import type { ProductRepositoryPort } from '../../../domain/ports/product-repository.port';
 
 @Injectable()
-export class ActivateProductUseCase {
+export class DeleteProductUseCase {
   constructor(
     @Inject('ProductRepositoryPort')
     private readonly productRepository: ProductRepositoryPort,
@@ -16,7 +16,7 @@ export class ActivateProductUseCase {
     }
 
     // 2. Ejecutamos nuestra regla de negocio (Soft Delete)
-    product.activate();
+    product.deactivate();
 
     // 3. Lo guardamos de vuelta en la base de datos ya desactivado
     await this.productRepository.save(product);
