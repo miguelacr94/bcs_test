@@ -3,9 +3,9 @@ import 'dotenv/config';
 export const envs = {
   // Configuración de las Bases de Datos (MongoDB)
   mongo: {
-    authUri: process.env.MONGO_URI || 'mongodb://localhost:27017/store_auth',
-    productsUri: process.env.MONGO_URI || 'mongodb://localhost:27017/store_products',
-    ordersUri: process.env.MONGO_URI || 'mongodb://localhost:27017/store_orders',
+    authUri: process.env.MONGO_URI_AUTH || 'mongodb://127.0.0.1:27017/bcs_auth_db',
+    customerUri: process.env.MONGO_URI_CUSTOMER || 'mongodb://127.0.0.1:27017/bcs_customer_db',
+    applicationsUri: process.env.MONGO_URI_APPLICATIONS || 'mongodb://127.0.0.1:27017/bcs_applications_db',
   },
   
   // Configuración del Message Broker (Redis)

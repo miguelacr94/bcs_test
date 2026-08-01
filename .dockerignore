@@ -1,11 +1,6 @@
 node_modules
 dist
 .git
-.gitignore
-.dockerignore
-npm-debug.log
-yarn-error.log
-coverage
-test
-**/*.spec.ts
 .env
+Dockerfile
+docker-compose.yml

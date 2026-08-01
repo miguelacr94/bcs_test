@@ -23,8 +23,8 @@ import { Roles } from '../../decorators/roles.decorator';
 import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
 import { timeout, retry } from 'rxjs/operators';
-import { RegisterUserDto } from '../../../../auth/src/application/use-cases/dtos/register-user.dto';
-import { LoginUserDto } from '../../../../auth/src/application/use-cases/dtos/login-user.dto';
+import { RegisterUserDto } from './dtos/register-user.dto';
+import { LoginUserDto } from './dtos/login-user.dto';
 import { UpdateUserProfileDto } from './dtos/update-user-profile.dto';
 import { CurrentUser } from '@app/shared/decorator/current-user.decorator';
 import { CurrentUserInterface } from '@app/shared/interfaces';
@@ -34,9 +34,10 @@ import { Public } from '@app/shared/decorator/public.decorator';
 @UseGuards(AuthGuard)
 @Controller()
 export class AuthController {
+  private readonly logger = new Logger(AuthController.name);
+
   constructor(
     @Inject('AUTH_SERVICE') private readonly authClient: ClientProxy,
-    private readonly logger = new Logger(AuthController.name),
   ) {}
 
   @ApiOperation({

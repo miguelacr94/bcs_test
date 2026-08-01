@@ -21,13 +21,19 @@ export class AllExceptionsFilter implements ExceptionFilter {
     else if (exception.error) {
       message = exception.error;
       
-      // Mapeo semántico de errores
-      if (message.includes('registrado') || message.includes('existe')) {
-        status = HttpStatus.CONFLICT; // 409 Conflict
-      } else if (message.includes('inválidas') || message.includes('incorrecto') || message.includes('expirado')) {
-        status = HttpStatus.UNAUTHORIZED; // 401 Unauthorized
+      if (exception.statusCode) {
+        status = exception.statusCode;
       } else {
-        status = HttpStatus.BAD_REQUEST; // 400 Bad Request
+        // Mapeo semántico de errores (fallback)
+        if (message.includes('registrado') || message.includes('existe')) {
+          status = HttpStatus.CONFLICT; // 409 Conflict
+        } else if (message.includes('inválidas') || message.includes('incorrecto') || message.includes('expirado')) {
+          status = HttpStatus.UNAUTHORIZED; // 401 Unauthorized
+        } else if (message.includes('No puedes') || message.includes('No se puede') || message.includes('no encontrada')) {
+          status = HttpStatus.BAD_REQUEST; // 400 Bad Request
+        } else {
+          status = HttpStatus.BAD_REQUEST; // 400 Bad Request
+        }
       }
     }
 

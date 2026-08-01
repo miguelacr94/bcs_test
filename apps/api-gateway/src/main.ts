@@ -10,6 +10,7 @@ import { CacheInterceptor } from './interceptors/cache.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.enableCors(); // Habilitamos CORS para que el frontend pueda conectarse
 
   // Activamos validaciones globales
   app.useGlobalPipes(

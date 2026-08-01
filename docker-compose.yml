@@ -1,95 +1,91 @@
+version: '3.8'
 
 services:
-  # ------------------------------------
-  # 1. Bases de Datos y Message Broker
-  # ------------------------------------
-  redis:
-    image: redis:alpine
-    ports:
-      - "6379:6379"
-    networks:
-      - store-network
-
   mongodb:
     image: mongo:latest
+    container_name: bcs_api_mongodb
     ports:
       - "27017:27017"
     volumes:
-      - mongo-data:/data/db
-    networks:
-      - store-network
+      - mongo_data:/data/db
 
-  # ------------------------------------
-  # 2. Microservicios (Backend)
-  # ------------------------------------
-  auth-service:
-    build:
-      context: .
-      args:
-        - APP_NAME=auth
-    environment:
-      - REDIS_HOST=redis
-      - MONGO_URI=mongodb://mongodb:27017/store_auth
-    depends_on:
-      - redis
-      - mongodb
-    networks:
-      - store-network
+  redis:
+    image: redis:alpine
+    container_name: bcs_api_redis
+    ports:
+      - "6379:6379"
 
-  products-service:
-    build:
-      context: .
-      args:
-        - APP_NAME=products
-    environment:
-      - REDIS_HOST=redis
-      - MONGO_URI=mongodb://mongodb:27017/store_products
-    depends_on:
-      - redis
-      - mongodb
-    networks:
-      - store-network
-
-  orders-service:
-    build:
-      context: .
-      args:
-        - APP_NAME=orders
-    environment:
-      - REDIS_HOST=redis
-      - MONGO_URI=mongodb://mongodb:27017/store_orders
-    depends_on:
-      - redis
-      - mongodb
-    networks:
-      - store-network
-
-  # ------------------------------------
-  # 3. API Gateway (Puerta Frontal)
-  # ------------------------------------
   api-gateway:
     build:
       context: .
       args:
-        - APP_NAME=api-gateway
+        APP_NAME: api-gateway
+    container_name: bcs_api_gateway_service
     ports:
-      - "3000:3000" # Exponemos el Gateway al mundo exterior
-    environment:
-      - REDIS_HOST=redis
+      - "3000:3000"
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
     depends_on:
-      - redis
-      - auth-service
-      - products-service
-      - orders-service
-    networks:
-      - store-network
+      - mongodb
+    env_file:
+      - .env
 
-# ------------------------------------
-# Redes y Volúmenes compartidos
-# ------------------------------------
-networks:
-  store-network:
-    driver: bridge
+  applications-service:
+    build:
+      context: .
+      args:
+        APP_NAME: applications
+    container_name: bcs_api_applications_service
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    depends_on:
+      - mongodb
+    env_file:
+      - .env
+
+  auth-service:
+    build:
+      context: .
+      args:
+        APP_NAME: auth
+    container_name: bcs_api_auth_service
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    depends_on:
+      - mongodb
+    env_file:
+      - .env
+
+  technical-test-service:
+    build:
+      context: .
+      args:
+        APP_NAME: technical-test
+    container_name: bcs_api_technical_test_service
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    depends_on:
+      - mongodb
+    env_file:
+      - .env
+
+  customer-service:
+    build:
+      context: .
+      args:
+        APP_NAME: customer
+    container_name: bcs_api_customer_service
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    depends_on:
+      - mongodb
+    env_file:
+      - .env
 
 volumes:
-  mongo-data: # Para que la base de datos no se borre si apagamos Docker
+  mongo_data:

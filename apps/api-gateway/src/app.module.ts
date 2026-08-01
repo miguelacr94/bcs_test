@@ -2,15 +2,14 @@ import { Module, MiddlewareConsumer, NestModule } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './modules/auth/auth.module';
-import { ProductsModule } from './modules/products/products.module';
-import { OrdersModule } from './modules/orders/orders.module';
+import { ApplicationsModule } from './modules/applications/applications.module';
 import { LoggerMiddleware } from './middlewares/logger.middleware';
+import { CustomerModule } from './modules/customer/customer.module';
 
 @Module({
   imports: [
     AuthModule, // Módulo de autenticación
-    ProductsModule, // Módulo de productos
-    OrdersModule, // Módulo de órdenes de compra
+    ApplicationsModule, CustomerModule, // Módulo de solicitudes de financiación
   ],
   controllers: [AppController],
   providers: [AppService],

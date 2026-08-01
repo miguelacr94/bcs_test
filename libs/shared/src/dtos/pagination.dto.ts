@@ -14,4 +14,12 @@ export class PaginationDto {
   @Type(() => Number)
   @IsPositive()
   limit?: number = 10;
+
+  @ApiPropertyOptional({ description: 'Filtrar por clientId' })
+  @IsOptional()
+  clientId?: string;
+
+  @ApiPropertyOptional({ description: 'Filtrar por estado' })
+  @IsOptional()
+  status?: string;
 }
