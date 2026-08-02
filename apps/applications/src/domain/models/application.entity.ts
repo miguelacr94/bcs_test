@@ -22,6 +22,12 @@ export class Application {
     if (this.status === ApplicationStatus.FINALIZED || this.status === ApplicationStatus.ABANDONED) {
       throw new Error('No puedes finalizar una solicitud que ya está cerrada (Finalizada o Abandonada).');
     }
+    
+    // Precondiciones mínimas definidas para finalizar: debe existir una oferta pre-aprobada viable
+    if (!this.simulationResult || !this.simulationResult.success || !this.simulationResult.offerDetails) {
+      throw new Error('No se puede finalizar la solicitud sin tener una oferta pre-aprobada viable.');
+    }
+
     this.status = ApplicationStatus.FINALIZED;
     this.addEvent('STATE_TRANSITION', 'Solicitud finalizada exitosamente.');
   }
@@ -30,6 +36,11 @@ export class Application {
     if (this.status === ApplicationStatus.FINALIZED || this.status === ApplicationStatus.ABANDONED) {
       throw new Error('No puedes abandonar una solicitud que ya está cerrada (Finalizada o Abandonada).');
     }
+
+    if (!reason || reason.trim() === '') {
+      throw new Error('El motivo de abandono es obligatorio.');
+    }
+
     this.status = ApplicationStatus.ABANDONED;
     this.addEvent('STATE_TRANSITION', `Solicitud abandonada. Motivo: ${reason}`);
   }

@@ -11,41 +11,34 @@ export class MockOfferServiceAdapter implements OfferServicePort {
     // Simulamos latencia de red (1 segundo)
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
-    // Lógica para cumplir con los escenarios basados en monto y plazo
     const random = Math.random();
 
-    // 15% de probabilidad: Error técnico temporal (Simulando inestabilidad)
-    if (random > 0.85) {
+    // 33% de probabilidad: Error técnico temporal
+    if (random < 0.33) {
       throw new Error('Error técnico temporal conectando con el Core Bancario. Intente nuevamente.');
     }
 
-    // Regla de negocio ficticia: Monto máximo viable es 50,000,000 y plazo máximo 72 meses
-    if (amount > 50000000) {
+    // 33% de probabilidad: No viable (con propuesta alternativa de cupo menor)
+    if (random < 0.66) {
+      const alternativeAmount = Math.round(amount * 0.7); // Ofrecer el 70% del monto original
       return {
         success: false,
-        message: 'Cliente no viable para el monto solicitado. El monto máximo permitido es 50,000,000.',
+        message: `Monto solicitado de ${amount.toLocaleString('es-CO')} no es viable según perfil crediticio.`,
         offerDetails: {
-          approvedAmount: 50000000,
-          interestRate: 2.5,
-          termMonths: Math.min(termMonths, 72),
+          approvedAmount: alternativeAmount,
+          interestRate: 1.85,
+          termMonths: Math.min(termMonths, 48), // Limitar plazo de alternativa
         }
       };
     }
-    
-    if (termMonths > 72) {
-       return {
-        success: false,
-        message: 'El plazo excede el máximo permitido (72 meses).',
-      };
-    }
 
-    // Éxito con oferta
+    // 34% de probabilidad: Oferta disponible viable
     return {
       success: true,
-      message: 'Oferta preliminar aprobada',
+      message: 'Oferta pre-aprobada disponible',
       offerDetails: {
         approvedAmount: amount,
-        interestRate: 1.5,
+        interestRate: 1.45,
         termMonths: termMonths,
       },
     };
