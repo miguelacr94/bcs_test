@@ -20,9 +20,12 @@ export class UpdateApplicationUseCase {
       throw new Error('No se pueden editar las solicitudes que se encuentran Finalizadas o Abandonadas.');
     }
 
-    // Permitimos transicionar de PENDING_VALIDATION de vuelta a EN_PROCESO
+    // Permitimos transicionar de PENDING_VALIDATION o VALIDATED de vuelta a EN_PROCESO
     if (updateData.status === ApplicationStatus.IN_PROGRESS) {
-      if (application.status === ApplicationStatus.PENDING_VALIDATION) {
+      if (
+        application.status === ApplicationStatus.PENDING_VALIDATION ||
+        application.status === ApplicationStatus.VALIDATED
+      ) {
         application.status = ApplicationStatus.IN_PROGRESS;
         application.simulationResult = {}; // Limpiamos la simulación
         application.addEvent('STATE_TRANSITION', 'Solicitud regresada a En Proceso. Simulación previa invalidada.', { updateData });
@@ -30,9 +33,12 @@ export class UpdateApplicationUseCase {
       }
     }
 
-    // Si está en PENDING_VALIDATION y no es para volver a EN_PROCESO, no se permite editar otros datos directamente
-    if (application.status === ApplicationStatus.PENDING_VALIDATION) {
-      throw new Error('No se pueden editar los datos de la solicitud mientras esté Pendiente de Validación. Debe modificar las condiciones primero.');
+    // Si está en PENDING_VALIDATION o VALIDATED y no es para volver a EN_PROCESO, no se permite editar otros datos directamente
+    if (
+      application.status === ApplicationStatus.PENDING_VALIDATION ||
+      application.status === ApplicationStatus.VALIDATED
+    ) {
+      throw new Error('No se pueden editar los datos de la solicitud mientras esté Pendiente de Validación o Validada. Debe modificar las condiciones primero.');
     }
 
     // Aquí actualizaríamos las propiedades parciales de la solicitud basado en updateData
