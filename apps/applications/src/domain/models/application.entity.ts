@@ -19,8 +19,8 @@ export class Application {
   ) {}
 
   finalizeApplication(): void {
-    if (this.status === ApplicationStatus.FINALIZED || this.status === ApplicationStatus.ABANDONED) {
-      throw new Error('No puedes finalizar una solicitud que ya está cerrada (Finalizada o Abandonada).');
+    if (this.status !== ApplicationStatus.VALIDATED) {
+      throw new Error('La solicitud debe estar en estado Validada antes de poder finalizarse.');
     }
     
     // Precondiciones mínimas definidas para finalizar: debe existir una oferta pre-aprobada viable

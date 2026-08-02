@@ -31,13 +31,19 @@ export class SimulateOfferUseCase {
       
       application.registerSimulation(simulation);
       
+      // La validación terminó (aprobada o no viable). Cambiamos a VALIDATED
+      application.status = ApplicationStatus.VALIDATED;
+      
       if (!simulation.success) {
-        application.addEvent('SIMULATION_ERROR', `Simulación rechazada: ${simulation.message}`, { simulation });
+        application.addEvent('SIMULATION_ERROR', `Simulación procesada (No Viable): ${simulation.message}`, { simulation });
       } else {
-        application.addEvent('SIMULATION_RESULT', `Simulación aprobada. Oferta generada.`, { simulation });
+        application.addEvent('SIMULATION_RESULT', `Simulación procesada (Aprobada). Oferta generada.`, { simulation });
       }
+      
+      application.addEvent('STATE_TRANSITION', 'Solicitud validada por el sistema. Nuevo estado: Validada.');
 
     } catch (error: any) {
+      // Se queda en PENDING_VALIDATION (representando el error de validación técnica pendiente de reintento)
       application.addEvent('SYSTEM_ERROR', `Fallo técnico en simulación: ${error.message}`, { error: error.message, stack: error.stack });
       await this.applicationRepository.save(application); // Persistir el error antes de propagar
       throw error;
