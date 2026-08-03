@@ -89,12 +89,12 @@ export class CustomerController {
   }
 
   @ApiOperation({ summary: 'Consultar cliente por documento' })
-  @Get('document/:document')
-  async getByDocument(@Param('document') document: string) {
-    this.logger.log(`Gateway: Petición para consultar cliente con documento ${document}`);
+  @Post('document')
+  async getByDocument(@Body() body: { document: string }) {
+    this.logger.log(`Gateway: Petición para consultar cliente con documento ${body.document}`);
     return await firstValueFrom(
       this.customerClient
-        .send({ cmd: CustomerPattern.GET_CUSTOMER_BY_DOCUMENT }, { document })
+        .send({ cmd: CustomerPattern.GET_CUSTOMER_BY_DOCUMENT }, { document: body.document })
         .pipe(timeout(5000), retry(3)),
     );
   }

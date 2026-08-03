@@ -1,7 +1,9 @@
 import {
   Controller,
   Get,
+  Post,
   Param,
+  Body,
   Logger,
   Inject,
   NotFoundException,
@@ -28,22 +30,22 @@ export class UserCoreGatewayController {
     private readonly applicationsClient: ClientProxy,
   ) {}
 
-  @Get('document/:document')
-  async getByDocument(@Param('document') document: string) {
+  @Post('document')
+  async getByDocument(@Body() body: { document: string }) {
     this.logger.log(
-      `Gateway: consultando User‑Core para documento ${document}`,
+      `Gateway: consultando User‑Core para documento ${body.document}`,
     );
     return await firstValueFrom(
       this.userClient
-        .send({ cmd: UserPattern.GET_USER_BY_DOCUMENT }, { document })
+        .send({ cmd: UserPattern.GET_USER_BY_DOCUMENT }, { document: body.document })
         .pipe(timeout(5000), retry(3)),
     );
   }
 
-  @Get('validate/:document')
-  async validateStatus(@Param('document') document: string) {
+  @Post('validate')
+  async validateStatus(@Body() body: { document: string }) {
     this.logger.log(
-      `Gateway-Compose: Validando estado completo para documento ${document}`,
+      `Gateway-Compose: Validando estado completo para documento ${body.document}`,
     );
 
     // 1. Validamos si existe en el Core (Centrales de riesgo)
@@ -51,7 +53,7 @@ export class UserCoreGatewayController {
     try {
       const coreUser = await firstValueFrom(
         this.userClient
-          .send({ cmd: UserPattern.GET_USER_BY_DOCUMENT }, { document })
+          .send({ cmd: UserPattern.GET_USER_BY_DOCUMENT }, { document: body.document })
           .pipe(timeout(5000), retry(3)),
       );
       if (coreUser) {
@@ -59,7 +61,7 @@ export class UserCoreGatewayController {
       }
     } catch (error) {
       this.logger.warn(
-        `Gateway-Compose: Usuario ${document} no es elegible (no encontrado en centrales)`,
+        `Gateway-Compose: Usuario ${body.document} no es elegible (no encontrado en centrales)`,
       );
       return {
         isEligible: false,
@@ -79,7 +81,7 @@ export class UserCoreGatewayController {
     try {
       const customer = await firstValueFrom(
         this.customerClient
-          .send({ cmd: CustomerPattern.GET_CUSTOMER_BY_DOCUMENT }, { document })
+          .send({ cmd: CustomerPattern.GET_CUSTOMER_BY_DOCUMENT }, { document: body.document })
           .pipe(timeout(5000), retry(3)),
       );
       if (customer) {
@@ -87,7 +89,7 @@ export class UserCoreGatewayController {
       }
     } catch (error) {
       this.logger.log(
-        `Gateway-Compose: Cliente ${document} no registrado localmente en la db`,
+        `Gateway-Compose: Cliente ${body.document} no registrado localmente en la db`,
       );
     }
 
@@ -125,7 +127,7 @@ export class UserCoreGatewayController {
       }
     } catch (error) {
       this.logger.error(
-        `Gateway-Compose: Error consultando solicitudes para ${document}`,
+        `Gateway-Compose: Error consultando solicitudes para ${body.document}`,
         error,
       );
     }

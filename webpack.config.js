@@ -7,6 +7,7 @@ module.exports = function (options, webpack) {
       ...options.resolve,
       alias: {
         '@app/shared': path.resolve(__dirname, 'libs/shared/src'),
+        '@app/shared/*': path.resolve(__dirname, 'libs/shared/src/*'),
       },
     },
   };

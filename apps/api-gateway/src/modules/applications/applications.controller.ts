@@ -60,8 +60,8 @@ export class ApplicationsController {
   @ApiOperation({ summary: 'Listar solicitudes con filtros' })
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
-  @Get()
-  async getApplications(@Query() paginationDto: PaginationDto) {
+  @Post('list')
+  async getApplications(@Body() paginationDto: PaginationDto) {
     this.logger.log('Gateway: Solicitando listar solicitudes');
     const applications = await firstValueFrom(
       this.applicationsClient
@@ -109,46 +109,44 @@ export class ApplicationsController {
   }
 
   @ApiOperation({ summary: 'Consultar detalle de solicitud' })
-  @Get(':id')
+  @Post('get-by-id')
   async getApplicationById(
-    @Param('id') id: string,
+    @Body() body: { id: string },
   ) {
-    this.logger.log(`Gateway: Petición para consultar solicitud ${id}`);
+    this.logger.log(`Gateway: Petición para consultar solicitud ${body.id}`);
     return await firstValueFrom(
       this.applicationsClient
-        .send({ cmd: ApplicationPattern.GET_APPLICATION_BY_ID }, { id })
+        .send({ cmd: ApplicationPattern.GET_APPLICATION_BY_ID }, { id: body.id })
         .pipe(timeout(5000), retry(3)),
     );
   }
 
   @ApiOperation({ summary: 'Actualizar parcialmente la solicitud' })
-  @Patch(':id')
+  @Post('update')
   @ApiBody({ type: UpdateApplicationDto })
   async updateApplication(
-    @Param('id') id: string,
-    @Body() updateDto: UpdateApplicationDto,
+    @Body() body: { id: string; updateDto: UpdateApplicationDto },
   ) {
-    this.logger.log(`Gateway: Petición para actualizar solicitud ${id}`);
+    this.logger.log(`Gateway: Petición para actualizar solicitud ${body.id}`);
     return await firstValueFrom(
       this.applicationsClient
-        .send({ cmd: ApplicationPattern.UPDATE_APPLICATION }, { id, updateDto })
+        .send({ cmd: ApplicationPattern.UPDATE_APPLICATION }, { id: body.id, updateDto: body.updateDto })
         .pipe(timeout(5000), retry(3)),
     );
   }
 
   @ApiOperation({ summary: 'Invocar simulación preliminar de oferta' })
-  @Post(':id/simulate-offer')
+  @Post('simulate-offer')
   @ApiBody({ type: SimulateOfferDto })
   async simulateOffer(
-    @Param('id') id: string,
-    @Body() simulateDto: SimulateOfferDto,
+    @Body() body: { id: string; simulateDto: SimulateOfferDto },
   ) {
     this.logger.log(
-      `Gateway: Petición para simular oferta para solicitud ${id}`,
+      `Gateway: Petición para simular oferta para solicitud ${body.id}`,
     );
     return await firstValueFrom(
       this.applicationsClient
-        .send({ cmd: ApplicationPattern.SIMULATE_OFFER }, { id, simulateDto })
+        .send({ cmd: ApplicationPattern.SIMULATE_OFFER }, { id: body.id, simulateDto: body.simulateDto })
         .pipe(timeout(5000), retry(3)),
     );
   }
@@ -156,14 +154,13 @@ export class ApplicationsController {
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Aceptar oferta de crédito' })
   @UseGuards(AuthGuard)
-  @Post(':id/accept-offer')
+  @Post('accept-offer')
   async acceptOffer(
-    @Param('id') id: string,
-    @Body() body: { channel?: string },
+    @Body() body: { id: string; channel?: string },
   ) {
     return await firstValueFrom(
       this.applicationsClient
-        .send({ cmd: ApplicationPattern.ACCEPT_OFFER }, { id, channel: body?.channel })
+        .send({ cmd: ApplicationPattern.ACCEPT_OFFER }, { id: body.id, channel: body?.channel })
         .pipe(timeout(5000), retry(3)),
     );
   }
@@ -171,15 +168,14 @@ export class ApplicationsController {
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Abandonar solicitud' })
   @UseGuards(AuthGuard)
-  @Post(':id/abandon')
+  @Post('abandon')
   @ApiBody({ type: AbandonApplicationDto })
   async abandonApplication(
-    @Param('id') id: string,
-    @Body() reasonDto: AbandonApplicationDto & { channel?: string },
+    @Body() body: { id: string; reasonDto: AbandonApplicationDto & { channel?: string } },
   ) {
     return await firstValueFrom(
       this.applicationsClient
-        .send({ cmd: ApplicationPattern.ABANDON_APPLICATION }, { id, reasonDto })
+        .send({ cmd: ApplicationPattern.ABANDON_APPLICATION }, { id: body.id, reasonDto: body.reasonDto })
         .pipe(timeout(5000), retry(3)),
     );
   }
@@ -188,14 +184,14 @@ export class ApplicationsController {
   @ApiOperation({ summary: 'Consultar bitácora o trazabilidad (Eventos)' })
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
-  @Get(':id/events')
-  async getApplicationEvents(@Param('id') id: string) {
+  @Post('events')
+  async getApplicationEvents(@Body() body: { id: string }) {
     this.logger.log(
-      `Gateway: Petición para consultar eventos de solicitud ${id}`,
+      `Gateway: Petición para consultar eventos de solicitud ${body.id}`,
     );
     return await firstValueFrom(
       this.applicationsClient
-        .send({ cmd: ApplicationPattern.GET_APPLICATION_EVENTS }, { id })
+        .send({ cmd: ApplicationPattern.GET_APPLICATION_EVENTS }, { id: body.id })
         .pipe(timeout(5000), retry(3)),
     );
   }
@@ -204,14 +200,13 @@ export class ApplicationsController {
   @ApiOperation({ summary: 'Validar solicitud (Admin)' })
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
-  @Post(':id/validate')
+  @Post('validate')
   async validateApplication(
-    @Param('id') id: string,
-    @Body() validationData: any,
+    @Body() body: { id: string; validationData: any },
   ) {
     return await firstValueFrom(
       this.applicationsClient
-        .send({ cmd: ApplicationPattern.VALIDATE_APPLICATION }, { id, validationData })
+        .send({ cmd: ApplicationPattern.VALIDATE_APPLICATION }, { id: body.id, validationData: body.validationData })
         .pipe(timeout(5000), retry(3)),
     );
   }
@@ -220,14 +215,13 @@ export class ApplicationsController {
   @ApiOperation({ summary: 'Finalizar solicitud (Admin)' })
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
-  @Post(':id/finalize')
+  @Post('finalize')
   async finalizeApplication(
-    @Param('id') id: string,
-    @Body() body: { withDisbursement: boolean; channel?: string },
+    @Body() body: { id: string; withDisbursement: boolean; channel?: string },
   ) {
     return await firstValueFrom(
       this.applicationsClient
-        .send({ cmd: ApplicationPattern.FINALIZE_APPLICATION }, { id, withDisbursement: body.withDisbursement, channel: body.channel })
+        .send({ cmd: ApplicationPattern.FINALIZE_APPLICATION }, { id: body.id, withDisbursement: body.withDisbursement, channel: body.channel })
         .pipe(timeout(5000), retry(3)),
     );
   }

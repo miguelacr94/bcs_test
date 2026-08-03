@@ -84,12 +84,12 @@ export class AuthController {
   @ApiOperation({
     summary: 'Endpoint de prueba para validar tokens manualmente',
   })
-  @Get('validate-test')
-  async validateTokenTest(@Query('token') token: string) {
+  @Post('validate-test')
+  async validateTokenTest(@Body() body: { token: string }) {
     this.logger.log('Gateway: Enviando validación de token a Auth por Redis...');
 
     const result = await firstValueFrom(
-      this.authClient.send({ cmd: AuthPattern.VALIDATE_TOKEN }, { token }).pipe(timeout(5000), retry(3)),
+      this.authClient.send({ cmd: AuthPattern.VALIDATE_TOKEN }, { token: body.token }).pipe(timeout(5000), retry(3)),
     );
 
     this.logger.log(`Gateway: Respuesta recibida del microservicio Auth: ${JSON.stringify(result)}`);
@@ -100,7 +100,7 @@ export class AuthController {
   @ApiOperation({ summary: 'Obtener perfil del usuario autenticado' })
   @ApiResponse({ status: 200, description: 'Perfil devuelto exitosamente' })
   @ApiResponse({ status: 401, description: 'Token no provisto o expirado' })
-  @Get('profile')
+  @Post('profile')
   getProfile(@CurrentUser() user: CurrentUserInterface) {
     this.logger.log(
       `Gateway: Devolviendo perfil del usuario autenticado: ${user.email}`,
@@ -115,7 +115,7 @@ export class AuthController {
   @ApiOperation({ summary: 'Actualizar perfil del usuario autenticado' })
   @ApiResponse({ status: 200, description: 'Perfil actualizado exitosamente' })
   @ApiResponse({ status: 401, description: 'Token no provisto o expirado' })
-  @Patch('profile')
+  @Post('update-profile')
   async updateProfile(
     @CurrentUser() user: CurrentUserInterface,
     @Body() body: UpdateUserProfileDto,
@@ -185,7 +185,7 @@ export class AuthController {
   @ApiResponse({ status: 403, description: 'No tienes permisos suficientes' })
   @UseGuards(RolesGuard)
   @Roles(Role.ADMIN)
-  @Get('admin-only')
+  @Post('admin-only')
   getAdminDashboard() {
     return {
       success: true,

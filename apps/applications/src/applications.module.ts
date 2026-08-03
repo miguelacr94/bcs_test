@@ -19,6 +19,7 @@ import {
   ValidateApplicationUseCase,
   FinalizeApplicationUseCase,
 } from './application/use-cases';
+import { TracingModule } from './modules/tracing/tracing.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import {
       { name: ApplicationDocument.name, schema: ApplicationSchema },
       { name: AuditOfferDocument.name, schema: AuditOfferSchema },
     ]),
+    TracingModule,
     ClientsModule.register([
       {
         name: 'CUSTOMER_SERVICE',
@@ -59,7 +61,7 @@ import {
     GetApplicationEventsUseCase,
     ValidateApplicationUseCase,
     FinalizeApplicationUseCase,
-    
+
     // Inversión de Dependencias (Puertos -> Adaptadores)
     {
       provide: 'ApplicationRepositoryPort',

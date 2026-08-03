@@ -7,10 +7,21 @@ import { AllExceptionsFilter } from './filters/all-exceptions.filter';
 import { TimeoutInterceptor } from './interceptors/timeout.interceptor';
 import { TransformInterceptor } from './interceptors/transform.interceptor';
 import { CacheInterceptor } from './interceptors/cache.interceptor';
+import { configureTracing } from '@app/shared/tracing/tracing.config';
+import { TracingInterceptor } from './modules/tracing/tracing.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.enableCors(); // Habilitamos CORS para que el frontend pueda conectarse
+
+  // Configurar tracing
+  configureTracing({
+    enabled: true,
+    serviceName: 'api-gateway',
+    sampleRate: 1.0,
+    logLevel: 'INFO',
+    logToConsole: true,
+  });
 
   // Activamos validaciones globales
   app.useGlobalPipes(
@@ -38,6 +49,7 @@ async function bootstrap() {
     new PerformanceInterceptor(),
     new TimeoutInterceptor(),
     new TransformInterceptor(),
+    new TracingInterceptor(app.get('TraceRepository')),
   );
 
   // Configuración de Swagger (OpenAPI) para documentación de APIs
