@@ -1,6 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ApplicationRepositoryPort } from '../../domain/ports/application-repository.port';
-import { Application } from '../../domain/models/application.entity';
 
 @Injectable()
 export class AcceptOfferUseCase {
@@ -9,7 +8,7 @@ export class AcceptOfferUseCase {
     private readonly applicationRepository: ApplicationRepositoryPort,
   ) {}
 
-  async execute(id: string): Promise<Application> {
+  async execute(id: string): Promise<{ success: boolean; message: string }> {
     const application = await this.applicationRepository.findById(id);
     if (!application) {
       throw new Error(`Solicitud con ID ${id} no encontrada.`);
@@ -26,6 +25,6 @@ export class AcceptOfferUseCase {
       previousStatus,
       saved.status
     );
-    return saved;
+    return { success: true, message: 'Oferta aceptada correctamente.' };
   }
 }

@@ -1,5 +1,5 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, IsIn } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsNotEmpty, IsString, IsIn, IsObject, IsOptional } from 'class-validator';
 
 export class CreateApplicationDto {
   @ApiProperty({
@@ -19,4 +19,9 @@ export class CreateApplicationDto {
   @IsString({ message: 'El canal debe ser una cadena de texto' })
   @IsIn(['Autogestionado', 'Asistido', 'Sucursal'], { message: 'El canal debe ser uno de los siguientes valores: Autogestionado, Asistido, Sucursal' })
   channel!: string;
+
+  @ApiPropertyOptional({ description: 'Resultado de la evaluación de oferta', example: { type: 'EXITOSO', success: true, offerDetails: {} } })
+  @IsOptional()
+  @IsObject()
+  offerResult?: any;
 }

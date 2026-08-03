@@ -15,10 +15,29 @@ export class CacheInterceptor implements NestInterceptor {
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const request = context.switchToHttp().getRequest();
+    const method = request.method;
 
-    // Solo cacheamos peticiones GET
-    if (request.method !== 'GET') {
-      return next.handle();
+    // Para métodos de escritura (POST, PATCH, DELETE, PUT): invalidamos el caché relacionado
+    if (method !== 'GET') {
+      return next.handle().pipe(
+        tap(() => {
+          // Extraemos el ID del path (ej: /api/v1/applications/abc123/accept-offer -> abc123)
+          const pathParts = request.originalUrl.split('/');
+          const idIndex = pathParts.findIndex((p: string) =>
+            /^[a-f0-9]{24}$/.test(p),
+          );
+          if (idIndex !== -1) {
+            const resourceId = pathParts[idIndex];
+            // Borramos todas las entradas de caché que contengan este ID
+            for (const key of this.cache.keys()) {
+              if (key.includes(resourceId)) {
+                this.cache.delete(key);
+                console.log(`[CACHE] 🗑️  Caché invalidado para: ${key}`);
+              }
+            }
+          }
+        }),
+      );
     }
 
     const cacheKey = request.originalUrl;

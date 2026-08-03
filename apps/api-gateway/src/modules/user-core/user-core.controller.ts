@@ -111,14 +111,13 @@ export class UserCoreGatewayController {
           .pipe(timeout(5000), retry(3)),
       );
 
-      // Filtramos las solicitudes del cliente que estén activas
+      // Filtramos las solicitudes del cliente que estén activas (estados que no estén cerrados)
       if (appsResponse && appsResponse.data) {
         const activeApp = appsResponse.data.find(
           (app: any) =>
             app.clientId === document &&
-            (app.status === 'IN_PROGRESS' ||
-              app.status === 'PENDING_VALIDATION' ||
-              app.status === 'IN_PROCESS'),
+            app.status !== 'Finalizada' &&
+            app.status !== 'Abandonada',
         );
         if (activeApp) {
           activeApplicationId = activeApp.id || activeApp._id || null;
@@ -132,7 +131,7 @@ export class UserCoreGatewayController {
     }
 
     return {
-      existsInCore: true,
+      isEligible: true,
       existsInDb: true,
       activeApplicationId,
     };
