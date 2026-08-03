@@ -24,9 +24,15 @@ export class CreateApplicationUseCase {
 
     const secureId = new Types.ObjectId().toString();
     const createdAt = new Date();
+    
+    // Generar radicado único: RAD-YYYYMMDD-XXXXX
+    const dateStr = createdAt.toISOString().slice(0, 10).replace(/-/g, '');
+    const randomPart = Math.floor(10000 + Math.random() * 90000).toString();
+    const radicado = `RAD-${dateStr}-${randomPart}`;
 
     const application = new Application(
       secureId,
+      radicado,
       clientId,
       channel,
       ApplicationStatus.IN_PROCESS,
@@ -39,7 +45,7 @@ export class CreateApplicationUseCase {
       saved.id, 
       'USER_ACTION', 
       `Solicitud creada por el cliente desde el canal: ${channel}`, 
-      'NINGUNO', 
+      'Inicio de proceso', 
       ApplicationStatus.IN_PROCESS,
       { channel, offerResult }
     );

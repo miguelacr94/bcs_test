@@ -31,6 +31,16 @@ export class CustomerRepositoryAdapter implements CustomerRepositoryPort {
     return this.mapToDomain(doc);
   }
 
+  async update(document: string, data: Partial<Customer>): Promise<Customer> {
+    const doc = await this.customerModel
+      .findOneAndUpdate({ document }, data, { new: true })
+      .exec();
+    if (!doc) {
+      throw new Error(`Customer with document ${document} not found`);
+    }
+    return this.mapToDomain(doc);
+  }
+
   private mapToDomain(doc: any): Customer {
     return new Customer(
       doc._id.toString(),
@@ -41,6 +51,7 @@ export class CustomerRepositoryAdapter implements CustomerRepositoryPort {
       doc.phone,
       doc.createdAt,
       doc.updatedAt,
+      doc.familyReference1,
     );
   }
 }

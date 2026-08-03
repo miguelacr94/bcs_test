@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
+import { ClientsModule, Transport } from '@nestjs/microservices';
 import { ApplicationsController } from './applications.controller';
 import { envs } from '@app/shared/config/envs';
 import { ApplicationDocument, ApplicationSchema } from './infrastructure/schemas/application.schema';
@@ -15,6 +16,8 @@ import {
   AcceptOfferUseCase,
   AbandonApplicationUseCase,
   GetApplicationEventsUseCase,
+  ValidateApplicationUseCase,
+  FinalizeApplicationUseCase,
 } from './application/use-cases';
 
 @Module({
@@ -23,6 +26,24 @@ import {
     MongooseModule.forFeature([
       { name: ApplicationDocument.name, schema: ApplicationSchema },
       { name: AuditOfferDocument.name, schema: AuditOfferSchema },
+    ]),
+    ClientsModule.register([
+      {
+        name: 'CUSTOMER_SERVICE',
+        transport: Transport.REDIS,
+        options: {
+          host: envs.redis.host,
+          port: envs.redis.port,
+        },
+      },
+      {
+        name: 'DISBURSEMENTS_SERVICE',
+        transport: Transport.REDIS,
+        options: {
+          host: envs.redis.host,
+          port: envs.redis.port,
+        },
+      },
     ]),
   ],
   controllers: [ApplicationsController],
@@ -36,6 +57,8 @@ import {
     AcceptOfferUseCase,
     AbandonApplicationUseCase,
     GetApplicationEventsUseCase,
+    ValidateApplicationUseCase,
+    FinalizeApplicationUseCase,
     
     // Inversión de Dependencias (Puertos -> Adaptadores)
     {
@@ -49,3 +72,4 @@ import {
   ],
 })
 export class ApplicationsModule {}
+

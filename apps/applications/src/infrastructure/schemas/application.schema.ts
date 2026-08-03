@@ -19,6 +19,9 @@ export class ApplicationEventSchema {
 
 @Schema({ collection: 'applications' })
 export class ApplicationDocument extends Document {
+  @Prop({ required: true, unique: true })
+  radicado!: string;
+
   @Prop({ required: true })
   clientId!: string;
 
@@ -33,6 +36,13 @@ export class ApplicationDocument extends Document {
 
   @Prop({ type: Object })
   offerResult!: object;
+
+  @Prop({ type: Object })
+  validationData?: {
+    familyReference1?: { name: string; phone: string; relationship: string };
+    familyReference2?: { map: string; phone: string; relationship: string };
+    additionalNotes?: string;
+  };
 }
 
 export const ApplicationSchema =

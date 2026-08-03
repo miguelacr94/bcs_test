@@ -7,6 +7,8 @@ export enum ApplicationPattern {
   ACCEPT_OFFER = 'accept_offer',
   ABANDON_APPLICATION = 'abandon_application',
   GET_APPLICATION_EVENTS = 'get_application_events',
+  VALIDATE_APPLICATION = 'validate_application',
+  FINALIZE_APPLICATION = 'finalize_application',
 }
 
 export enum AuthPattern {
@@ -25,4 +27,9 @@ export enum CustomerPattern {
 
 export enum UserPattern {
   GET_USER_BY_DOCUMENT = 'get_user_by_document',
+}
+
+export enum DisbursementPattern {
+  CREATE_DISBURSEMENT = 'create_disbursement',
+  GET_DISBURSEMENT = 'get_disbursement',
 }

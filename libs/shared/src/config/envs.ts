@@ -6,6 +6,7 @@ export const envs = {
     authUri: process.env.MONGO_URI_AUTH || 'mongodb://127.0.0.1:27017/bcs_auth_db',
     customerUri: process.env.MONGO_URI_CUSTOMER || 'mongodb://127.0.0.1:27017/bcs_customer_db',
     applicationsUri: process.env.MONGO_URI_APPLICATIONS || 'mongodb://127.0.0.1:27017/bcs_applications_db',
+    disbursementsUri: process.env.MONGO_URI_DISBURSEMENTS || 'mongodb://127.0.0.1:27017/bcs_disbursements_db',
   },
   
   // Configuración del Message Broker (Redis)

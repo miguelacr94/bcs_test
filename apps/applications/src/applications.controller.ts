@@ -10,6 +10,8 @@ import {
   AcceptOfferUseCase,
   AbandonApplicationUseCase,
   GetApplicationEventsUseCase,
+  ValidateApplicationUseCase,
+  FinalizeApplicationUseCase,
 } from './application/use-cases';
 
 @Controller()
@@ -25,6 +27,8 @@ export class ApplicationsController {
     private readonly acceptOfferUseCase: AcceptOfferUseCase,
     private readonly abandonApplicationUseCase: AbandonApplicationUseCase,
     private readonly getApplicationEventsUseCase: GetApplicationEventsUseCase,
+    private readonly validateApplicationUseCase: ValidateApplicationUseCase,
+    private readonly finalizeApplicationUseCase: FinalizeApplicationUseCase,
   ) {}
 
   @MessagePattern({ cmd: ApplicationPattern.CREATE_APPLICATION })
@@ -88,9 +92,9 @@ export class ApplicationsController {
   }
 
   @MessagePattern({ cmd: ApplicationPattern.ACCEPT_OFFER })
-  async acceptOffer(@Payload() data: { id: string }) {
+  async acceptOffer(@Payload() data: { id: string; channel?: string }) {
     try {
-      return await this.acceptOfferUseCase.execute(data.id);
+      return await this.acceptOfferUseCase.execute(data.id, data.channel);
     } catch (error: any) {
       this.logger.error(`Error accepting offer for application ${data.id}: ${error.message}`);
       if (error instanceof RpcException) throw error;
@@ -99,9 +103,9 @@ export class ApplicationsController {
   }
 
   @MessagePattern({ cmd: ApplicationPattern.ABANDON_APPLICATION })
-  async abandonApplication(@Payload() data: { id: string; reasonDto: { reason: string } }) {
+  async abandonApplication(@Payload() data: { id: string; reasonDto: { reason: string; channel?: string } }) {
     try {
-      return await this.abandonApplicationUseCase.execute(data.id, data.reasonDto.reason);
+      return await this.abandonApplicationUseCase.execute(data.id, data.reasonDto.reason, data.reasonDto.channel);
     } catch (error: any) {
       this.logger.error(`Error abandoning application ${data.id}: ${error.message}`);
       if (error instanceof RpcException) throw error;
@@ -115,6 +119,29 @@ export class ApplicationsController {
       return await this.getApplicationEventsUseCase.execute(data.id);
     } catch (error: any) {
       this.logger.error(`Error getting events for ${data.id}: ${error.message}`);
+      if (error instanceof RpcException) throw error;
+      throw new RpcException({ error: error.message, statusCode: 400 });
+    }
+  }
+
+  @MessagePattern({ cmd: ApplicationPattern.VALIDATE_APPLICATION })
+  async validateApplication(@Payload() data: { id: string; validationData: any }) {
+    try {
+      const { channel, ...rest } = data.validationData;
+      return await this.validateApplicationUseCase.execute(data.id, rest, channel);
+    } catch (error: any) {
+      this.logger.error(`Error validating application ${data.id}: ${error.message}`);
+      if (error instanceof RpcException) throw error;
+      throw new RpcException({ error: error.message, statusCode: 400 });
+    }
+  }
+
+  @MessagePattern({ cmd: ApplicationPattern.FINALIZE_APPLICATION })
+  async finalizeApplication(@Payload() data: { id: string; withDisbursement: boolean; channel?: string }) {
+    try {
+      return await this.finalizeApplicationUseCase.execute(data.id, data.withDisbursement, data.channel);
+    } catch (error: any) {
+      this.logger.error(`Error finalizing application ${data.id}: ${error.message}`);
       if (error instanceof RpcException) throw error;
       throw new RpcException({ error: error.message, statusCode: 400 });
     }

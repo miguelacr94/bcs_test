@@ -17,6 +17,9 @@ export class CustomerDocument extends Document {
 
   @Prop({ required: true })
   phone!: string;
+
+  @Prop({ type: Object })
+  familyReference1?: { name: string; phone: string; relationship: string };
 }
 
 export const CustomerSchema = SchemaFactory.createForClass(CustomerDocument);

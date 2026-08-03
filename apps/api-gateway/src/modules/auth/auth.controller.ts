@@ -32,7 +32,7 @@ import { Public } from '@app/shared/decorator/public.decorator';
 
 @ApiTags('Autenticación')
 @UseGuards(AuthGuard)
-@Controller()
+@Controller('auth')
 export class AuthController {
   private readonly logger = new Logger(AuthController.name);
 

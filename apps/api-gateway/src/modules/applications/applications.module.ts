@@ -23,6 +23,15 @@ import { envs } from '@app/shared/config/envs';
           port: 6379,
         },
       },
+
+      {
+        name: 'CUSTOMER_SERVICE',
+        transport: Transport.REDIS,
+        options: {
+          host: envs.redis.host,
+          port: 6379,
+        },
+      },
     ]),
   ],
   controllers: [ApplicationsController],

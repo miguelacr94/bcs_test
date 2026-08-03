@@ -6,3 +6,5 @@ export * from './simulate-offer.use-case';
 export * from './accept-offer.use-case';
 export * from './abandon-application.use-case';
 export * from './get-application-events.use-case';
+export * from './validate-application.use-case';
+export * from './finalize-application.use-case';

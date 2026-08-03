@@ -1,0 +1,37 @@
+import { Controller, Logger } from '@nestjs/common';
+import { MessagePattern, Payload, RpcException } from '@nestjs/microservices';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { DisbursementDocument } from './infrastructure/schemas/disbursement.schema';
+import { DisbursementPattern } from '@app/shared/enums';
+
+@Controller()
+export class DisbursementsController {
+  private readonly logger = new Logger(DisbursementsController.name);
+
+  constructor(
+    @InjectModel(DisbursementDocument.name)
+    private disbursementModel: Model<DisbursementDocument>,
+  ) {}
+
+  @MessagePattern({ cmd: DisbursementPattern.CREATE_DISBURSEMENT })
+  async createDisbursement(@Payload() data: { applicationId: string; clientId: string; amount: number }) {
+    try {
+      this.logger.log(`Received request to disburse ${data.amount} for application ${data.applicationId}`);
+      
+      const newDisbursement = new this.disbursementModel({
+        applicationId: data.applicationId,
+        clientId: data.clientId,
+        amount: data.amount,
+        status: 'SCHEDULED'
+      });
+
+      const saved = await newDisbursement.save();
+      this.logger.log(`Disbursement scheduled with ID ${saved._id}`);
+      return saved;
+    } catch (error: any) {
+      this.logger.error(`Error scheduling disbursement: ${error.message}`);
+      throw new RpcException({ error: error.message, statusCode: 400 });
+    }
+  }
+}

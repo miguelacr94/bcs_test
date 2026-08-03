@@ -5,6 +5,7 @@
   "compilerOptions": {
     "deleteOutDir": true,
     "webpack": true,
+    "webpackConfigPath": "webpack.config.js",
     "tsConfigPath": "apps/api-gateway/tsconfig.app.json"
   },
   "monorepo": true,
@@ -44,6 +45,15 @@
       "sourceRoot": "apps/customer/src",
       "compilerOptions": {
         "tsConfigPath": "apps/customer/tsconfig.app.json"
+      }
+    },
+    "disbursements": {
+      "type": "application",
+      "root": "apps/disbursements",
+      "entryFile": "main",
+      "sourceRoot": "apps/disbursements/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/disbursements/tsconfig.app.json"
       }
     },
     "technical-test": {
