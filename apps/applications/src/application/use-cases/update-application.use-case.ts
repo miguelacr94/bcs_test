@@ -20,30 +20,44 @@ export class UpdateApplicationUseCase {
       throw new Error('No se pueden editar las solicitudes que se encuentran Finalizadas o Abandonadas.');
     }
 
-    // Permitimos transicionar de PENDING_VALIDATION o VALIDATED de vuelta a EN_PROCESO
+    // Permitimos transicionar de PENDING_VALIDATION de vuelta a EN_PROCESO
     if (updateData.status === ApplicationStatus.IN_PROGRESS) {
       if (
-        application.status === ApplicationStatus.PENDING_VALIDATION ||
-        application.status === ApplicationStatus.VALIDATED
+        application.status === ApplicationStatus.PENDING_VALIDATION
       ) {
+        const previousStatus = application.status;
         application.status = ApplicationStatus.IN_PROGRESS;
-        application.simulationResult = {}; // Limpiamos la simulación
-        application.addEvent('STATE_TRANSITION', 'Solicitud regresada a En Proceso. Simulación previa invalidada.', { updateData });
-        return await this.applicationRepository.save(application);
+        const saved = await this.applicationRepository.save(application);
+        await this.applicationRepository.saveAudit(
+          saved.id,
+          'STATE_TRANSITION',
+          'Solicitud regresada a En Proceso. Simulación previa invalidada.',
+          previousStatus,
+          saved.status,
+          { updateData }
+        );
+        return saved;
       }
     }
 
-    // Si está en PENDING_VALIDATION o VALIDATED y no es para volver a EN_PROCESO, no se permite editar otros datos directamente
+    // Si está en PENDING_VALIDATION y no es para volver a EN_PROCESO, no se permite editar otros datos directamente
     if (
-      application.status === ApplicationStatus.PENDING_VALIDATION ||
-      application.status === ApplicationStatus.VALIDATED
+      application.status === ApplicationStatus.PENDING_VALIDATION
     ) {
-      throw new Error('No se pueden editar los datos de la solicitud mientras esté Pendiente de Validación o Validada. Debe modificar las condiciones primero.');
+      throw new Error('No se pueden editar los datos de la solicitud mientras esté Pendiente de Validación. Debe modificar las condiciones primero.');
     }
 
     // Aquí actualizaríamos las propiedades parciales de la solicitud basado en updateData
-    application.addEvent('USER_ACTION', 'Solicitud actualizada parcialmente por el cliente.', { updateData });
+    const saved = await this.applicationRepository.save(application);
+    await this.applicationRepository.saveAudit(
+      saved.id,
+      'USER_ACTION',
+      'Solicitud actualizada parcialmente por el cliente.',
+      saved.status,
+      saved.status,
+      { updateData }
+    );
 
-    return await this.applicationRepository.save(application);
+    return saved;
   }
 }

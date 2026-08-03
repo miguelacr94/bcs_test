@@ -4,7 +4,7 @@ export enum ApplicationPattern {
   GET_APPLICATION_BY_ID = 'get_application_by_id',
   UPDATE_APPLICATION = 'update_application',
   SIMULATE_OFFER = 'simulate_offer',
-  FINALIZE_APPLICATION = 'finalize_application',
+  ACCEPT_OFFER = 'accept_offer',
   ABANDON_APPLICATION = 'abandon_application',
   GET_APPLICATION_EVENTS = 'get_application_events',
 }
@@ -21,4 +21,8 @@ export enum AuthPattern {
 export enum CustomerPattern {
   CREATE_CUSTOMER = 'create_customer',
   GET_CUSTOMER_BY_DOCUMENT = 'get_customer_by_document',
+}
+
+export enum UserPattern {
+  GET_USER_BY_DOCUMENT = 'get_user_by_document',
 }

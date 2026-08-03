@@ -9,8 +9,7 @@ export class ApplicationMapper {
       doc.channel,
       doc.status,
       doc.createdAt,
-      doc.events,
-      doc.simulationResult,
+      doc.offerResult,
     );
   }
 
@@ -20,8 +19,7 @@ export class ApplicationMapper {
       channel: entity.channel,
       status: entity.status,
       createdAt: entity.createdAt,
-      events: entity.events,
-      simulationResult: entity.simulationResult,
+      offerResult: entity.offerResult,
     };
   }
 }

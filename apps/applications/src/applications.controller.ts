@@ -7,7 +7,7 @@ import {
   GetApplicationByIdUseCase,
   UpdateApplicationUseCase,
   SimulateOfferUseCase,
-  FinalizeApplicationUseCase,
+  AcceptOfferUseCase,
   AbandonApplicationUseCase,
   GetApplicationEventsUseCase,
 } from './application/use-cases';
@@ -22,15 +22,15 @@ export class ApplicationsController {
     private readonly getApplicationByIdUseCase: GetApplicationByIdUseCase,
     private readonly updateApplicationUseCase: UpdateApplicationUseCase,
     private readonly simulateOfferUseCase: SimulateOfferUseCase,
-    private readonly finalizeApplicationUseCase: FinalizeApplicationUseCase,
+    private readonly acceptOfferUseCase: AcceptOfferUseCase,
     private readonly abandonApplicationUseCase: AbandonApplicationUseCase,
     private readonly getApplicationEventsUseCase: GetApplicationEventsUseCase,
   ) {}
 
   @MessagePattern({ cmd: ApplicationPattern.CREATE_APPLICATION })
-  async createApplication(@Payload() data: { createDto: { clientId: string; channel: string } }) {
+  async createApplication(@Payload() data: { createDto: { clientId: string; channel: string; offerResult?: any } }) {
     try {
-      return await this.createApplicationUseCase.execute(data.createDto.clientId, data.createDto.channel);
+      return await this.createApplicationUseCase.execute(data.createDto.clientId, data.createDto.channel, data.createDto.offerResult);
     } catch (error: any) {
       this.logger.error(`Error creating application: ${error.message}`);
       if (error instanceof RpcException) throw error;
@@ -87,12 +87,12 @@ export class ApplicationsController {
     }
   }
 
-  @MessagePattern({ cmd: ApplicationPattern.FINALIZE_APPLICATION })
-  async finalizeApplication(@Payload() data: { id: string }) {
+  @MessagePattern({ cmd: ApplicationPattern.ACCEPT_OFFER })
+  async acceptOffer(@Payload() data: { id: string }) {
     try {
-      return await this.finalizeApplicationUseCase.execute(data.id);
+      return await this.acceptOfferUseCase.execute(data.id);
     } catch (error: any) {
-      this.logger.error(`Error finalizing application ${data.id}: ${error.message}`);
+      this.logger.error(`Error accepting offer for application ${data.id}: ${error.message}`);
       if (error instanceof RpcException) throw error;
       throw new RpcException({ error: error.message, statusCode: 400 });
     }

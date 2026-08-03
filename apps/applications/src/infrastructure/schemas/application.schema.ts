@@ -31,11 +31,8 @@ export class ApplicationDocument extends Document {
   @Prop({ default: Date.now })
   createdAt!: Date;
 
-  @Prop({ type: [SchemaFactory.createForClass(ApplicationEventSchema)], default: [] })
-  events!: ApplicationEventSchema[];
-
-  @Prop({ type: Object, default: {} })
-  simulationResult!: object;
+  @Prop({ type: Object })
+  offerResult!: object;
 }
 
 export const ApplicationSchema =

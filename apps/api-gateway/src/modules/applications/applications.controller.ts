@@ -104,14 +104,14 @@ export class ApplicationsController {
     );
   }
 
-  @ApiOperation({ summary: 'Finalizar solicitud' })
-  @Post(':id/finalize')
-  async finalizeApplication(
+  @ApiOperation({ summary: 'Aceptar oferta de crédito' })
+  @Post(':id/accept-offer')
+  async acceptOffer(
     @Param('id') id: string,
   ) {
     return await firstValueFrom(
       this.applicationsClient
-        .send({ cmd: ApplicationPattern.FINALIZE_APPLICATION }, { id })
+        .send({ cmd: ApplicationPattern.ACCEPT_OFFER }, { id })
         .pipe(timeout(5000), retry(3)),
     );
   }

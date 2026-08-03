@@ -1,11 +1,19 @@
 import { Module } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
-import { CustomerController } from './customer.controller';
+import { UserCoreGatewayController } from './user-core.controller';
 import { envs } from '@app/shared/config/envs';
 
 @Module({
   imports: [
     ClientsModule.register([
+      {
+        name: 'USER_CORE_SERVICE',
+        transport: Transport.REDIS,
+        options: {
+          host: envs.redis.host,
+          port: envs.redis.port,
+        },
+      },
       {
         name: 'CUSTOMER_SERVICE',
         transport: Transport.REDIS,
@@ -24,6 +32,6 @@ import { envs } from '@app/shared/config/envs';
       },
     ]),
   ],
-  controllers: [CustomerController],
+  controllers: [UserCoreGatewayController],
 })
-export class CustomerModule {}
+export class UserCoreGatewayModule {}

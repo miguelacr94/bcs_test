@@ -7,26 +7,36 @@ import { ApplicationDocument } from '../schemas/application.schema';
 import { ApplicationMapper } from '../mappers/application.mapper';
 import { PaginationDto } from '@app/shared/dtos';
 import { ApplicationStatus } from '@app/shared/enums';
+import { AuditOfferDocument } from '../schemas/audit-offer.schema';
+
 @Injectable()
 export class MongooseApplicationRepository implements ApplicationRepositoryPort {
   constructor(
     @InjectModel(ApplicationDocument.name)
     private readonly applicationModel: Model<ApplicationDocument>,
+    @InjectModel(AuditOfferDocument.name)
+    private readonly auditOfferModel: Model<AuditOfferDocument>,
   ) {}
 
   async save(application: Application): Promise<Application> {
     const persistenceData = ApplicationMapper.toPersistence(application);
 
-    if (application.id && Types.ObjectId.isValid(application.id)) {
-      const updatedDoc = await this.applicationModel
-        .findByIdAndUpdate(application.id, persistenceData, { new: true })
-        .exec();
-      if (updatedDoc) {
-        return ApplicationMapper.toDomain(updatedDoc);
+    if (application.id) {
+      const exists = await this.applicationModel.exists({ _id: application.id });
+      if (exists) {
+        const updatedDoc = await this.applicationModel
+          .findByIdAndUpdate(application.id, persistenceData, { new: true })
+          .exec();
+        if (updatedDoc) {
+          return ApplicationMapper.toDomain(updatedDoc);
+        }
       }
     }
 
-    const createdDoc = new this.applicationModel(persistenceData);
+    const createdDoc = new this.applicationModel({
+      ...persistenceData,
+      ...(application.id ? { _id: new Types.ObjectId(application.id) } : {}),
+    });
     const savedDoc = await createdDoc.save();
     return ApplicationMapper.toDomain(savedDoc);
   }
@@ -72,5 +82,28 @@ export class MongooseApplicationRepository implements ApplicationRepositoryPort 
       return null;
     }
     return ApplicationMapper.toDomain(doc);
+  }
+
+  async saveAudit(
+    offerId: string, 
+    type: string, 
+    message: string, 
+    previousStatus?: string, 
+    nextStatus?: string, 
+    metadata?: any
+  ): Promise<void> {
+    const audit = new this.auditOfferModel({
+      offerId,
+      type,
+      message,
+      previousStatus,
+      nextStatus,
+      metadata,
+    });
+    await audit.save();
+  }
+
+  async findAuditsByOfferId(offerId: string): Promise<any[]> {
+    return await this.auditOfferModel.find({ offerId }).sort({ createdAt: 1 }).exec();
   }
 }

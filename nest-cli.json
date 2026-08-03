@@ -54,6 +54,15 @@
       "compilerOptions": {
         "tsConfigPath": "apps/technical-test/tsconfig.app.json"
       }
+    },
+    "user-core": {
+      "type": "application",
+      "root": "apps/user-core",
+      "entryFile": "main",
+      "sourceRoot": "apps/user-core/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/user-core/tsconfig.app.json"
+      }
     }
   }
 }

@@ -3,6 +3,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { ApplicationsController } from './applications.controller';
 import { envs } from '@app/shared/config/envs';
 import { ApplicationDocument, ApplicationSchema } from './infrastructure/schemas/application.schema';
+import { AuditOfferDocument, AuditOfferSchema } from './infrastructure/schemas/audit-offer.schema';
 import { MongooseApplicationRepository } from './infrastructure/adapters/mongoose-application.repository';
 import { MockOfferServiceAdapter } from './infrastructure/adapters/mock-offer-service.adapter';
 import {
@@ -11,7 +12,7 @@ import {
   GetApplicationByIdUseCase,
   UpdateApplicationUseCase,
   SimulateOfferUseCase,
-  FinalizeApplicationUseCase,
+  AcceptOfferUseCase,
   AbandonApplicationUseCase,
   GetApplicationEventsUseCase,
 } from './application/use-cases';
@@ -21,6 +22,7 @@ import {
     MongooseModule.forRoot(envs.mongo.applicationsUri),
     MongooseModule.forFeature([
       { name: ApplicationDocument.name, schema: ApplicationSchema },
+      { name: AuditOfferDocument.name, schema: AuditOfferSchema },
     ]),
   ],
   controllers: [ApplicationsController],
@@ -31,7 +33,7 @@ import {
     GetApplicationByIdUseCase,
     UpdateApplicationUseCase,
     SimulateOfferUseCase,
-    FinalizeApplicationUseCase,
+    AcceptOfferUseCase,
     AbandonApplicationUseCase,
     GetApplicationEventsUseCase,
     

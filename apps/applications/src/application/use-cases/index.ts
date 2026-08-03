@@ -3,6 +3,6 @@ export * from './get-applications.use-case';
 export * from './get-application-by-id.use-case';
 export * from './update-application.use-case';
 export * from './simulate-offer.use-case';
-export * from './finalize-application.use-case';
+export * from './accept-offer.use-case';
 export * from './abandon-application.use-case';
 export * from './get-application-events.use-case';

@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import * as crypto from 'crypto';
+import { Types } from 'mongoose';
 import { ApplicationRepositoryPort } from '../../domain/ports/application-repository.port';
 import { Application } from '../../domain/models/application.entity';
 import { ApplicationStatus } from '@app/shared/enums';
@@ -11,7 +11,7 @@ export class CreateApplicationUseCase {
     private readonly applicationRepository: ApplicationRepositoryPort,
   ) {}
 
-  async execute(clientId: string, channel: string): Promise<Application> {
+  async execute(clientId: string, channel: string, offerResult?: any): Promise<Application> {
     // Control de Duplicidad: Buscar si ya existe una solicitud activa
     const existingApplication = await this.applicationRepository.findByClientIdAndStatus(
       clientId,
@@ -22,7 +22,7 @@ export class CreateApplicationUseCase {
       throw new Error(`Ya existe una solicitud activa en estado: ${existingApplication.status}`);
     }
 
-    const secureId = crypto.randomUUID();
+    const secureId = new Types.ObjectId().toString();
     const createdAt = new Date();
 
     const application = new Application(
@@ -31,10 +31,18 @@ export class CreateApplicationUseCase {
       channel,
       ApplicationStatus.IN_PROCESS,
       createdAt,
+      offerResult,
     );
 
-    application.addEvent('USER_ACTION', `Solicitud creada por el cliente desde el canal: ${channel}`, { channel });
-
-    return await this.applicationRepository.save(application);
+    const saved = await this.applicationRepository.save(application);
+    await this.applicationRepository.saveAudit(
+      saved.id, 
+      'USER_ACTION', 
+      `Solicitud creada por el cliente desde el canal: ${channel}`, 
+      'NINGUNO', 
+      ApplicationStatus.IN_PROCESS,
+      { channel, offerResult }
+    );
+    return saved;
   }
 }

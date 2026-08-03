@@ -14,22 +14,15 @@ export class Application {
     public readonly channel: string,
     public status: ApplicationStatus,
     public readonly createdAt: Date,
-    public events: ApplicationEvent[] = [],
-    public simulationResult?: any,
+    public offerResult?: any,
   ) {}
 
-  finalizeApplication(): void {
-    if (this.status !== ApplicationStatus.VALIDATED) {
-      throw new Error('La solicitud debe estar en estado Validada antes de poder finalizarse.');
-    }
-    
-    // Precondiciones mínimas definidas para finalizar: debe existir una oferta pre-aprobada viable
-    if (!this.simulationResult || !this.simulationResult.success || !this.simulationResult.offerDetails) {
-      throw new Error('No se puede finalizar la solicitud sin tener una oferta pre-aprobada viable.');
+  acceptOffer(): void {
+    if (this.status !== ApplicationStatus.IN_PROCESS) {
+      throw new Error('La solicitud debe estar en estado En Proceso antes de poder aceptar la oferta.');
     }
 
-    this.status = ApplicationStatus.FINALIZED;
-    this.addEvent('STATE_TRANSITION', 'Solicitud finalizada exitosamente.');
+    this.status = ApplicationStatus.PENDING_VALIDATION;
   }
 
   abandonApplication(reason: string): void {
@@ -42,20 +35,5 @@ export class Application {
     }
 
     this.status = ApplicationStatus.ABANDONED;
-    this.addEvent('STATE_TRANSITION', `Solicitud abandonada. Motivo: ${reason}`);
-  }
-
-  registerSimulation(result: any): void {
-    this.simulationResult = result;
-    this.addEvent('SIMULATION_RESULT', 'Se ejecutó simulación preliminar de oferta.', { result });
-  }
-
-  addEvent(type: string, message: string, metadata?: any): void {
-    this.events.push({
-      type,
-      message,
-      timestamp: new Date().toISOString(),
-      metadata,
-    });
   }
 }

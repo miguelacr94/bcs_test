@@ -9,12 +9,7 @@ export class GetApplicationEventsUseCase {
     private readonly applicationRepository: ApplicationRepositoryPort,
   ) {}
 
-  async execute(id: string): Promise<ApplicationEvent[]> {
-    const application = await this.applicationRepository.findById(id);
-    if (!application) {
-      throw new Error(`Solicitud con ID ${id} no encontrada.`);
-    }
-
-    return application.events;
+  async execute(id: string): Promise<any[]> {
+    return await this.applicationRepository.findAuditsByOfferId(id);
   }
 }

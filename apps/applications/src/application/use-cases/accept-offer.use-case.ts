@@ -3,29 +3,28 @@ import { ApplicationRepositoryPort } from '../../domain/ports/application-reposi
 import { Application } from '../../domain/models/application.entity';
 
 @Injectable()
-export class AbandonApplicationUseCase {
+export class AcceptOfferUseCase {
   constructor(
     @Inject('ApplicationRepositoryPort')
     private readonly applicationRepository: ApplicationRepositoryPort,
   ) {}
 
-  async execute(id: string, reason: string): Promise<Application> {
+  async execute(id: string): Promise<Application> {
     const application = await this.applicationRepository.findById(id);
     if (!application) {
       throw new Error(`Solicitud con ID ${id} no encontrada.`);
     }
 
     const previousStatus = application.status;
-    application.abandonApplication(reason);
+    application.acceptOffer();
 
     const saved = await this.applicationRepository.save(application);
     await this.applicationRepository.saveAudit(
       saved.id,
       'STATE_TRANSITION',
-      `Solicitud abandonada. Motivo: ${reason}`,
+      'Oferta aceptada por el cliente. Solicitud pasa a Pendiente Validación.',
       previousStatus,
-      saved.status,
-      { reason }
+      saved.status
     );
     return saved;
   }
