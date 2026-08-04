@@ -73,15 +73,6 @@
         "tsConfigPath": "libs/shared/tsconfig.json"
       }
     },
-    "technical-test": {
-      "type": "application",
-      "root": "apps/technical-test",
-      "entryFile": "main",
-      "sourceRoot": "apps/technical-test/src",
-      "compilerOptions": {
-        "tsConfigPath": "apps/technical-test/tsconfig.app.json"
-      }
-    },
     "tracing": {
       "type": "application",
       "root": "apps/tracing",

@@ -10,6 +10,7 @@ interface ExceptionPayload {
   message?: string;
   error?: string;
   statusCode?: number;
+  code?: number;
   getStatus?: () => number;
   getResponse?: () => string | { message: string };
 }
@@ -30,6 +31,13 @@ export class AllExceptionsFilter implements ExceptionFilter {
       status = exc.getStatus();
       const res = exc.getResponse ? exc.getResponse() : null;
       message = typeof res === 'object' && res !== null ? res.message : String(res);
+    } else if (exc.code) {
+      // Mapeo de códigos de error de negocio a HTTP status
+      if (exc.code === 4001) {
+        status = HttpStatus.NOT_FOUND;
+      } else if (exc.code >= 4000 && exc.code < 5000) {
+        status = HttpStatus.BAD_REQUEST;
+      }
     } else if (exc.error) {
       message = exc.error;
 

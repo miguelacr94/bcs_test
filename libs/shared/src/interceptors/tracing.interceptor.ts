@@ -96,8 +96,8 @@ export class TracingInterceptor implements NestInterceptor {
       headers: sanitizeHeaders(request.headers),
       queryParams: sanitizeData(request.query, {
         maxBodySize: config.maxBodySize,
-      }),
-      body: sanitizeData(request.body, { maxBodySize: config.maxBodySize }),
+      }) as Record<string, unknown>,
+      body: sanitizeData(request.body, { maxBodySize: config.maxBodySize }) as Record<string, unknown>,
       userId: request.user?.id || request.headers?.['x-user-id'],
       correlationId: request.headers?.['x-correlation-id'],
       tags: [`method:${request.method}`, `path:${request.url}`],
@@ -116,7 +116,7 @@ export class TracingInterceptor implements NestInterceptor {
         trace.statusCode = response?.statusCode || 200;
         trace.response = sanitizeData(data, {
           maxBodySize: config.maxBodySize,
-        });
+        }) as Record<string, unknown>;
 
         this.persistTrace(trace);
 
@@ -133,7 +133,7 @@ export class TracingInterceptor implements NestInterceptor {
           name: (error instanceof Error ? error.name : "Error"),
           message: (error instanceof Error ? error.message : String(error)),
           stack: config.includeStackTrace ? (error instanceof Error ? error.stack : undefined) : undefined,
-          code: (error as Record<string, unknown>).code,
+          code: (error as any).code ? String((error as any).code) : undefined,
         };
 
         this.persistTrace(trace);

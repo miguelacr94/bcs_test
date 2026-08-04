@@ -57,5 +57,6 @@ Authorization: Bearer {{token}}
 {
   "id": "AQUÍ_VA_EL_ID_DE_LA_SOLICITUD",
   "withDisbursement": true,
-  "channel": "Oficina"
+  "channel": "Oficina",
+  "reason": "Finalización aprobada por comité"
 }

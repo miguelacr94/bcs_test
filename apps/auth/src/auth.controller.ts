@@ -78,7 +78,7 @@ export class AuthController {
       const decoded = await this.tokenService.verifyToken(data.token);
 
       // 2. Obtener el ID del usuario ('sub' del payload)
-      const userId = decoded.sub;
+      const userId = (decoded as { sub: string }).sub;
 
       // 3. Confirmar que el usuario existe en la base de datos
       const user = await this.userRepository.findById(userId);

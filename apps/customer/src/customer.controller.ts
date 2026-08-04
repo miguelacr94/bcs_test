@@ -3,6 +3,7 @@ import { MessagePattern, Payload, RpcException } from '@nestjs/microservices';
 import { CustomerPattern } from '@app/shared/enums';
 import { CreateCustomerUseCase } from './application/use-cases/create-customer.use-case';
 import { FindCustomerByDocumentUseCase } from './application/use-cases/find-customer-by-document.use-case';
+import { FindCustomerByIdUseCase } from './application/use-cases/find-customer-by-id.use-case';
 import { CreateCustomerDto } from './application/dtos/create-customer.dto';
 
 @Controller()
@@ -12,6 +13,7 @@ export class CustomerController {
   constructor(
     private readonly createCustomerUseCase: CreateCustomerUseCase,
     private readonly findCustomerByDocumentUseCase: FindCustomerByDocumentUseCase,
+    private readonly findCustomerByIdUseCase: FindCustomerByIdUseCase,
   ) {}
 
   @MessagePattern({ cmd: CustomerPattern.CREATE_CUSTOMER })
@@ -40,6 +42,28 @@ export class CustomerController {
     } catch (error: unknown) {
       this.logger.error(
         `Error finding customer ${payload.document}: ${(error instanceof Error ? error.message : String(error))}`,
+      );
+      if (error instanceof RpcException) throw error;
+      throw new RpcException({ error: (error instanceof Error ? error.message : String(error)), statusCode: 400 });
+    }
+  }
+
+  @MessagePattern({ cmd: CustomerPattern.GET_CUSTOMER_BY_ID })
+  async findById(@Payload() payload: { id: string }) {
+    try {
+      const customer = await this.findCustomerByIdUseCase.execute(
+        payload.id,
+      );
+      if (!customer) {
+        throw new RpcException({
+          error: 'Cliente no encontrado',
+          statusCode: 404,
+        });
+      }
+      return customer;
+    } catch (error: unknown) {
+      this.logger.error(
+        `Error finding customer by ID ${payload.id}: ${(error instanceof Error ? error.message : String(error))}`,
       );
       if (error instanceof RpcException) throw error;
       throw new RpcException({ error: (error instanceof Error ? error.message : String(error)), statusCode: 400 });

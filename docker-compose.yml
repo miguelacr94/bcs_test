@@ -59,20 +59,6 @@ services:
     env_file:
       - .env
 
-  technical-test-service:
-    build:
-      context: .
-      args:
-        APP_NAME: technical-test
-    container_name: bcs_api_technical_test_service
-    volumes:
-      - .:/usr/src/app
-      - /usr/src/app/node_modules
-    depends_on:
-      - mongodb
-    env_file:
-      - .env
-
   customer-service:
     build:
       context: .

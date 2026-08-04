@@ -20,7 +20,7 @@ export class RefreshTokenUseCase {
     try {
       // 1. Verificar firma y expiración del refresh token
       const decoded = await this.tokenService.verifyToken(refreshToken);
-      const userId = decoded.sub;
+      const userId = (decoded as { sub: string }).sub;
 
       // 2. Buscar al usuario en la base de datos
       const user = await this.userRepository.findById(userId);

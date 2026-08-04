@@ -204,7 +204,7 @@ export class ApplicationsController {
       return await this.validateApplicationUseCase.execute(
         data.id,
         rest,
-        channel,
+        channel as string | undefined,
       );
     } catch (error: unknown) {
       this.logger.error(
@@ -222,6 +222,7 @@ export class ApplicationsController {
       id: string;
       withDisbursement: boolean;
       channel?: string;
+      reason?: string;
     },
   ) {
     try {
@@ -229,6 +230,7 @@ export class ApplicationsController {
         data.id,
         data.withDisbursement,
         data.channel,
+        data.reason,
       );
     } catch (error: unknown) {
       this.logger.error(

@@ -17,6 +17,7 @@ export class FinalizeApplicationUseCase {
     id: string,
     withDisbursement: boolean,
     channel?: string,
+    reason?: string,
   ): Promise<{ success: boolean; message: string }> {
     const application = await this.applicationRepository.findById(id);
     if (!application) {
@@ -24,11 +25,11 @@ export class FinalizeApplicationUseCase {
     }
 
     const previousStatus = application.status;
-    application.finalizeApplication();
+    application.finalizeApplication(withDisbursement, reason);
 
     const saved = await this.applicationRepository.save(application);
 
-    let message = 'Solicitud finalizada correctamente.';
+    let message = 'Solicitud finalizada correctamente sin desembolso.';
 
     if (withDisbursement) {
       await firstValueFrom(
@@ -37,7 +38,12 @@ export class FinalizeApplicationUseCase {
           {
             applicationId: saved.id,
             clientId: saved.clientId,
-            amount: saved.offerResult?.offerDetails?.approvedAmount || 0,
+            amount:
+              (
+                saved.offerResult as {
+                  offerDetails?: { approvedAmount?: number };
+                }
+              )?.offerDetails?.approvedAmount || 0,
           },
         ),
       );
@@ -50,7 +56,7 @@ export class FinalizeApplicationUseCase {
       message,
       previousStatus,
       saved.status,
-      { withDisbursement, channel: channel ?? 'Autogestionado' },
+      { withDisbursement, channel: channel ?? 'Autogestionado', reason },
     );
 
     return { success: true, message };

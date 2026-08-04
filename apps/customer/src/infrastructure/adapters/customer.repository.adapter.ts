@@ -15,6 +15,12 @@ export class CustomerRepositoryAdapter implements CustomerRepositoryPort {
     private readonly customerModel: Model<CustomerDocument>,
   ) {}
 
+  async findById(id: string): Promise<Customer | null> {
+    const doc = await this.customerModel.findById(id).exec();
+    if (!doc) return null;
+    return this.mapToDomain(doc);
+  }
+
   async findByDocument(document: string): Promise<Customer | null> {
     // Usamos el hash determinístico para buscar (siempre produce el mismo resultado)
     const documentHash = this.cryptoAdapter.hash(document);

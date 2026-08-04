@@ -22,6 +22,7 @@ import { CreateApplicationDto } from './dtos/create-application.dto';
 import { UpdateApplicationDto } from './dtos/update-application.dto';
 import { AbandonApplicationDto } from './dtos/abandon-application.dto';
 import { SimulateOfferDto } from './dtos/simulate-offer.dto';
+import { FinalizeApplicationDto } from './dtos/finalize-application.dto';
 import { AuthGuard } from '../../guards/auth.guard';
 import { RolesGuard } from '../../guards/roles.guard';
 import { Roles } from '../../decorators/roles.decorator';
@@ -70,7 +71,7 @@ export class ApplicationsController {
         }
       } catch (error: unknown) {
       throw new BadRequestException(
-          error?.message ||
+          (error as any)?.message ||
             'Error al validar el cliente asociado al documento.',
         );
       }
@@ -111,14 +112,16 @@ export class ApplicationsController {
             const customer = await firstValueFrom(
               this.customerClient
                 .send(
-                  { cmd: CustomerPattern.GET_CUSTOMER_BY_DOCUMENT },
-                  { document: app.clientId },
+                  { cmd: CustomerPattern.GET_CUSTOMER_BY_ID },
+                  { id: app.clientId },
                 )
                 .pipe(timeout(5000), retry(3)),
             );
 
+            const { clientId, offerResult, ...appWithoutSensitiveData } = app as any;
+
             return {
-              ...app,
+              ...appWithoutSensitiveData,
               customer:
                 this.sensitiveDataMask.sanitizeCustomerForList(customer),
             };
@@ -126,8 +129,9 @@ export class ApplicationsController {
             this.logger.error(
               `Error fetching customer for clientId ${app.clientId}: ${error}`,
             );
+            const { clientId, offerResult, ...appWithoutSensitiveData } = app as any;
             return {
-              ...app,
+              ...appWithoutSensitiveData,
               customer: null,
             };
           }
@@ -170,7 +174,7 @@ export class ApplicationsController {
         );
 
         if (customer) {
-          const isAdmin = req.user?.role === Role.ADMIN;
+          const isAdmin = (req.user as any)?.role === Role.ADMIN;
 
           const docStr = customer.document || '';
           if (docStr.length > 4) {
@@ -308,11 +312,12 @@ export class ApplicationsController {
 
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Finalizar solicitud (Admin)' })
+  @ApiBody({ type: FinalizeApplicationDto })
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
   @Post('finalize')
   async finalizeApplication(
-    @Body() body: { id: string; withDisbursement: boolean; channel?: string },
+    @Body() body: FinalizeApplicationDto,
   ) {
     return await firstValueFrom(
       this.applicationsClient
@@ -322,6 +327,7 @@ export class ApplicationsController {
             id: body.id,
             withDisbursement: body.withDisbursement,
             channel: body.channel,
+            reason: body.reason,
           },
         )
         .pipe(timeout(5000), retry(3)),

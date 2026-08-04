@@ -1,4 +1,5 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { RpcException } from '@nestjs/microservices';
 
 export interface UserInfo {
   document: string;
@@ -27,9 +28,10 @@ export class MockUserAdapter {
   async findByDocument(document: string): Promise<UserInfo> {
     const user = this.users.find((u) => u.document === document);
     if (!user) {
-      throw new NotFoundException(
-        `Usuario con documento ${document} no encontrado`,
-      );
+      throw new RpcException({
+        code: 4001,
+        message: `Usuario con documento ${document} no encontrado`,
+      });
     }
     return user;
   }

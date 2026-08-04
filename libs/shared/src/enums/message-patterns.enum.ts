@@ -24,6 +24,7 @@ export enum AuthPattern {
 export enum CustomerPattern {
   CREATE_CUSTOMER = 'create_customer',
   GET_CUSTOMER_BY_DOCUMENT = 'get_customer_by_document',
+  GET_CUSTOMER_BY_ID = 'get_customer_by_id',
 }
 
 export enum UserPattern {

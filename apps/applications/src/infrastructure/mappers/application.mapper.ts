@@ -13,6 +13,7 @@ export class ApplicationMapper {
       doc.createdAt,
       doc.offerResult as Record<string, unknown>,
       doc.validationData as Record<string, unknown>,
+      doc.statusReason,
     );
   }
 
@@ -25,6 +26,7 @@ export class ApplicationMapper {
       createdAt: entity.createdAt,
       offerResult: entity.offerResult,
       validationData: entity.validationData,
+      statusReason: entity.statusReason,
     };
   }
 }

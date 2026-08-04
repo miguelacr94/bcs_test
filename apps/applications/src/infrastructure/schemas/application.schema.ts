@@ -43,6 +43,9 @@ export class ApplicationDocument extends Document {
     familyReference2?: { map: string; phone: string; relationship: string };
     additionalNotes?: string;
   };
+
+  @Prop({ required: false })
+  statusReason?: string;
 }
 
 export const ApplicationSchema =

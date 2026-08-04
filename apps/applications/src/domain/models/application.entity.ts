@@ -17,6 +17,7 @@ export class Application {
     public readonly createdAt: Date,
     public offerResult?: Record<string, unknown>,
     public validationData?: Record<string, unknown>,
+    public statusReason?: string,
   ) {}
 
   acceptOffer(): void {
@@ -44,6 +45,7 @@ export class Application {
     }
 
     this.status = ApplicationStatus.ABANDONED;
+    this.statusReason = reason;
   }
 
   validateApplication(validationData: Record<string, unknown>): void {
@@ -58,7 +60,7 @@ export class Application {
     // but the presence of validationData will unlock finalization.
   }
 
-  finalizeApplication(): void {
+  finalizeApplication(withDisbursement: boolean, reason?: string): void {
     if (this.status !== ApplicationStatus.PENDING_VALIDATION) {
       throw new Error(
         'La solicitud debe estar pendiente de validación para ser finalizada.',
@@ -71,6 +73,15 @@ export class Application {
       );
     }
 
+    if (!withDisbursement && (!reason || reason.trim() === '')) {
+      throw new Error(
+        'Debe proveer una justificación si va a finalizar la solicitud sin desembolso.',
+      );
+    }
+
     this.status = ApplicationStatus.FINALIZED;
+    if (reason) {
+      this.statusReason = reason;
+    }
   }
 }

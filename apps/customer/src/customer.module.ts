@@ -8,6 +8,7 @@ import {
 import { CustomerRepositoryAdapter } from './infrastructure/adapters/customer.repository.adapter';
 import { CreateCustomerUseCase } from './application/use-cases/create-customer.use-case';
 import { FindCustomerByDocumentUseCase } from './application/use-cases/find-customer-by-document.use-case';
+import { FindCustomerByIdUseCase } from './application/use-cases/find-customer-by-id.use-case';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { envs } from '@app/shared/config/envs';
 
@@ -26,6 +27,7 @@ import { envs } from '@app/shared/config/envs';
     },
     CreateCustomerUseCase,
     FindCustomerByDocumentUseCase,
+    FindCustomerByIdUseCase,
   ],
 })
 export class CustomerModule {}
