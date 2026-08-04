@@ -13,7 +13,11 @@ export class FinalizeApplicationUseCase {
     private readonly disbursementsClient: ClientProxy,
   ) {}
 
-  async execute(id: string, withDisbursement: boolean, channel?: string): Promise<{ success: boolean; message: string }> {
+  async execute(
+    id: string,
+    withDisbursement: boolean,
+    channel?: string,
+  ): Promise<{ success: boolean; message: string }> {
     const application = await this.applicationRepository.findById(id);
     if (!application) {
       throw new Error(`Solicitud con ID ${id} no encontrada.`);
@@ -23,15 +27,19 @@ export class FinalizeApplicationUseCase {
     application.finalizeApplication();
 
     const saved = await this.applicationRepository.save(application);
-    
+
     let message = 'Solicitud finalizada correctamente.';
-    
+
     if (withDisbursement) {
       await firstValueFrom(
         this.disbursementsClient.send(
           { cmd: DisbursementPattern.CREATE_DISBURSEMENT },
-          { applicationId: saved.id, clientId: saved.clientId, amount: saved.offerResult?.offerDetails?.approvedAmount || 0 }
-        )
+          {
+            applicationId: saved.id,
+            clientId: saved.clientId,
+            amount: saved.offerResult?.offerDetails?.approvedAmount || 0,
+          },
+        ),
       );
       message = 'Solicitud finalizada y desembolso programado correctamente.';
     }
@@ -42,9 +50,9 @@ export class FinalizeApplicationUseCase {
       message,
       previousStatus,
       saved.status,
-      { withDisbursement, channel: channel ?? 'Autogestionado' }
+      { withDisbursement, channel: channel ?? 'Autogestionado' },
     );
-    
+
     return { success: true, message };
   }
 }

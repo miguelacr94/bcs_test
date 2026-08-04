@@ -7,15 +7,12 @@ import {
   extractTraceIdFromHeaders,
   extractParentSpanIdFromHeaders,
 } from './utils/trace-id.generator';
-import {
-  sanitizeData,
-  safeStringify,
-} from './utils/data-sanitizer';
+import { sanitizeData, safeStringify } from './utils/data-sanitizer';
 import { getTracingConfig, shouldSample } from './tracing.config';
 
 /**
  * Decorador para instrumentación manual de métodos
- * 
+ *
  * @example
  * @Trace({ operation: 'calculateCreditScore', tags: ['credit-scoring'] })
  * async calculateScore(customerId: string) {
@@ -42,12 +39,13 @@ export function Trace(options: TraceOptions = {}): MethodDecorator {
       let spanId: string;
 
       // Intentar extraer de headers si está disponible
-      const headersArg = args.find((arg) => 
-        arg && typeof arg === 'object' && arg.headers
+      const headersArg = args.find(
+        (arg) => arg && typeof arg === 'object' && arg.headers,
       );
-      
+
       if (headersArg?.headers) {
-        traceId = extractTraceIdFromHeaders(headersArg.headers) || generateTraceId();
+        traceId =
+          extractTraceIdFromHeaders(headersArg.headers) || generateTraceId();
         parentSpanId = extractParentSpanIdFromHeaders(headersArg.headers);
       } else {
         traceId = generateTraceId();
@@ -87,7 +85,9 @@ export function Trace(options: TraceOptions = {}): MethodDecorator {
         trace.duration = Date.now() - startTime;
 
         if (options.logResponse && config.logLevel !== 'ERROR') {
-          trace.response = sanitizeData(result, { maxBodySize: config.maxBodySize });
+          trace.response = sanitizeData(result, {
+            maxBodySize: config.maxBodySize,
+          });
         }
 
         persistTrace(trace);

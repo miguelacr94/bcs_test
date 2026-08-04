@@ -1,0 +1,61 @@
+### SOLICITUDES (APPLICATIONS) - SERVICE.HTTP (LOCAL)
+### Estas peticiones pasan por el API Gateway (puerto 3000) y se enrutan al microservicio por Redis.
+
+@host = http://localhost:3000/api/v1
+@contentType = application/json
+# Pega tu token de administrador aquí después de hacer login en auth
+@token = eyJhbGciOiJIUzI1NiIsIn...
+
+### 1. Consultar lista de solicitudes (Admin)
+POST {{host}}/applications/list
+Content-Type: {{contentType}}
+Authorization: Bearer {{token}}
+
+{
+  "page": 1,
+  "limit": 10,
+  "sortField": "createdAt",
+  "sortOrder": "desc"
+}
+
+### 2. Consultar detalle de solicitud por ID
+POST {{host}}/applications/get-by-id
+Content-Type: {{contentType}}
+Authorization: Bearer {{token}}
+
+{
+  "id": "AQUÍ_VA_EL_ID_DE_LA_SOLICITUD"
+}
+
+### 3. Consultar eventos de una solicitud (Admin)
+POST {{host}}/applications/events
+Content-Type: {{contentType}}
+Authorization: Bearer {{token}}
+
+{
+  "id": "AQUÍ_VA_EL_ID_DE_LA_SOLICITUD"
+}
+
+### 4. Validar solicitud (Admin)
+POST {{host}}/applications/validate
+Content-Type: {{contentType}}
+Authorization: Bearer {{token}}
+
+{
+  "id": "AQUÍ_VA_EL_ID_DE_LA_SOLICITUD",
+  "validationData": {
+    "isValid": true,
+    "comments": "Todo en orden"
+  }
+}
+
+### 5. Finalizar solicitud (Admin)
+POST {{host}}/applications/finalize
+Content-Type: {{contentType}}
+Authorization: Bearer {{token}}
+
+{
+  "id": "AQUÍ_VA_EL_ID_DE_LA_SOLICITUD",
+  "withDisbursement": true,
+  "channel": "Oficina"
+}

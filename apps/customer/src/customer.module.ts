@@ -1,7 +1,10 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { CustomerController } from './customer.controller';
-import { CustomerSchema, CustomerDocument } from './infrastructure/schemas/customer.schema';
+import {
+  CustomerSchema,
+  CustomerDocument,
+} from './infrastructure/schemas/customer.schema';
 import { CustomerRepositoryAdapter } from './infrastructure/adapters/customer.repository.adapter';
 import { CreateCustomerUseCase } from './application/use-cases/create-customer.use-case';
 import { FindCustomerByDocumentUseCase } from './application/use-cases/find-customer-by-document.use-case';

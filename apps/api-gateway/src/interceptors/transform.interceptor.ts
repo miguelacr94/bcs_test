@@ -7,7 +7,6 @@ import {
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
-// Interfaz que define cómo se verá SIEMPRE nuestra respuesta
 export interface Response<T> {
   statusCode: number;
   data: T;

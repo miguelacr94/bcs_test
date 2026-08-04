@@ -1,0 +1,10 @@
+### API GATEWAY - SERVICE.HTTP (LOCAL)
+### El Gateway es la única entrada HTTP para todo el sistema (puerto 3000)
+
+@host = http://localhost:3000
+
+### 1. Petición de Salud / Healthcheck (Raíz)
+GET {{host}}/api/v1/
+
+### Nota: Para ver las peticiones específicas de cada módulo (Auth, Applications, Customers, Users), 
+### revisa el archivo service.http dentro de la carpeta docs/ de su respectivo microservicio.

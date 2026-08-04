@@ -6,7 +6,10 @@ export class LoginUserDto {
     description: 'Correo electrónico del usuario registrado',
     example: 'miguel@example.com',
   })
-  @IsEmail({}, { message: 'El correo electrónico provisto no tiene un formato válido.' })
+  @IsEmail(
+    {},
+    { message: 'El correo electrónico provisto no tiene un formato válido.' },
+  )
   readonly email!: string;
 
   @ApiProperty({

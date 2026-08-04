@@ -13,7 +13,9 @@ export class CreateCustomerUseCase {
   async execute(dto: CreateCustomerDto): Promise<Customer> {
     const exists = await this.customerRepository.findByDocument(dto.document);
     if (exists) {
-      throw new ConflictException('El cliente ya se encuentra registrado con este documento.');
+      throw new ConflictException(
+        'El cliente ya se encuentra registrado con este documento.',
+      );
     }
 
     const newCustomer = new Customer(

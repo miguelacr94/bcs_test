@@ -6,7 +6,7 @@ export class User {
     public readonly password: string,
     public readonly role: string,
     public readonly createdAt: Date,
-    public readonly refreshToken?: string | null
+    public readonly refreshToken?: string | null,
   ) {
     this.validateEmail();
     this.validatePassword();
@@ -16,7 +16,9 @@ export class User {
   private validateEmail(): void {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(this.email)) {
-      throw new Error('El correo electrónico provisto no tiene un formato válido.');
+      throw new Error(
+        'El correo electrónico provisto no tiene un formato válido.',
+      );
     }
   }
 

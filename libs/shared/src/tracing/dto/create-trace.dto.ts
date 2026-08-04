@@ -1,4 +1,8 @@
-import { TraceType, TraceLink, TraceError } from '../interfaces/trace.interface';
+import {
+  TraceType,
+  TraceLink,
+  TraceError,
+} from '../interfaces/trace.interface';
 
 export class CreateTraceDto {
   traceId!: string;

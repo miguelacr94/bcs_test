@@ -11,7 +11,9 @@ describe('TechnicalTestController', () => {
       providers: [TechnicalTestService],
     }).compile();
 
-    technicalTestController = app.get<TechnicalTestController>(TechnicalTestController);
+    technicalTestController = app.get<TechnicalTestController>(
+      TechnicalTestController,
+    );
   });
 
   describe('root', () => {

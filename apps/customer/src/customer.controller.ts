@@ -27,13 +27,20 @@ export class CustomerController {
   @MessagePattern({ cmd: CustomerPattern.GET_CUSTOMER_BY_DOCUMENT })
   async findByDocument(@Payload() payload: { document: string }) {
     try {
-      const customer = await this.findCustomerByDocumentUseCase.execute(payload.document);
+      const customer = await this.findCustomerByDocumentUseCase.execute(
+        payload.document,
+      );
       if (!customer) {
-        throw new RpcException({ error: 'Cliente no encontrado', statusCode: 404 });
+        throw new RpcException({
+          error: 'Cliente no encontrado',
+          statusCode: 404,
+        });
       }
       return customer;
     } catch (error: any) {
-      this.logger.error(`Error finding customer ${payload.document}: ${error.message}`);
+      this.logger.error(
+        `Error finding customer ${payload.document}: ${error.message}`,
+      );
       if (error instanceof RpcException) throw error;
       throw new RpcException({ error: error.message, statusCode: 400 });
     }

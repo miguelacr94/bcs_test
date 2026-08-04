@@ -19,7 +19,10 @@ export class TraceRepository {
     return this.traceModel.find({ traceId }).sort({ timestamp: 1 }).exec();
   }
 
-  async findByService(service: string, limit: number = 100): Promise<TraceDocument[]> {
+  async findByService(
+    service: string,
+    limit: number = 100,
+  ): Promise<TraceDocument[]> {
     return this.traceModel
       .find({ service })
       .sort({ timestamp: -1 })
@@ -27,7 +30,10 @@ export class TraceRepository {
       .exec();
   }
 
-  async findByUserId(userId: string, limit: number = 100): Promise<TraceDocument[]> {
+  async findByUserId(
+    userId: string,
+    limit: number = 100,
+  ): Promise<TraceDocument[]> {
     return this.traceModel
       .find({ userId })
       .sort({ timestamp: -1 })

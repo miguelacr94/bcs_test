@@ -50,23 +50,28 @@ export class ApplicationsController {
 
     let finalClientId = createDto.clientId;
 
-    // Si el clientId no tiene 24 caracteres (no es un ObjectId válido), asumimos que es el documento
     if (finalClientId && finalClientId.length !== 24) {
       try {
         const customer = await firstValueFrom(
           this.customerClient
-            .send({ cmd: CustomerPattern.GET_CUSTOMER_BY_DOCUMENT }, { document: finalClientId })
+            .send(
+              { cmd: CustomerPattern.GET_CUSTOMER_BY_DOCUMENT },
+              { document: finalClientId },
+            )
             .pipe(timeout(3000)),
         );
-        
+
         if (customer && customer.id) {
           finalClientId = customer.id;
         } else {
-          throw new BadRequestException('No existe un cliente asociado a ese documento.');
+          throw new BadRequestException(
+            'No existe un cliente asociado a ese documento.',
+          );
         }
       } catch (error: any) {
         throw new BadRequestException(
-          error?.message || 'Error al validar el cliente asociado al documento.',
+          error?.message ||
+            'Error al validar el cliente asociado al documento.',
         );
       }
     }
@@ -78,7 +83,10 @@ export class ApplicationsController {
 
     return await firstValueFrom(
       this.applicationsClient
-        .send({ cmd: ApplicationPattern.CREATE_APPLICATION }, { createDto: payload })
+        .send(
+          { cmd: ApplicationPattern.CREATE_APPLICATION },
+          { createDto: payload },
+        )
         .pipe(timeout(5000), retry(3)),
     );
   }
@@ -96,12 +104,10 @@ export class ApplicationsController {
         .pipe(timeout(5000), retry(3)),
     );
 
-    // Enriquecer con información del cliente
     if (applications && applications.data) {
       const enrichedApplications = await Promise.all(
         applications.data.map(async (app: any) => {
           try {
-            // Obtener información del cliente usando el clientId como documento
             const customer = await firstValueFrom(
               this.customerClient
                 .send(
@@ -162,31 +168,32 @@ export class ApplicationsController {
             )
             .pipe(timeout(5000)),
         );
-        
+
         if (customer) {
           const isAdmin = req.user?.role === Role.ADMIN;
-          
-          // Enmascarar el documento dejando solo los últimos 4 dígitos
+
           const docStr = customer.document || '';
           if (docStr.length > 4) {
-            customer.document = '*'.repeat(docStr.length - 4) + docStr.slice(-4);
+            customer.document =
+              '*'.repeat(docStr.length - 4) + docStr.slice(-4);
           }
 
-          // Enmascarar el teléfono dejando solo los últimos 4 dígitos SI NO ES ADMIN
           if (!isAdmin) {
             const phoneStr = customer.phone || '';
             if (phoneStr.length > 4) {
-              customer.phone = '*'.repeat(phoneStr.length - 4) + phoneStr.slice(-4);
+              customer.phone =
+                '*'.repeat(phoneStr.length - 4) + phoneStr.slice(-4);
             }
           }
-          
+
           application.customer = customer;
         }
       } catch (error) {
-        this.logger.warn(`No se pudo obtener la información del cliente para la solicitud ${body.id}`);
+        this.logger.warn(
+          `No se pudo obtener la información del cliente para la solicitud ${body.id}`,
+        );
       }
 
-      // Eliminar el clientId de la respuesta como solicitaste
       delete application.clientId;
     }
 

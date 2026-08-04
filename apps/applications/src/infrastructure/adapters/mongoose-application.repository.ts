@@ -22,7 +22,9 @@ export class MongooseApplicationRepository implements ApplicationRepositoryPort 
     const persistenceData = ApplicationMapper.toPersistence(application);
 
     if (application.id) {
-      const exists = await this.applicationModel.exists({ _id: application.id });
+      const exists = await this.applicationModel.exists({
+        _id: application.id,
+      });
       if (exists) {
         const updatedDoc = await this.applicationModel
           .findByIdAndUpdate(application.id, persistenceData, { new: true })
@@ -66,7 +68,11 @@ export class MongooseApplicationRepository implements ApplicationRepositoryPort 
       filter.status = status;
     }
 
-    const docs = await this.applicationModel.find(filter).skip(skip).limit(limit).exec();
+    const docs = await this.applicationModel
+      .find(filter)
+      .skip(skip)
+      .limit(limit)
+      .exec();
     const total = await this.applicationModel.countDocuments(filter).exec();
 
     return {
@@ -75,9 +81,16 @@ export class MongooseApplicationRepository implements ApplicationRepositoryPort 
     };
   }
 
-  async findByClientIdAndStatus(clientId: string, status: string | string[]): Promise<Application | null> {
-    const queryStatus = Array.isArray(status) ? { $in: status as ApplicationStatus[] } : (status as ApplicationStatus);
-    const doc = await this.applicationModel.findOne({ clientId: new Types.ObjectId(clientId), status: queryStatus }).exec();
+  async findByClientIdAndStatus(
+    clientId: string,
+    status: string | string[],
+  ): Promise<Application | null> {
+    const queryStatus = Array.isArray(status)
+      ? { $in: status as ApplicationStatus[] }
+      : (status as ApplicationStatus);
+    const doc = await this.applicationModel
+      .findOne({ clientId: new Types.ObjectId(clientId), status: queryStatus })
+      .exec();
     if (!doc) {
       return null;
     }
@@ -85,12 +98,12 @@ export class MongooseApplicationRepository implements ApplicationRepositoryPort 
   }
 
   async saveAudit(
-    offerId: string, 
-    type: string, 
-    message: string, 
-    previousStatus?: string, 
-    nextStatus?: string, 
-    metadata?: any
+    offerId: string,
+    type: string,
+    message: string,
+    previousStatus?: string,
+    nextStatus?: string,
+    metadata?: any,
   ): Promise<void> {
     const audit = new this.auditOfferModel({
       offerId,
@@ -104,6 +117,9 @@ export class MongooseApplicationRepository implements ApplicationRepositoryPort 
   }
 
   async findAuditsByOfferId(offerId: string): Promise<any[]> {
-    return await this.auditOfferModel.find({ offerId }).sort({ createdAt: 1 }).exec();
+    return await this.auditOfferModel
+      .find({ offerId })
+      .sort({ createdAt: 1 })
+      .exec();
   }
 }

@@ -9,8 +9,10 @@ export class AesEncryptionAdapter implements EncryptionPort {
   private readonly idKey: Buffer;
 
   constructor() {
-    const envSecret = process.env.ENCRYPTION_SECRET || 'bcs-secure-default-secret-key-32b!';
-    const envIdSecret = process.env.ID_ENCRYPTION_SECRET || 'bcs-secure-id-secret-key-32bytes!';
+    const envSecret =
+      process.env.ENCRYPTION_SECRET || 'bcs-secure-default-secret-key-32b!';
+    const envIdSecret =
+      process.env.ID_ENCRYPTION_SECRET || 'bcs-secure-id-secret-key-32bytes!';
     this.key = crypto.scryptSync(envSecret, 'salt', 32);
     this.idKey = crypto.scryptSync(envIdSecret, 'idSalt', 32);
   }
@@ -26,7 +28,7 @@ export class AesEncryptionAdapter implements EncryptionPort {
 
     const iv = crypto.randomBytes(12);
     const cipher = crypto.createCipheriv(this.algorithm, this.key, iv);
-    
+
     let encrypted = cipher.update(text, 'utf8', 'hex');
     encrypted += cipher.final('hex');
     const authTag = cipher.getAuthTag().toString('hex');
@@ -50,7 +52,7 @@ export class AesEncryptionAdapter implements EncryptionPort {
       const iv = Buffer.from(ivHex, 'hex');
       const authTag = Buffer.from(authTagHex, 'hex');
       const decipher = crypto.createDecipheriv(this.algorithm, this.key, iv);
-      
+
       decipher.setAuthTag(authTag);
       let decrypted = decipher.update(encryptedHex, 'hex', 'utf8');
       decrypted += decipher.final('utf8');
@@ -65,12 +67,15 @@ export class AesEncryptionAdapter implements EncryptionPort {
    */
   encryptId(id: string): string {
     if (!id || typeof id !== 'string') return id;
-    
+
     try {
       const iv = crypto.randomBytes(12);
       const cipher = crypto.createCipheriv(this.algorithm, this.idKey, iv);
-      
-      const encryptedBuf = Buffer.concat([cipher.update(id, 'utf8'), cipher.final()]);
+
+      const encryptedBuf = Buffer.concat([
+        cipher.update(id, 'utf8'),
+        cipher.final(),
+      ]);
       const authTag = cipher.getAuthTag();
 
       // Combinar iv (12 bytes) + authTag (16 bytes) + encrypted
@@ -86,7 +91,7 @@ export class AesEncryptionAdapter implements EncryptionPort {
    */
   decryptId(cipherId: string): string {
     if (!cipherId || typeof cipherId !== 'string') return cipherId;
-    
+
     // Si ya parece un Mongo ObjectId directo (24 caracteres hex)
     if (/^[0-9a-fA-F]{24}$/.test(cipherId)) {
       return cipherId;
@@ -94,7 +99,8 @@ export class AesEncryptionAdapter implements EncryptionPort {
 
     try {
       const combined = Buffer.from(cipherId, 'base64url');
-      if (combined.length < 28) { // 12 iv + 16 authTag = 28 bytes mínimo
+      if (combined.length < 28) {
+        // 12 iv + 16 authTag = 28 bytes mínimo
         return cipherId;
       }
 
@@ -126,6 +132,8 @@ export class AesEncryptionAdapter implements EncryptionPort {
 
   private isEncrypted(text: string): boolean {
     const parts = text.split(':');
-    return parts.length === 3 && parts[0].length === 24 && parts[1].length === 32;
+    return (
+      parts.length === 3 && parts[0].length === 24 && parts[1].length === 32
+    );
   }
 }

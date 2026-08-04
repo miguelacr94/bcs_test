@@ -1,10 +1,5 @@
-import {
-  Controller,
-  Post,
-  Body,
-  Logger,
-  Inject,
-} from '@nestjs/common';
+import { Controller, Post, Body, Logger, Inject } from '@nestjs/common';
+import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
 import { timeout, retry } from 'rxjs/operators';
@@ -14,6 +9,7 @@ import {
   ApplicationPattern,
 } from '@app/shared/enums/message-patterns.enum';
 
+@ApiTags('Validación Core (Centrales)')
 @Controller('users')
 export class UserCoreGatewayController {
   private readonly logger = new Logger(UserCoreGatewayController.name);
@@ -27,30 +23,20 @@ export class UserCoreGatewayController {
     private readonly applicationsClient: ClientProxy,
   ) {}
 
-  @Post('document')
-  async getByDocument(@Body() body: { document: string }) {
-    this.logger.log(
-      `Gateway: consultando User‑Core para documento ${body.document}`,
-    );
-    return await firstValueFrom(
-      this.userClient
-        .send({ cmd: UserPattern.GET_USER_BY_DOCUMENT }, { document: body.document })
-        .pipe(timeout(5000), retry(3)),
-    );
-  }
-
+  @ApiOperation({ summary: 'Validar estado del usuario en centrales y local' })
   @Post('validate')
   async validateStatus(@Body() body: { document: string }) {
     this.logger.log(
       `Gateway-Compose: Validando estado completo para documento ${body.document}`,
     );
-
-    // 1. Validamos si existe en el Core (Centrales de riesgo)
     let coreUserExists = false;
     try {
       const coreUser = await firstValueFrom(
         this.userClient
-          .send({ cmd: UserPattern.GET_USER_BY_DOCUMENT }, { document: body.document })
+          .send(
+            { cmd: UserPattern.GET_USER_BY_DOCUMENT },
+            { document: body.document },
+          )
           .pipe(timeout(5000), retry(3)),
       );
       if (coreUser) {
@@ -72,13 +58,14 @@ export class UserCoreGatewayController {
         existsInDb: false,
       };
     }
-
-    // 2. Validamos si existe en la Base de Datos local del banco (Customer)
     let customer: any = null;
     try {
       customer = await firstValueFrom(
         this.customerClient
-          .send({ cmd: CustomerPattern.GET_CUSTOMER_BY_DOCUMENT }, { document: body.document })
+          .send(
+            { cmd: CustomerPattern.GET_CUSTOMER_BY_DOCUMENT },
+            { document: body.document },
+          )
           .pipe(timeout(5000), retry(3)),
       );
     } catch (error) {
@@ -88,7 +75,6 @@ export class UserCoreGatewayController {
     }
 
     if (!customer) {
-      // Elegible pero no tiene registro local → debe crear aplicación
       return {
         isEligible: true,
         existsInDb: false,
@@ -96,10 +82,7 @@ export class UserCoreGatewayController {
       };
     }
 
-    // 3. Si existe en la DB local, buscamos solicitud activa.
-    //    IMPORTANTE: el clientId guardado en las aplicaciones es el DOCUMENTO del cliente,
-    //    no el ObjectId del customer (así se crea desde el gateway al llamar CREATE_APPLICATION).
-    const clientId = body.document;
+    const clientId = customer.id;
     let activeApplicationId: string | null = null;
 
     try {
@@ -119,7 +102,6 @@ export class UserCoreGatewayController {
         );
       }
     } catch (error) {
-      // Si el microservicio no encuentra app activa, simplemente retornamos null
       this.logger.log(
         `Gateway-Compose: No se encontró solicitud activa para clientId ${clientId}`,
       );
@@ -128,7 +110,7 @@ export class UserCoreGatewayController {
     return {
       isEligible: true,
       existsInDb: true,
-      activeApplicationId, // null → frontend crea nueva; string base64 → frontend redirige al detalle
+      activeApplicationId,
     };
   }
 }

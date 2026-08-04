@@ -70,7 +70,10 @@ export class Trace {
   @Prop({ type: [String], default: [] })
   tags!: string[];
 
-  @Prop({ type: [{ traceId: String, spanId: String, type: String }], default: [] })
+  @Prop({
+    type: [{ traceId: String, spanId: String, type: String }],
+    default: [],
+  })
   links!: Array<{ traceId: string; spanId: string; type: string }>;
 }
 

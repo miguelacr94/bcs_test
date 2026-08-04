@@ -25,7 +25,7 @@ export class LogoutUseCase {
         user.password,
         user.role,
         user.createdAt,
-        null
+        null,
       );
       await this.userRepository.save(updatedUser);
 

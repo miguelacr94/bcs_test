@@ -9,7 +9,10 @@ import {
 import { Observable } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
 import { ClientProxy } from '@nestjs/microservices';
-import { Trace, TraceType } from '@app/shared/tracing/interfaces/trace.interface';
+import {
+  Trace,
+  TraceType,
+} from '@app/shared/tracing/interfaces/trace.interface';
 import {
   generateTraceId,
   generateSpanId,
@@ -20,7 +23,10 @@ import {
   sanitizeData,
   sanitizeHeaders,
 } from '@app/shared/tracing/utils/data-sanitizer';
-import { getTracingConfig, shouldSample } from '@app/shared/tracing/tracing.config';
+import {
+  getTracingConfig,
+  shouldSample,
+} from '@app/shared/tracing/tracing.config';
 import { TracingPattern } from '@app/shared/enums';
 
 /**
@@ -88,7 +94,9 @@ export class TracingInterceptor implements NestInterceptor {
       method: request.method,
       path: request.url,
       headers: sanitizeHeaders(request.headers),
-      queryParams: sanitizeData(request.query, { maxBodySize: config.maxBodySize }),
+      queryParams: sanitizeData(request.query, {
+        maxBodySize: config.maxBodySize,
+      }),
       body: sanitizeData(request.body, { maxBodySize: config.maxBodySize }),
       userId: request.user?.id || request.headers?.['x-user-id'],
       correlationId: request.headers?.['x-correlation-id'],
@@ -106,7 +114,9 @@ export class TracingInterceptor implements NestInterceptor {
       tap((data) => {
         trace.duration = Date.now() - startTime;
         trace.statusCode = response?.statusCode || 200;
-        trace.response = sanitizeData(data, { maxBodySize: config.maxBodySize });
+        trace.response = sanitizeData(data, {
+          maxBodySize: config.maxBodySize,
+        });
 
         this.persistTrace(trace);
 
@@ -157,9 +167,12 @@ export class TracingInterceptor implements NestInterceptor {
 
   private async saveTrace(trace: Trace): Promise<void> {
     try {
-      this.tracingClient.emit({ cmd: TracingPattern.CREATE_TRACE }, trace).subscribe({
-        error: (err) => this.logger.error(`Error emitting trace: ${err.message}`)
-      });
+      this.tracingClient
+        .emit({ cmd: TracingPattern.CREATE_TRACE }, trace)
+        .subscribe({
+          error: (err) =>
+            this.logger.error(`Error emitting trace: ${err.message}`),
+        });
     } catch (error: any) {
       this.logger.error(`Failed to emit trace: ${error.message}`);
     }

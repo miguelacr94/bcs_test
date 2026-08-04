@@ -11,7 +11,7 @@ export class UserMapper {
       document.password,
       document.role,
       document.createdAt,
-      document.refreshToken
+      document.refreshToken,
     );
   }
 

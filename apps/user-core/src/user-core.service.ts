@@ -1,5 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { MockUserAdapter, UserInfo } from './infrastructure/adapters/mock-user.adapter';
+import {
+  MockUserAdapter,
+  UserInfo,
+} from './infrastructure/adapters/mock-user.adapter';
 
 @Injectable()
 export class UserCoreService {

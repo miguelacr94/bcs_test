@@ -16,4 +16,5 @@ export class DisbursementDocument extends Document {
   status!: string;
 }
 
-export const DisbursementSchema = SchemaFactory.createForClass(DisbursementDocument);
+export const DisbursementSchema =
+  SchemaFactory.createForClass(DisbursementDocument);

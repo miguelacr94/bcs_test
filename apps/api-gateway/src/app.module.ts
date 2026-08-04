@@ -8,12 +8,8 @@ import { LoggerMiddleware } from './middlewares/logger.middleware';
 import { UserCoreGatewayModule } from './modules/user-core/user-core.module';
 
 
-import { MongooseModule } from '@nestjs/mongoose';
-import { envs } from '@app/shared/config/envs';
-
 @Module({
   imports: [
-    MongooseModule.forRoot(envs.mongo.apiGatewayUri),
     AuthModule,
     ApplicationsModule,
     CustomerModule,
@@ -27,4 +23,3 @@ export class AppModule implements NestModule {
     consumer.apply(LoggerMiddleware).forRoutes('*');
   }
 }
-

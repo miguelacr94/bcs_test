@@ -27,7 +27,9 @@ export class MockUserAdapter {
   async findByDocument(document: string): Promise<UserInfo> {
     const user = this.users.find((u) => u.document === document);
     if (!user) {
-      throw new NotFoundException(`Usuario con documento ${document} no encontrado`);
+      throw new NotFoundException(
+        `Usuario con documento ${document} no encontrado`,
+      );
     }
     return user;
   }

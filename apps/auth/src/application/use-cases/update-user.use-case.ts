@@ -10,10 +10,12 @@ export class UpdateUserUseCase {
     private readonly userRepository: UserRepositoryPort,
   ) {}
 
-  async execute(dto: UpdateUserDto): Promise<Omit<User, 'password' | 'refreshToken'>> {
+  async execute(
+    dto: UpdateUserDto,
+  ): Promise<Omit<User, 'password' | 'refreshToken'>> {
     // 1. Obtener la entidad original completa de la base de datos
     const user = await this.userRepository.findById(dto.userId);
-    
+
     if (!user) {
       throw new Error('Usuario no encontrado.');
     }
@@ -23,7 +25,7 @@ export class UpdateUserUseCase {
     const newName = dto.name !== undefined ? dto.name : user.name;
 
     // 3. Reconstruir la entidad pura de Dominio para validar reglas de negocio.
-    // Pasamos todos los campos originales (correo, contraseña encriptada, etc.) 
+    // Pasamos todos los campos originales (correo, contraseña encriptada, etc.)
     // y solo sobrescribimos los que cambiaron.
     const updatedUser = new User(
       user.id,
@@ -32,7 +34,7 @@ export class UpdateUserUseCase {
       user.password,
       user.role,
       user.createdAt,
-      user.refreshToken // Conservamos el token de sesión
+      user.refreshToken, // Conservamos el token de sesión
     );
 
     // 4. Guardar la entidad reconstruida. El repositorio hará un "Upsert/Replace".

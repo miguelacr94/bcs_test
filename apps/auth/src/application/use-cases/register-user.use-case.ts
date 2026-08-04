@@ -37,7 +37,7 @@ export class RegisterUserUseCase {
       dto.email,
       hashedPassword,
       'USER', // Rol por defecto
-      createdAt
+      createdAt,
     );
 
     // 5. Guardar a través del puerto (sin saber qué base de datos hay detrás)

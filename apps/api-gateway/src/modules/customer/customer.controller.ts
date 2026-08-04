@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Body, Param, Inject, Logger } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Inject,
+  Logger,
+} from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
 import { timeout, retry } from 'rxjs/operators';
@@ -31,26 +39,34 @@ export class CustomerController {
     );
   }
 
-  @ApiOperation({ summary: 'Aplicar solicitud transaccional unificada (Registro + Solicitud + Oferta)' })
+  @ApiOperation({
+    summary:
+      'Aplicar solicitud transaccional unificada (Registro + Solicitud + Oferta)',
+  })
   @ApiBody({ type: ApplyTransactionDto })
   @Post('apply')
   async apply(@Body() dto: ApplyTransactionDto) {
-    this.logger.log(`Gateway-Compose: Procesando transacción unificada aplicar para documento ${dto.customerData.document}`);
+    this.logger.log(
+      `Gateway-Compose: Procesando transacción unificada aplicar para documento ${dto.customerData.document}`,
+    );
 
     let customer: any = null;
 
-    // 1. Validar si el cliente ya existe en la base de datos local (Customer)
     try {
       customer = await firstValueFrom(
         this.customerClient
-          .send({ cmd: CustomerPattern.GET_CUSTOMER_BY_DOCUMENT }, { document: dto.customerData.document })
+          .send(
+            { cmd: CustomerPattern.GET_CUSTOMER_BY_DOCUMENT },
+            { document: dto.customerData.document },
+          )
           .pipe(timeout(3000)),
       );
     } catch (error) {
-      this.logger.log(`Gateway-Compose: El cliente con documento ${dto.customerData.document} no existe en base de datos. Creándolo...`);
+      this.logger.log(
+        `Gateway-Compose: El cliente con documento ${dto.customerData.document} no existe en base de datos. Creándolo...`,
+      );
     }
 
-    // Si no existe, procedemos a crearlo
     if (!customer) {
       customer = await firstValueFrom(
         this.customerClient
@@ -58,20 +74,21 @@ export class CustomerController {
           .pipe(timeout(5000), retry(3)),
       );
     } else {
-      this.logger.log(`Gateway-Compose: Cliente con documento ${dto.customerData.document} ya registrado. Continuando con la solicitud...`);
+      this.logger.log(
+        `Gateway-Compose: Cliente con documento ${dto.customerData.document} ya registrado. Continuando con la solicitud...`,
+      );
     }
 
-    // 2. Crear solicitud de financiación (inicialmente En Proceso) y guardar el resultado de la simulación
     const newApplication = await firstValueFrom(
       this.applicationsClient
         .send(
           { cmd: ApplicationPattern.CREATE_APPLICATION },
-          { 
-            createDto: { 
-              clientId: customer.id, 
+          {
+            createDto: {
+              clientId: customer.id,
               channel: 'Autogestionado',
-              offerResult: dto.offerResult 
-            } 
+              offerResult: dto.offerResult,
+            },
           },
         )
         .pipe(timeout(5000), retry(3)),
@@ -88,14 +105,4 @@ export class CustomerController {
     };
   }
 
-  @ApiOperation({ summary: 'Consultar cliente por documento' })
-  @Post('document')
-  async getByDocument(@Body() body: { document: string }) {
-    this.logger.log(`Gateway: Petición para consultar cliente con documento ${body.document}`);
-    return await firstValueFrom(
-      this.customerClient
-        .send({ cmd: CustomerPattern.GET_CUSTOMER_BY_DOCUMENT }, { document: body.document })
-        .pipe(timeout(5000), retry(3)),
-    );
-  }
 }

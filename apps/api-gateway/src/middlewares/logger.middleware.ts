@@ -8,10 +8,7 @@ export class LoggerMiddleware implements NestMiddleware {
   use(req: Request, res: Response, next: NextFunction) {
     const { method, originalUrl } = req;
 
-    // Registramos qué están pidiendo
     this.logger.log(`📥 Petición Entrante: ${method} ${originalUrl}`);
-
-    // next() es VITAL. Si no lo llamas, la petición se queda colgada para siempre
     next();
   }
 }

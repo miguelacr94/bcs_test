@@ -67,7 +67,9 @@ export class TracingInterceptor implements NestInterceptor {
       method: request.method,
       path: request.url,
       headers: sanitizeHeaders(request.headers),
-      queryParams: sanitizeData(request.query, { maxBodySize: config.maxBodySize }),
+      queryParams: sanitizeData(request.query, {
+        maxBodySize: config.maxBodySize,
+      }),
       body: sanitizeData(request.body, { maxBodySize: config.maxBodySize }),
       userId: request.user?.id || request.headers['x-user-id'],
       correlationId: request.headers['x-correlation-id'],
@@ -86,7 +88,9 @@ export class TracingInterceptor implements NestInterceptor {
         // Success response
         trace.duration = Date.now() - startTime;
         trace.statusCode = response.statusCode;
-        trace.response = sanitizeData(data, { maxBodySize: config.maxBodySize });
+        trace.response = sanitizeData(data, {
+          maxBodySize: config.maxBodySize,
+        });
 
         this.persistTrace(trace);
 

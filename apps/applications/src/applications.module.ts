@@ -3,8 +3,14 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { ApplicationsController } from './applications.controller';
 import { envs } from '@app/shared/config/envs';
-import { ApplicationDocument, ApplicationSchema } from './infrastructure/schemas/application.schema';
-import { AuditOfferDocument, AuditOfferSchema } from './infrastructure/schemas/audit-offer.schema';
+import {
+  ApplicationDocument,
+  ApplicationSchema,
+} from './infrastructure/schemas/application.schema';
+import {
+  AuditOfferDocument,
+  AuditOfferSchema,
+} from './infrastructure/schemas/audit-offer.schema';
 import { MongooseApplicationRepository } from './infrastructure/adapters/mongoose-application.repository';
 import { MockOfferServiceAdapter } from './infrastructure/adapters/mock-offer-service.adapter';
 import {
@@ -72,4 +78,3 @@ import {
   ],
 })
 export class ApplicationsModule {}
-

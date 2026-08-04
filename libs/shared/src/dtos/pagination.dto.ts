@@ -9,7 +9,10 @@ export class PaginationDto {
   @IsPositive()
   page?: number = 1;
 
-  @ApiPropertyOptional({ description: 'Cantidad de elementos por página', default: 10 })
+  @ApiPropertyOptional({
+    description: 'Cantidad de elementos por página',
+    default: 10,
+  })
   @IsOptional()
   @Type(() => Number)
   @IsPositive()

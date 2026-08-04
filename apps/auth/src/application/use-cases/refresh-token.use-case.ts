@@ -14,7 +14,9 @@ export class RefreshTokenUseCase {
     private readonly tokenService: TokenServicePort,
   ) {}
 
-  async execute(refreshToken: string): Promise<{ accessToken: string; refreshToken: string }> {
+  async execute(
+    refreshToken: string,
+  ): Promise<{ accessToken: string; refreshToken: string }> {
     try {
       // 1. Verificar firma y expiración del refresh token
       const decoded = await this.tokenService.verifyToken(refreshToken);
@@ -38,8 +40,12 @@ export class RefreshTokenUseCase {
         role: user.role,
       };
 
-      const newAccessToken = await this.tokenService.generateToken(payload, { expiresIn: '1h' });
-      const newRefreshToken = await this.tokenService.generateToken(payload, { expiresIn: '7d' });
+      const newAccessToken = await this.tokenService.generateToken(payload, {
+        expiresIn: '1h',
+      });
+      const newRefreshToken = await this.tokenService.generateToken(payload, {
+        expiresIn: '7d',
+      });
 
       // 5. Guardar el nuevo refresh token en la base de datos
       const updatedUser = new User(
@@ -49,7 +55,7 @@ export class RefreshTokenUseCase {
         user.password,
         user.role,
         user.createdAt,
-        newRefreshToken
+        newRefreshToken,
       );
       await this.userRepository.save(updatedUser);
 

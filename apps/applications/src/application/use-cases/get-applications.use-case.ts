@@ -15,7 +15,8 @@ export class GetApplicationsUseCase {
     paginationDto: PaginationDto,
   ): Promise<PaginatedResponse<Application>> {
     const { page = 1, limit = 10 } = paginationDto;
-    const { data, total } = await this.applicationRepository.findAll(paginationDto);
+    const { data, total } =
+      await this.applicationRepository.findAll(paginationDto);
 
     return {
       data,

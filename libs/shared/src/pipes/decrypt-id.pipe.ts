@@ -14,7 +14,9 @@ export class DecryptIdPipe implements PipeTransform<string, string> {
     const decryptedId = this.cryptoAdapter.decryptId(value);
 
     if (!isValidObjectId(decryptedId)) {
-      throw new BadRequestException(`El ID enviado (${value}) no pudo ser procesado o es inválido.`);
+      throw new BadRequestException(
+        `El ID enviado (${value}) no pudo ser procesado o es inválido.`,
+      );
     }
 
     return decryptedId;

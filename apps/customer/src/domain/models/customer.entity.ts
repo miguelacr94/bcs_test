@@ -8,6 +8,10 @@ export class Customer {
     public phone: string,
     public createdAt?: Date,
     public updatedAt?: Date,
-    public familyReference1?: { name: string; phone: string; relationship: string },
+    public familyReference1?: {
+      name: string;
+      phone: string;
+      relationship: string;
+    },
   ) {}
 }

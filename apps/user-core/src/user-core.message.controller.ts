@@ -13,14 +13,18 @@ export class UserCoreMessageController {
   constructor(private readonly userService: UserCoreService) {}
 
   @MessagePattern({ cmd: UserPattern.GET_USER_BY_DOCUMENT })
-  async getUserByDocument(@Payload() data: { document: string }): Promise<UserInfo> {
+  async getUserByDocument(
+    @Payload() data: { document: string },
+  ): Promise<UserInfo> {
     try {
       return await this.userService.getUserByDocument(data.document);
     } catch (error) {
       if (error instanceof NotFoundException) {
         throw error;
       }
-      throw new NotFoundException(`Error al buscar usuario con documento ${data.document}`);
+      throw new NotFoundException(
+        `Error al buscar usuario con documento ${data.document}`,
+      );
     }
   }
 }

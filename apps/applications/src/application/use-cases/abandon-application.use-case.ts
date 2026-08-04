@@ -8,7 +8,11 @@ export class AbandonApplicationUseCase {
     private readonly applicationRepository: ApplicationRepositoryPort,
   ) {}
 
-  async execute(id: string, reason: string, channel?: string): Promise<{ success: boolean; message: string }> {
+  async execute(
+    id: string,
+    reason: string,
+    channel?: string,
+  ): Promise<{ success: boolean; message: string }> {
     const application = await this.applicationRepository.findById(id);
     if (!application) {
       throw new Error(`Solicitud con ID ${id} no encontrada.`);
@@ -24,7 +28,7 @@ export class AbandonApplicationUseCase {
       `Solicitud abandonada. Motivo: ${reason}`,
       previousStatus,
       saved.status,
-      { reason, channel: channel ?? 'Autogestionado' }
+      { reason, channel: channel ?? 'Autogestionado' },
     );
     return { success: true, message: 'Solicitud abandonada correctamente.' };
   }

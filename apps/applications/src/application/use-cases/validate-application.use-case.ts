@@ -11,7 +11,11 @@ export class ValidateApplicationUseCase {
     private readonly customerClient: ClientProxy,
   ) {}
 
-  async execute(id: string, validationData: any, channel?: string): Promise<{ success: boolean; message: string }> {
+  async execute(
+    id: string,
+    validationData: any,
+    channel?: string,
+  ): Promise<{ success: boolean; message: string }> {
     const application = await this.applicationRepository.findById(id);
     if (!application) {
       throw new Error(`Solicitud con ID ${id} no encontrada.`);
@@ -23,10 +27,12 @@ export class ValidateApplicationUseCase {
     // Update customer with validation data (family references) via microservice
     if (validationData.familyReference1) {
       try {
-        await this.customerClient.emit('customer.update', {
-          document: application.clientId,
-          data: { familyReference1: validationData.familyReference1 },
-        }).toPromise();
+        await this.customerClient
+          .emit('customer.update', {
+            document: application.clientId,
+            data: { familyReference1: validationData.familyReference1 },
+          })
+          .toPromise();
       } catch (error) {
         console.error('Failed to update customer:', error);
         // Continue even if customer update fails
@@ -40,7 +46,7 @@ export class ValidateApplicationUseCase {
       'El analista ha guardado los datos de validación (referencias).',
       previousStatus,
       saved.status,
-      { validationData, channel: channel ?? 'Autogestionado' }
+      { validationData, channel: channel ?? 'Autogestionado' },
     );
     return { success: true, message: 'Validación guardada correctamente.' };
   }

@@ -1,0 +1,38 @@
+### CLIENTES (CUSTOMER) - SERVICE.HTTP (LOCAL)
+### Estas peticiones pasan por el API Gateway (puerto 3000) y se enrutan al microservicio por Redis.
+
+@host = http://localhost:3000/api/v1
+@contentType = application/json
+
+### 1. Flujo Unificado Completo (Crear/Consultar Cliente + Simular Oferta + Crear Solicitud)
+POST {{host}}/customers/apply
+Content-Type: {{contentType}}
+
+{
+  "customerData": {
+    "firstName": "María",
+    "lastName": "Gómez",
+    "document": "111111111",
+    "email": "maria.gomez@ejemplo.com",
+    "phone": "3001234567"
+  },
+  "offerResult": {
+    "isPreApproved": true,
+    "maxAmount": 50000000,
+    "interestRate": 1.5,
+    "termMonths": 60,
+    "monthlyPayment": 1200000
+  }
+}
+
+### 2. Crear un Cliente (Directo)
+POST {{host}}/customers
+Content-Type: {{contentType}}
+
+{
+  "firstName": "Juan",
+  "lastName": "Pérez",
+  "document": "999999999",
+  "email": "juan.perez@ejemplo.com",
+  "phone": "3109876543"
+}

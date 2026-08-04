@@ -1,6 +1,10 @@
 import { NestFactory } from '@nestjs/core';
 import { CustomerModule } from './customer.module';
-import { MicroserviceOptions, Transport, ClientProxyFactory } from '@nestjs/microservices';
+import {
+  MicroserviceOptions,
+  Transport,
+  ClientProxyFactory,
+} from '@nestjs/microservices';
 import { Logger } from '@nestjs/common';
 import { configureTracing } from '@app/shared/tracing/tracing.config';
 import { TracingInterceptor } from '@app/shared/interceptors/tracing.interceptor';

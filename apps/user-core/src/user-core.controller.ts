@@ -10,7 +10,9 @@ export class UserCoreController {
   async getByDocument(@Param('document') document: string): Promise<UserInfo> {
     const user = await this.userService.getUserByDocument(document);
     if (!user) {
-      throw new NotFoundException(`Usuario con documento ${document} no encontrado`);
+      throw new NotFoundException(
+        `Usuario con documento ${document} no encontrado`,
+      );
     }
     return user;
   }

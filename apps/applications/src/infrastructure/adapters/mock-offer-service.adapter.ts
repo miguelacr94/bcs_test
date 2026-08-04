@@ -1,13 +1,23 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { OfferServicePort, OfferSimulationResult } from '../../domain/ports/offer-service.port';
+import {
+  OfferServicePort,
+  OfferSimulationResult,
+} from '../../domain/ports/offer-service.port';
 
 @Injectable()
 export class MockOfferServiceAdapter implements OfferServicePort {
   private readonly logger = new Logger(MockOfferServiceAdapter.name);
 
-  async simulateOffer(applicationId: string, clientId: string, amount: number, termMonths: number): Promise<OfferSimulationResult> {
-    this.logger.log(`Iniciando simulación mock para la solicitud ${applicationId} por monto ${amount} y plazo ${termMonths}...`);
-    
+  async simulateOffer(
+    applicationId: string,
+    clientId: string,
+    amount: number,
+    termMonths: number,
+  ): Promise<OfferSimulationResult> {
+    this.logger.log(
+      `Iniciando simulación mock para la solicitud ${applicationId} por monto ${amount} y plazo ${termMonths}...`,
+    );
+
     // Simulamos latencia de red (1 segundo)
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
@@ -15,7 +25,9 @@ export class MockOfferServiceAdapter implements OfferServicePort {
 
     // 33% de probabilidad: Error técnico temporal
     if (random < 0.33) {
-      throw new Error('Error técnico temporal conectando con el Core Bancario. Intente nuevamente.');
+      throw new Error(
+        'Error técnico temporal conectando con el Core Bancario. Intente nuevamente.',
+      );
     }
 
     // 33% de probabilidad: No viable (con propuesta alternativa de cupo menor)
@@ -28,7 +40,7 @@ export class MockOfferServiceAdapter implements OfferServicePort {
           approvedAmount: alternativeAmount,
           interestRate: 1.85,
           termMonths: Math.min(termMonths, 48), // Limitar plazo de alternativa
-        }
+        },
       };
     }
 

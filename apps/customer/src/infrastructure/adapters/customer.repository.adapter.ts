@@ -19,12 +19,12 @@ export class CustomerRepositoryAdapter implements CustomerRepositoryPort {
     // Usamos el hash determinístico para buscar (siempre produce el mismo resultado)
     const documentHash = this.cryptoAdapter.hash(document);
     let doc = await this.customerModel.findOne({ documentHash }).exec();
-    
+
     // Fallback: buscar por documento plano (registros legacy sin encriptar)
     if (!doc) {
       doc = await this.customerModel.findOne({ document }).exec();
     }
-    
+
     if (!doc) return null;
     return this.mapToDomain(doc);
   }

@@ -50,10 +50,14 @@ export class AuthController {
   @Public()
   @Post('register')
   async registerUser(@Body() dto: RegisterUserDto) {
-    this.logger.log('Gateway: Enviando petición de registro a Auth por Redis...');
+    this.logger.log(
+      'Gateway: Enviando petición de registro a Auth por Redis...',
+    );
 
     const result = await firstValueFrom(
-      this.authClient.send({ cmd: AuthPattern.REGISTER_USER }, dto).pipe(timeout(5000), retry(3)),
+      this.authClient
+        .send({ cmd: AuthPattern.REGISTER_USER }, dto)
+        .pipe(timeout(5000), retry(3)),
     );
 
     this.logger.log(
@@ -71,7 +75,9 @@ export class AuthController {
     this.logger.log('Gateway: Enviando petición de login a Auth por Redis...');
 
     const result = await firstValueFrom(
-      this.authClient.send({ cmd: AuthPattern.LOGIN_USER }, dto).pipe(timeout(5000), retry(3)),
+      this.authClient
+        .send({ cmd: AuthPattern.LOGIN_USER }, dto)
+        .pipe(timeout(5000), retry(3)),
     );
 
     this.logger.log(
@@ -80,116 +86,8 @@ export class AuthController {
     return result;
   }
 
-  @Public()
-  @ApiOperation({
-    summary: 'Endpoint de prueba para validar tokens manualmente',
-  })
-  @Post('validate-test')
-  async validateTokenTest(@Body() body: { token: string }) {
-    this.logger.log('Gateway: Enviando validación de token a Auth por Redis...');
 
-    const result = await firstValueFrom(
-      this.authClient.send({ cmd: AuthPattern.VALIDATE_TOKEN }, { token: body.token }).pipe(timeout(5000), retry(3)),
-    );
 
-    this.logger.log(`Gateway: Respuesta recibida del microservicio Auth: ${JSON.stringify(result)}`);
-    return result;
-  }
 
-  @ApiBearerAuth('JWT-auth')
-  @ApiOperation({ summary: 'Obtener perfil del usuario autenticado' })
-  @ApiResponse({ status: 200, description: 'Perfil devuelto exitosamente' })
-  @ApiResponse({ status: 401, description: 'Token no provisto o expirado' })
-  @Post('profile')
-  getProfile(@CurrentUser() user: CurrentUserInterface) {
-    this.logger.log(
-      `Gateway: Devolviendo perfil del usuario autenticado: ${user.email}`,
-    );
-    return {
-      success: true,
-      user: user,
-    };
-  }
 
-  @ApiBearerAuth('JWT-auth')
-  @ApiOperation({ summary: 'Actualizar perfil del usuario autenticado' })
-  @ApiResponse({ status: 200, description: 'Perfil actualizado exitosamente' })
-  @ApiResponse({ status: 401, description: 'Token no provisto o expirado' })
-  @Post('update-profile')
-  async updateProfile(
-    @CurrentUser() user: CurrentUserInterface,
-    @Body() body: UpdateUserProfileDto,
-  ) {
-    this.logger.log(
-      'Gateway: Enviando petición de actualización de perfil a Auth...',
-    );
-
-    const payload = {
-      userId: user.id,
-      ...body,
-    };
-
-    const result = await firstValueFrom(
-      this.authClient.send({ cmd: AuthPattern.UPDATE_USER_PROFILE }, payload).pipe(timeout(5000), retry(3)),
-    );
-
-    this.logger.log(`Gateway: Respuesta de actualización recibida: ${JSON.stringify(result)}`);
-    return result;
-  }
-
-  @ApiBearerAuth('JWT-auth')
-  @ApiOperation({ summary: 'Refrescar el token de acceso' })
-  @ApiResponse({
-    status: 200,
-    description: 'Nuevos tokens generados con éxito',
-  })
-  @ApiResponse({
-    status: 400,
-    description: 'Refresh token inválido o expirado',
-  })
-  @Post('refresh')
-  async refreshToken(@Body() body: { refreshToken: string }) {
-    this.logger.log('Gateway: Enviando petición de refresco de token a Auth...');
-
-    const result = await firstValueFrom(
-      this.authClient.send({ cmd: AuthPattern.REFRESH_TOKEN }, body).pipe(timeout(5000), retry(3)),
-    );
-
-    this.logger.log(
-      `Gateway: Respuesta de refresco recibida del microservicio: ${JSON.stringify(result)}`,
-    );
-    return result;
-  }
-
-  @ApiBearerAuth('JWT-auth')
-  @ApiOperation({ summary: 'Cerrar sesión' })
-  @ApiResponse({ status: 200, description: 'Sesión cerrada con éxito' })
-  @ApiResponse({ status: 401, description: 'Token no provisto o expirado' })
-  @Post('logout')
-  async logout(@CurrentUser() user: CurrentUserInterface) {
-    this.logger.log(`Gateway: Enviando petición de logout para usuario: ${user.id}`);
-
-    const result = await firstValueFrom(
-      this.authClient.send({ cmd: AuthPattern.LOGOUT }, { userId: user.id }).pipe(timeout(5000), retry(3)),
-    );
-
-    this.logger.log(
-      `Gateway: Respuesta de logout recibida del microservicio: ${JSON.stringify(result)}`,
-    );
-    return result;
-  }
-
-  @ApiBearerAuth('JWT-auth')
-  @ApiOperation({ summary: 'Endpoint de prueba solo para administradores' })
-  @ApiResponse({ status: 200, description: 'Acceso autorizado' })
-  @ApiResponse({ status: 403, description: 'No tienes permisos suficientes' })
-  @UseGuards(RolesGuard)
-  @Roles(Role.ADMIN)
-  @Post('admin-only')
-  getAdminDashboard() {
-    return {
-      success: true,
-      message: '¡Bienvenido al panel de administración!',
-    };
-  }
 }

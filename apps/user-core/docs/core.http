@@ -1,0 +1,27 @@
+### VALIDACIÓN CORE (USERS) - CORE.HTTP (MOCKS)
+### Mocks simulando la integración externa con las Centrales de Riesgo u otros Cores Bancarios.
+
+### 1. Simulación de Petición HTTP Directa a la Central de Riesgos Externa (Mock)
+# POST https://api.datacredito.ejemplo.com/v1/consultar
+# Content-Type: application/json
+# Authorization: Bearer TOKEN_EXTERNO
+#
+# {
+#   "documento": "111111111",
+#   "tipoDocumento": "CC"
+# }
+
+### Respuesta Mock Exitosa (Cliente Elegible)
+# {
+#   "status": "APPROVED",
+#   "score": 850,
+#   "maxAmount": 50000000,
+#   "reportedDebts": 0
+# }
+
+### Respuesta Mock Rechazada (Cliente con Reportes)
+# {
+#   "status": "REJECTED",
+#   "score": 400,
+#   "reason": "Mora mayor a 90 días"
+# }

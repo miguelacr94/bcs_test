@@ -17,20 +17,26 @@ export function generateSpanId(): string {
 /**
  * Extrae el Trace ID de los headers HTTP
  */
-export function extractTraceIdFromHeaders(headers: Record<string, string>): string | undefined {
+export function extractTraceIdFromHeaders(
+  headers: Record<string, string>,
+): string | undefined {
   return headers['x-trace-id'] || headers['x-request-id'] || undefined;
 }
 
 /**
  * Extrae el Span ID de los headers HTTP
  */
-export function extractSpanIdFromHeaders(headers: Record<string, string>): string | undefined {
+export function extractSpanIdFromHeaders(
+  headers: Record<string, string>,
+): string | undefined {
   return headers['x-span-id'] || undefined;
 }
 
 /**
  * Extrae el Parent Span ID de los headers HTTP
  */
-export function extractParentSpanIdFromHeaders(headers: Record<string, string>): string | undefined {
+export function extractParentSpanIdFromHeaders(
+  headers: Record<string, string>,
+): string | undefined {
   return headers['x-parent-span-id'] || undefined;
 }

@@ -10,28 +10,26 @@ import { UserMapper } from '../mappers/user.mapper';
 export class MongooseUserRepository implements UserRepositoryPort {
   constructor(
     @InjectModel(UserDocument.name)
-    private readonly userModel: Model<UserDocument>
+    private readonly userModel: Model<UserDocument>,
   ) {}
 
   // Implementación del método para guardar un usuario (soporta creación y actualización)
   async save(user: User): Promise<User> {
     const persistenceData = UserMapper.toPersistence(user);
-    
+
     // Si la entidad tiene un ID que corresponde a un ObjectId válido de Mongo, es un update.
     if (user.id && Types.ObjectId.isValid(user.id)) {
-      const updatedDoc = await this.userModel.findByIdAndUpdate(
-        user.id,
-        persistenceData,
-        { new: true }
-      ).exec();
+      const updatedDoc = await this.userModel
+        .findByIdAndUpdate(user.id, persistenceData, { new: true })
+        .exec();
       if (updatedDoc) {
         return UserMapper.toDomain(updatedDoc);
       }
     }
-    
+
     const createdUser = new this.userModel(persistenceData);
     const savedDoc = await createdUser.save();
-    
+
     return UserMapper.toDomain(savedDoc);
   }
 

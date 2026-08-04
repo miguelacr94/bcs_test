@@ -15,15 +15,24 @@ export class DisbursementsController {
   ) {}
 
   @MessagePattern({ cmd: DisbursementPattern.CREATE_DISBURSEMENT })
-  async createDisbursement(@Payload() data: { applicationId: string; clientId: string; amount: number }) {
+  async createDisbursement(
+    @Payload()
+    data: {
+      applicationId: string;
+      clientId: string;
+      amount: number;
+    },
+  ) {
     try {
-      this.logger.log(`Received request to disburse ${data.amount} for application ${data.applicationId}`);
-      
+      this.logger.log(
+        `Received request to disburse ${data.amount} for application ${data.applicationId}`,
+      );
+
       const newDisbursement = new this.disbursementModel({
         applicationId: data.applicationId,
         clientId: data.clientId,
         amount: data.amount,
-        status: 'SCHEDULED'
+        status: 'SCHEDULED',
       });
 
       const saved = await newDisbursement.save();

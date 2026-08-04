@@ -5,5 +5,10 @@ export interface OfferSimulationResult {
 }
 
 export interface OfferServicePort {
-  simulateOffer(applicationId: string, clientId: string, amount: number, termMonths: number): Promise<OfferSimulationResult>;
+  simulateOffer(
+    applicationId: string,
+    clientId: string,
+    amount: number,
+    termMonths: number,
+  ): Promise<OfferSimulationResult>;
 }

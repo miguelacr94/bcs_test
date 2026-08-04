@@ -7,12 +7,12 @@ import { MongooseUserRepository } from './infrastructure/adapters/mongoose-user.
 import { BcryptHasherAdapter } from './infrastructure/adapters/bcrypt-hasher.adapter';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtTokenAdapter } from './infrastructure/adapters/jwt-token.adapter';
-import { 
-  RegisterUserUseCase, 
-  LoginUserUseCase, 
-  RefreshTokenUseCase, 
-  LogoutUseCase, 
-  UpdateUserUseCase 
+import {
+  RegisterUserUseCase,
+  LoginUserUseCase,
+  RefreshTokenUseCase,
+  LogoutUseCase,
+  UpdateUserUseCase,
 } from './application/use-cases';
 import { envs } from '@app/shared/config/envs';
 
@@ -20,7 +20,7 @@ import { envs } from '@app/shared/config/envs';
   imports: [
     // Conectamos este microservicio a su base de datos independiente en MongoDB
     MongooseModule.forRoot(envs.mongo.authUri),
-    
+
     // Registramos el esquema de Mongoose para que esté disponible para inyección
     MongooseModule.forFeature([
       { name: UserDocument.name, schema: UserSchema },
@@ -38,7 +38,7 @@ import { envs } from '@app/shared/config/envs';
     RefreshTokenUseCase,
     LogoutUseCase,
     UpdateUserUseCase,
-    
+
     // Inversión de Control: Enlazamos el token del Port con la clase del Adapter de persistencia
     {
       provide: 'UserRepositoryPort',

@@ -18,10 +18,10 @@ export class LoginUserUseCase {
     private readonly tokenService: TokenServicePort,
   ) {}
 
-  async execute(dto: LoginUserDto): Promise<{ 
-    accessToken: string; 
-    refreshToken: string; 
-    user: { id: string; name: string; email: string; role: string } 
+  async execute(dto: LoginUserDto): Promise<{
+    accessToken: string;
+    refreshToken: string;
+    user: { id: string; name: string; email: string; role: string };
   }> {
     // 1. Buscar al usuario por correo electrónico
     const user = await this.userRepository.findByEmail(dto.email);
@@ -31,7 +31,10 @@ export class LoginUserUseCase {
     }
 
     // 2. Comparar la contraseña enviada con el hash persistido
-    const isPasswordValid = await this.passwordHasher.compare(dto.password, user.password);
+    const isPasswordValid = await this.passwordHasher.compare(
+      dto.password,
+      user.password,
+    );
     if (!isPasswordValid) {
       throw new Error('Credenciales inválidas.');
     }
@@ -44,8 +47,12 @@ export class LoginUserUseCase {
     };
 
     // 4. Generar tokens (Access Token corto y Refresh Token largo)
-    const accessToken = await this.tokenService.generateToken(payload, { expiresIn: '1h' });
-    const refreshToken = await this.tokenService.generateToken(payload, { expiresIn: '7d' });
+    const accessToken = await this.tokenService.generateToken(payload, {
+      expiresIn: '1h',
+    });
+    const refreshToken = await this.tokenService.generateToken(payload, {
+      expiresIn: '7d',
+    });
 
     // 5. Guardar el nuevo refresh token en la base de datos
     const updatedUser = new User(
@@ -55,7 +62,7 @@ export class LoginUserUseCase {
       user.password,
       user.role,
       user.createdAt,
-      refreshToken
+      refreshToken,
     );
     await this.userRepository.save(updatedUser);
 

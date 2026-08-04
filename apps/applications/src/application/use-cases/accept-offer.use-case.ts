@@ -8,7 +8,10 @@ export class AcceptOfferUseCase {
     private readonly applicationRepository: ApplicationRepositoryPort,
   ) {}
 
-  async execute(id: string, channel?: string): Promise<{ success: boolean; message: string }> {
+  async execute(
+    id: string,
+    channel?: string,
+  ): Promise<{ success: boolean; message: string }> {
     const application = await this.applicationRepository.findById(id);
     if (!application) {
       throw new Error(`Solicitud con ID ${id} no encontrada.`);
@@ -24,7 +27,7 @@ export class AcceptOfferUseCase {
       'Oferta aceptada. Solicitud pasa a Pendiente Validación.',
       previousStatus,
       saved.status,
-      { channel: channel ?? 'Autogestionado' }
+      { channel: channel ?? 'Autogestionado' },
     );
     return { success: true, message: 'Oferta aceptada correctamente.' };
   }

@@ -30,10 +30,7 @@ interface SanitizerConfig {
 /**
  * Sanitiza datos sensibles de un objeto
  */
-export function sanitizeData(
-  data: any,
-  config: SanitizerConfig = {},
-): any {
+export function sanitizeData(data: any, config: SanitizerConfig = {}): any {
   const {
     sensitiveFields = DEFAULT_SENSITIVE_FIELDS,
     maxBodySize = 1024 * 10, // 10KB por defecto
@@ -44,7 +41,9 @@ export function sanitizeData(
 
   // Si es string y es muy largo, truncar
   if (typeof data === 'string') {
-    return data.length > maxBodySize ? data.substring(0, maxBodySize) + '...' : data;
+    return data.length > maxBodySize
+      ? data.substring(0, maxBodySize) + '...'
+      : data;
   }
 
   // Si es primitivo, retornar tal cual
@@ -81,7 +80,12 @@ export function sanitizeData(
 export function sanitizeHeaders(
   headers: Record<string, string>,
 ): Record<string, string> {
-  const sensitiveHeaders = ['authorization', 'cookie', 'x-api-key', 'x-auth-token'];
+  const sensitiveHeaders = [
+    'authorization',
+    'cookie',
+    'x-api-key',
+    'x-auth-token',
+  ];
   const sanitized: Record<string, string> = {};
 
   for (const key in headers) {

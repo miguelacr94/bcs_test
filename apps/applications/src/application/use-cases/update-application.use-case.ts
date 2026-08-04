@@ -16,15 +16,18 @@ export class UpdateApplicationUseCase {
       throw new Error(`Solicitud con ID ${id} no encontrada.`);
     }
 
-    if (application.status === ApplicationStatus.FINALIZED || application.status === ApplicationStatus.ABANDONED) {
-      throw new Error('No se pueden editar las solicitudes que se encuentran Finalizadas o Abandonadas.');
+    if (
+      application.status === ApplicationStatus.FINALIZED ||
+      application.status === ApplicationStatus.ABANDONED
+    ) {
+      throw new Error(
+        'No se pueden editar las solicitudes que se encuentran Finalizadas o Abandonadas.',
+      );
     }
 
     // Permitimos transicionar de PENDING_VALIDATION de vuelta a EN_PROCESO
     if (updateData.status === ApplicationStatus.IN_PROGRESS) {
-      if (
-        application.status === ApplicationStatus.PENDING_VALIDATION
-      ) {
+      if (application.status === ApplicationStatus.PENDING_VALIDATION) {
         const previousStatus = application.status;
         application.status = ApplicationStatus.IN_PROGRESS;
         const saved = await this.applicationRepository.save(application);
@@ -34,17 +37,17 @@ export class UpdateApplicationUseCase {
           'Solicitud regresada a En Proceso. Simulación previa invalidada.',
           previousStatus,
           saved.status,
-          { updateData }
+          { updateData },
         );
         return saved;
       }
     }
 
     // Si está en PENDING_VALIDATION y no es para volver a EN_PROCESO, no se permite editar otros datos directamente
-    if (
-      application.status === ApplicationStatus.PENDING_VALIDATION
-    ) {
-      throw new Error('No se pueden editar los datos de la solicitud mientras esté Pendiente de Validación. Debe modificar las condiciones primero.');
+    if (application.status === ApplicationStatus.PENDING_VALIDATION) {
+      throw new Error(
+        'No se pueden editar los datos de la solicitud mientras esté Pendiente de Validación. Debe modificar las condiciones primero.',
+      );
     }
 
     // Aquí actualizaríamos las propiedades parciales de la solicitud basado en updateData
@@ -55,7 +58,7 @@ export class UpdateApplicationUseCase {
       'Solicitud actualizada parcialmente por el cliente.',
       saved.status,
       saved.status,
-      { updateData }
+      { updateData },
     );
 
     return saved;

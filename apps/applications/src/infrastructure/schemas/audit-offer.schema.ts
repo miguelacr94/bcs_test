@@ -25,4 +25,5 @@ export class AuditOfferDocument extends Document {
   metadata?: any;
 }
 
-export const AuditOfferSchema = SchemaFactory.createForClass(AuditOfferDocument);
+export const AuditOfferSchema =
+  SchemaFactory.createForClass(AuditOfferDocument);
