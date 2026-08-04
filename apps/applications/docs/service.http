@@ -7,19 +7,27 @@
 @token = eyJhbGciOiJIUzI1NiIsIn...
 
 ### 1. Consultar lista de solicitudes (Admin)
-POST {{host}}/applications/list
+POST {{host}}/applications/admin/list
 Content-Type: {{contentType}}
 Authorization: Bearer {{token}}
 
 {
   "page": 1,
   "limit": 10,
-  "sortField": "createdAt",
-  "sortOrder": "desc"
+  "status": "Pendiente Validación",
+  "radicado": "RAD-202608"
 }
 
-### 2. Consultar detalle de solicitud por ID
+### 2. Consultar detalle de solicitud por ID (Cliente / Público)
 POST {{host}}/applications/get-by-id
+Content-Type: {{contentType}}
+
+{
+  "id": "AQUÍ_VA_EL_ID_DE_LA_SOLICITUD"
+}
+
+### 2.1. Consultar detalle completo de solicitud por ID (Admin)
+POST {{host}}/applications/admin/get-by-id
 Content-Type: {{contentType}}
 Authorization: Bearer {{token}}
 

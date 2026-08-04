@@ -10,8 +10,8 @@ POST {{host}}/auth/login
 Content-Type: {{contentType}}
 
 {
-  "email": "admin@banco.com",
-  "password": "Password123!"
+  "email": "admin@bcs.com",
+  "password": "admin123"
 }
 
 ### 2. Registrar usuario (Admin)
@@ -19,8 +19,8 @@ POST {{host}}/auth/register
 Content-Type: {{contentType}}
 
 {
-  "email": "nuevo.admin@banco.com",
-  "password": "Password123!",
+  "email": "nuevo.admin@bcs.com",
+  "password": "admin123",
   "firstName": "Juan",
   "lastName": "Perez"
 }

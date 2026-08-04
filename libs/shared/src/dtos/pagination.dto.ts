@@ -25,4 +25,8 @@ export class PaginationDto {
   @ApiPropertyOptional({ description: 'Filtrar por estado' })
   @IsOptional()
   status?: string;
+
+  @ApiPropertyOptional({ description: 'Buscar por número de radicado' })
+  @IsOptional()
+  radicado?: string;
 }

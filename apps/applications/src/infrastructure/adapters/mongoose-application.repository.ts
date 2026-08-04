@@ -57,7 +57,7 @@ export class MongooseApplicationRepository implements ApplicationRepositoryPort 
   async findAll(
     paginationDto: PaginationDto,
   ): Promise<{ data: Application[]; total: number }> {
-    const { page = 1, limit = 10, clientId, status } = paginationDto;
+    const { page = 1, limit = 10, clientId, status, radicado } = paginationDto;
     const skip = (page - 1) * limit;
 
     const filter: Record<string, unknown> = {};
@@ -66,6 +66,9 @@ export class MongooseApplicationRepository implements ApplicationRepositoryPort 
     }
     if (status) {
       filter.status = status;
+    }
+    if (radicado) {
+      filter.radicado = { $regex: radicado, $options: 'i' };
     }
 
     const docs = await this.applicationModel

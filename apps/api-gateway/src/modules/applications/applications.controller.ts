@@ -93,10 +93,10 @@ export class ApplicationsController {
   }
 
   @ApiBearerAuth('JWT-auth')
-  @ApiOperation({ summary: 'Listar solicitudes con filtros' })
+  @ApiOperation({ summary: 'Listar solicitudes con filtros (Admin)', description: 'Permite listar todas las solicitudes con paginación, y filtrar por estado o buscar por radicado.' })
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
-  @Post('list')
+  @Post('admin/list')
   async getApplications(@Body() paginationDto: PaginationDto) {
     this.logger.log('Gateway: Solicitando listar solicitudes');
     const applications = await firstValueFrom(
@@ -149,7 +149,7 @@ export class ApplicationsController {
 
   @Public()
   @UseGuards(AuthGuard)
-  @ApiOperation({ summary: 'Consultar detalle de solicitud' })
+  @ApiOperation({ summary: 'Consultar detalle de solicitud (Público/Cliente)', description: 'Retorna el estado de la solicitud sin exponer datos sensibles del cliente.' })
   @Post('get-by-id')
   async getApplicationById(@Req() req: Record<string, unknown>, @Body() body: { id: string }) {
     this.logger.log(`Gateway: Petición para consultar solicitud ${body.id}`);
@@ -171,7 +171,7 @@ export class ApplicationsController {
   }
 
   @ApiBearerAuth('JWT-auth')
-  @ApiOperation({ summary: 'Consultar detalle completo de solicitud (Admin)' })
+  @ApiOperation({ summary: 'Consultar detalle completo de solicitud (Admin)', description: 'Retorna todos los detalles de la solicitud incluyendo información completa del cliente, excepto el documento que viaja enmascarado por reglas de negocio.' })
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
   @Post('admin/get-by-id')
