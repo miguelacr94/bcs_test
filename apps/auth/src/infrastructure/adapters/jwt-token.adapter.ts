@@ -6,11 +6,11 @@ import { TokenServicePort } from '../../domain/ports/token-service.port';
 export class JwtTokenAdapter implements TokenServicePort {
   constructor(private readonly jwtService: JwtService) {}
 
-  async generateToken(payload: any, options?: any): Promise<string> {
+  async generateToken(payload: Record<string, unknown>, options?: Record<string, unknown>): Promise<string> {
     return this.jwtService.signAsync(payload, options);
   }
 
-  async verifyToken(token: string): Promise<any> {
+  async verifyToken(token: string): Promise<unknown> {
     return this.jwtService.verifyAsync(token);
   }
 }

@@ -36,5 +36,5 @@ export class CreateApplicationDto {
   })
   @IsOptional()
   @IsObject()
-  offerResult?: any;
+  offerResult?: Record<string, unknown>;
 }

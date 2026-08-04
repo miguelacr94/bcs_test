@@ -46,7 +46,7 @@ export class TraceRepository {
     endDate: Date,
     service?: string,
   ): Promise<TraceDocument[]> {
-    const query: any = {
+    const query: Record<string, unknown> = {
       timestamp: { $gte: startDate, $lte: endDate },
     };
 

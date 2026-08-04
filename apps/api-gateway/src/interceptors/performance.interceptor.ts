@@ -9,7 +9,7 @@ import { tap } from 'rxjs/operators';
 
 @Injectable()
 export class PerformanceInterceptor implements NestInterceptor {
-  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+  intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     const req = context.switchToHttp().getRequest();
     const methodName = context.getHandler().name;
     const className = context.getClass().name;

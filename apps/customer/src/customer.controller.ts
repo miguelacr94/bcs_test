@@ -18,9 +18,9 @@ export class CustomerController {
   async create(@Payload() createCustomerDto: CreateCustomerDto) {
     try {
       return await this.createCustomerUseCase.execute(createCustomerDto);
-    } catch (error: any) {
-      this.logger.error(`Error creating customer: ${error.message}`);
-      throw new RpcException({ error: error.message });
+    } catch (error: unknown) {
+      this.logger.error(`Error creating customer: ${(error instanceof Error ? error.message : String(error))}`);
+      throw new RpcException({ error: (error instanceof Error ? error.message : String(error)) });
     }
   }
 
@@ -37,12 +37,12 @@ export class CustomerController {
         });
       }
       return customer;
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error(
-        `Error finding customer ${payload.document}: ${error.message}`,
+        `Error finding customer ${payload.document}: ${(error instanceof Error ? error.message : String(error))}`,
       );
       if (error instanceof RpcException) throw error;
-      throw new RpcException({ error: error.message, statusCode: 400 });
+      throw new RpcException({ error: (error instanceof Error ? error.message : String(error)), statusCode: 400 });
     }
   }
 }

@@ -21,7 +21,7 @@ export class SensitiveDataMaskAdapter {
     name: string;
     lastName: string;
     document: string;
-    [key: string]: any;
+    [key: string]: Record<string, unknown>;
   }): { name: string; lastName: string; document: string } {
     return {
       name: customer.name,

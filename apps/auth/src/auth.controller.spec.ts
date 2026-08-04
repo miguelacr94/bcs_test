@@ -36,7 +36,7 @@ describe('AuthController', () => {
   describe('loginUser', () => {
     it('should login and return tokens', async () => {
       const dto = { email: 'admin@test.com', password: 'password' };
-      const expectedTokens = { accessToken: 'token123', refreshToken: 'refresh123', user: { id: '1' } as any };
+      const expectedTokens = { accessToken: 'token123', refreshToken: 'refresh123', user: { id: '1', name: 'Admin', email: 'admin@test.com', role: 'admin' } };
       
       jest.spyOn(loginUseCase, 'execute').mockResolvedValue(expectedTokens);
 

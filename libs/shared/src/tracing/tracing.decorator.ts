@@ -21,14 +21,14 @@ import { getTracingConfig, shouldSample } from './tracing.config';
  */
 export function Trace(options: TraceOptions = {}): MethodDecorator {
   return (
-    target: any,
+    target: Record<string, unknown>,
     propertyKey: string | symbol,
     descriptor: PropertyDescriptor,
   ) => {
     const originalMethod = descriptor.value;
     const config = getTracingConfig();
 
-    descriptor.value = async function (...args: any[]) {
+    descriptor.value = async function (...args: unknown[]) {
       if (!config.enabled || !shouldSample()) {
         return originalMethod.apply(this, args);
       }
@@ -93,14 +93,14 @@ export function Trace(options: TraceOptions = {}): MethodDecorator {
         persistTrace(trace);
 
         return result;
-      } catch (error: any) {
-        // Error
+      } catch (error: unknown) {
+      // Error
         trace.duration = Date.now() - startTime;
         trace.error = {
-          name: error.name,
-          message: error.message,
-          stack: config.includeStackTrace ? error.stack : undefined,
-          code: error.code,
+          name: (error instanceof Error ? error.name : "Error"),
+          message: (error instanceof Error ? error.message : String(error)),
+          stack: config.includeStackTrace ? (error instanceof Error ? error.stack : undefined) : undefined,
+          code: (error as Record<string, unknown>).code,
         };
 
         persistTrace(trace);
@@ -122,12 +122,12 @@ function persistTrace(trace: Trace): void {
   if (config.persistAsync) {
     setImmediate(() => {
       saveTrace(trace).catch((error) => {
-        console.error(`Failed to persist trace: ${error.message}`);
+        console.error(`Failed to persist trace: ${(error instanceof Error ? error.message : String(error))}`);
       });
     });
   } else {
     saveTrace(trace).catch((error) => {
-      console.error(`Failed to persist trace: ${error.message}`);
+      console.error(`Failed to persist trace: ${(error instanceof Error ? error.message : String(error))}`);
     });
   }
 }

@@ -21,5 +21,5 @@ export class ApplyTransactionDto {
   })
   @IsObject()
   @IsOptional()
-  offerResult!: any;
+  offerResult!: Record<string, unknown>;
 }

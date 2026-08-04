@@ -68,8 +68,8 @@ export class ApplicationsController {
             'No existe un cliente asociado a ese documento.',
           );
         }
-      } catch (error: any) {
-        throw new BadRequestException(
+      } catch (error: unknown) {
+      throw new BadRequestException(
           error?.message ||
             'Error al validar el cliente asociado al documento.',
         );
@@ -106,7 +106,7 @@ export class ApplicationsController {
 
     if (applications && applications.data) {
       const enrichedApplications = await Promise.all(
-        applications.data.map(async (app: any) => {
+        applications.data.map(async (app: Record<string, unknown>) => {
           try {
             const customer = await firstValueFrom(
               this.customerClient
@@ -147,9 +147,9 @@ export class ApplicationsController {
   @UseGuards(AuthGuard)
   @ApiOperation({ summary: 'Consultar detalle de solicitud' })
   @Post('get-by-id')
-  async getApplicationById(@Req() req: any, @Body() body: { id: string }) {
+  async getApplicationById(@Req() req: Record<string, unknown>, @Body() body: { id: string }) {
     this.logger.log(`Gateway: Petición para consultar solicitud ${body.id}`);
-    const application: any = await firstValueFrom(
+    const application: Record<string, unknown> = await firstValueFrom(
       this.applicationsClient
         .send(
           { cmd: ApplicationPattern.GET_APPLICATION_BY_ID },
@@ -295,7 +295,7 @@ export class ApplicationsController {
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
   @Post('validate')
-  async validateApplication(@Body() body: { id: string; validationData: any }) {
+  async validateApplication(@Body() body: { id: string; validationData: Record<string, unknown> }) {
     return await firstValueFrom(
       this.applicationsClient
         .send(

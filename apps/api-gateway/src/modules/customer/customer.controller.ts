@@ -50,7 +50,7 @@ export class CustomerController {
       `Gateway-Compose: Procesando transacción unificada aplicar para documento ${dto.customerData.document}`,
     );
 
-    let customer: any = null;
+    let customer: Record<string, unknown> | null = null;
 
     try {
       customer = await firstValueFrom(

@@ -40,7 +40,7 @@ export class TracingInterceptor implements NestInterceptor {
     @Inject('TRACING_SERVICE') private readonly tracingClient: ClientProxy,
   ) {}
 
-  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+  intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     const config = getTracingConfig();
 
     if (!config.enabled || !shouldSample()) {
@@ -130,17 +130,17 @@ export class TracingInterceptor implements NestInterceptor {
         trace.duration = Date.now() - startTime;
         trace.statusCode = error.status || 500;
         trace.error = {
-          name: error.name,
-          message: error.message,
-          stack: config.includeStackTrace ? error.stack : undefined,
-          code: error.code,
+          name: (error instanceof Error ? error.name : "Error"),
+          message: (error instanceof Error ? error.message : String(error)),
+          stack: config.includeStackTrace ? (error instanceof Error ? error.stack : undefined) : undefined,
+          code: (error as Record<string, unknown>).code,
         };
 
         this.persistTrace(trace);
 
         if (config.logToConsole) {
           this.logger.error(
-            `[TRACE] Failed ${trace.operation} - Error: ${error.message}`,
+            `[TRACE] Failed ${trace.operation} - Error: ${(error instanceof Error ? error.message : String(error))}`,
           );
         }
 
@@ -155,12 +155,12 @@ export class TracingInterceptor implements NestInterceptor {
     if (config.persistAsync) {
       setImmediate(() => {
         this.saveTrace(trace).catch((error) => {
-          this.logger.error(`Failed to persist trace: ${error.message}`);
+          this.logger.error(`Failed to persist trace: ${(error instanceof Error ? error.message : String(error))}`);
         });
       });
     } else {
       this.saveTrace(trace).catch((error) => {
-        this.logger.error(`Failed to persist trace: ${error.message}`);
+        this.logger.error(`Failed to persist trace: ${(error instanceof Error ? error.message : String(error))}`);
       });
     }
   }
@@ -173,8 +173,8 @@ export class TracingInterceptor implements NestInterceptor {
           error: (err) =>
             this.logger.error(`Error emitting trace: ${err.message}`),
         });
-    } catch (error: any) {
-      this.logger.error(`Failed to emit trace: ${error.message}`);
+    } catch (error: unknown) {
+      this.logger.error(`Failed to emit trace: ${(error instanceof Error ? error.message : String(error))}`);
     }
   }
 }

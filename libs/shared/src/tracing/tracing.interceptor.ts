@@ -25,7 +25,7 @@ import { getTracingConfig, shouldSample } from './tracing.config';
 export class TracingInterceptor implements NestInterceptor {
   private readonly logger = new Logger(TracingInterceptor.name);
 
-  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+  intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     const config = getTracingConfig();
 
     if (!config.enabled || !shouldSample()) {

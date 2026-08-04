@@ -9,7 +9,7 @@ export class GetApplicationEventsUseCase {
     private readonly applicationRepository: ApplicationRepositoryPort,
   ) {}
 
-  async execute(id: string): Promise<any[]> {
+  async execute(id: string): Promise<unknown[]> {
     return await this.applicationRepository.findAuditsByOfferId(id);
   }
 }

@@ -12,7 +12,7 @@ import { AesEncryptionAdapter } from '../adapters/aes-encryption.adapter';
 export class EncryptIdInterceptor implements NestInterceptor {
   private readonly cryptoAdapter = new AesEncryptionAdapter();
 
-  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+  intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     const request = context.switchToHttp().getRequest();
 
     // 1. Desencriptar IDs recibidos en el Body, Params o Query
@@ -34,14 +34,14 @@ export class EncryptIdInterceptor implements NestInterceptor {
     return next.handle().pipe(map((data) => this.encryptObjectIds(data)));
   }
 
-  private decryptObjectIds(obj: any): any {
+  private decryptObjectIds(obj: unknown): unknown {
     if (!obj || typeof obj !== 'object') return obj;
 
     if (Array.isArray(obj)) {
       return obj.map((item) => this.decryptObjectIds(item));
     }
 
-    const newObj = { ...obj };
+    const newObj: Record<string, unknown> = { ...(obj as Record<string, unknown>) };
     for (const key of Object.keys(newObj)) {
       if (
         (key === 'id' ||
@@ -58,7 +58,7 @@ export class EncryptIdInterceptor implements NestInterceptor {
     return newObj;
   }
 
-  private encryptObjectIds(obj: any): any {
+  private encryptObjectIds(obj: unknown): unknown {
     if (!obj || typeof obj !== 'object') return obj;
 
     if (Array.isArray(obj)) {
@@ -68,7 +68,7 @@ export class EncryptIdInterceptor implements NestInterceptor {
     // Preservar instancias de Date, RegExp, etc.
     if (obj instanceof Date || obj instanceof RegExp) return obj;
 
-    const newObj = { ...obj };
+    const newObj: Record<string, unknown> = { ...(obj as Record<string, unknown>) };
     for (const key of Object.keys(newObj)) {
       if (
         (key === 'id' ||

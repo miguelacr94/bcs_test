@@ -10,7 +10,7 @@ export class UpdateApplicationUseCase {
     private readonly applicationRepository: ApplicationRepositoryPort,
   ) {}
 
-  async execute(id: string, updateData: any): Promise<Application> {
+  async execute(id: string, updateData: Record<string, unknown>): Promise<Application> {
     const application = await this.applicationRepository.findById(id);
     if (!application) {
       throw new Error(`Solicitud con ID ${id} no encontrada.`);

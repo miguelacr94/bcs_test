@@ -27,7 +27,7 @@ import { envs } from '@app/shared/config/envs';
     ]),
     JwtModule.register({
       secret: envs.jwt.secret,
-      signOptions: { expiresIn: envs.jwt.expiresIn },
+      signOptions: { expiresIn: envs.jwt.expiresIn as never },
     }),
   ],
   controllers: [AuthController],

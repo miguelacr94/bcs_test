@@ -17,7 +17,7 @@ export interface ApplicationRepositoryPort {
     message: string,
     previousStatus?: string,
     nextStatus?: string,
-    metadata?: any,
+    metadata?: Record<string, unknown>,
   ): Promise<void>;
-  findAuditsByOfferId(offerId: string): Promise<any[]>;
+  findAuditsByOfferId(offerId: string): Promise<unknown[]>;
 }

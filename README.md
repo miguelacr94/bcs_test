@@ -1,98 +1,90 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# BCS API - Backend Monorepo
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Este repositorio contiene el backend del proyecto BCS, construido como un **monorepositorio** utilizando [NestJS](https://nestjs.com/) y una arquitectura basada en microservicios.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## 📋 Requisitos Previos
 
-## Description
+Antes de comenzar, asegúrate de tener instalado en tu máquina:
+- **Node.js** (v18 o superior recomendado)
+- **Docker** y **Docker Compose** (para levantar las bases de datos y caché)
+- **pnpm** (o npm) como gestor de paquetes.
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+---
 
-## Project setup
+## ⚙️ Configuración Inicial
 
+### 1. Clonar el repositorio
+Si aún no lo has hecho, clona el repositorio y navega a la carpeta de la API:
 ```bash
-$ npm install
+cd bcs_api
 ```
 
-## Compile and run the project
+### 2. Variables de Entorno
+Asegúrate de contar con el archivo `.env` en la raíz del proyecto (`bcs_api/.env`). Este archivo debe contener como mínimo:
+```env
+PORT=3000
+MONGO_URI_AUTH=mongodb://127.0.0.1:27017/bcs_auth_db
+MONGO_URI_CUSTOMER=mongodb://127.0.0.1:27017/bcs_customer_db
+MONGO_URI_APPLICATIONS=mongodb://127.0.0.1:27017/bcs_applications_db
+```
+*(Nota: Si las URIs apuntan a `127.0.0.1`, los microservicios deben ejecutarse localmente, fuera de los contenedores Docker, o bien ajustar la URI a `mongodb` si se ejecutan dentro).*
 
+### 3. Instalar Dependencias
+Instala todas las dependencias del monorepo utilizando tu gestor de paquetes (se recomienda `pnpm` o `npm`):
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+npm install
+# o
+pnpm install
 ```
 
-## Run tests
+---
 
+## 🚀 Paso a Paso para Levantar la API
+
+### Paso 1: Levantar los servicios de Infraestructura (MongoDB y Redis)
+El proyecto cuenta con un archivo `docker-compose.yml` que facilita la creación de los servicios base. Para iniciar la base de datos (MongoDB) y la caché (Redis), ejecuta:
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+docker-compose up -d mongodb redis
 ```
+Esto levantará:
+- **MongoDB** en el puerto `27017`
+- **Redis** en el puerto `6379`
 
-## Deployment
+### Paso 2: Ejecutar los Microservicios Localmente
+El proyecto incluye un script preparado para levantar el **API Gateway** junto con todos los microservicios (`auth`, `customer`, `applications`, `user-core`, `offer-core`, `disbursements`, `tracing`) al mismo tiempo.
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
+Ejecuta el siguiente comando en la raíz de `bcs_api`:
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+npm run start:all
+# o
+pnpm start:all
 ```
+*Este comando se encarga automáticamente de matar procesos anteriores que se hayan quedado colgados en el puerto 3000 y levanta todos los servicios en modo de desarrollo (`--watch`).*
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+---
 
-## Resources
+## 🐳 Alternativa: Levantar todo con Docker
 
-Check out a few resources that may come in handy when working with NestJS:
+Si prefieres levantar **todo el ecosistema** (Bases de datos + Microservicios) utilizando únicamente Docker, puedes hacerlo con el siguiente comando:
+```bash
+docker-compose up --build
+```
+*Nota: Ten en cuenta que si levantas los servicios de Node mediante Docker, deberás ajustar las URLs de conexión en tu `.env` para que apunten al host interno de Docker (por ejemplo, reemplazar `127.0.0.1` por `mongodb`).*
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+---
 
-## Support
+## 🗂️ Estructura del Monorepo
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+El código fuente está dividido principalmente en dos carpetas dentro de la raíz:
+- **`apps/`**: Contiene el API Gateway y todos los microservicios individuales (ej. `api-gateway`, `auth`, `customer`, `applications`, etc.).
+- **`libs/`**: Contiene código compartido, utilidades y librerías transversales (ej. `shared/src/tracing`).
 
-## Stay in touch
+---
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+## 🛠️ Otros Comandos Útiles
 
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+- **`npm run build`**: Compila todos los proyectos.
+- **`npm run test`**: Ejecuta las pruebas unitarias.
+- **`npm run lint`**: Analiza el código con ESLint y corrige problemas menores.
+- **`npm run format`**: Aplica formato a todo el código utilizando Prettier.
+- **`npm run kill-stale`**: Fuerza el cierre de aplicaciones previas que estén usando el puerto 3000 o procesos de Nest que se hayan quedado colgados.

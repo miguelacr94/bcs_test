@@ -49,9 +49,9 @@ export class AuthController {
         role: user.role,
         createdAt: user.createdAt,
       };
-    } catch (error: any) {
-      this.logger.error(`Microservicio Auth Error: ${error.message}`);
-      throw new RpcException(error.message);
+    } catch (error: unknown) {
+      this.logger.error(`Microservicio Auth Error: ${(error instanceof Error ? error.message : String(error))}`);
+      throw new RpcException((error instanceof Error ? error.message : String(error)));
     }
   }
 
@@ -63,9 +63,9 @@ export class AuthController {
     );
     try {
       return await this.loginUserUseCase.execute(dto);
-    } catch (error: any) {
-      this.logger.error(`Microservicio Auth Login Error: ${error.message}`);
-      throw new RpcException(error.message);
+    } catch (error: unknown) {
+      this.logger.error(`Microservicio Auth Login Error: ${(error instanceof Error ? error.message : String(error))}`);
+      throw new RpcException((error instanceof Error ? error.message : String(error)));
     }
   }
 
@@ -94,8 +94,8 @@ export class AuthController {
           role: user.role,
         },
       };
-    } catch (error: any) {
-      this.logger.error(`Error al validar token: ${error.message}`);
+    } catch (error: unknown) {
+      this.logger.error(`Error al validar token: ${(error instanceof Error ? error.message : String(error))}`);
       return {
         isValid: false,
         error: 'Token inválido o expirado.',
@@ -109,9 +109,9 @@ export class AuthController {
     this.logger.log('Microservicio Auth: Refrescando token...');
     try {
       return await this.refreshTokenUseCase.execute(data.refreshToken);
-    } catch (error: any) {
-      this.logger.error(`Microservicio Auth Refresh Error: ${error.message}`);
-      throw new RpcException(error.message);
+    } catch (error: unknown) {
+      this.logger.error(`Microservicio Auth Refresh Error: ${(error instanceof Error ? error.message : String(error))}`);
+      throw new RpcException((error instanceof Error ? error.message : String(error)));
     }
   }
 
@@ -123,9 +123,9 @@ export class AuthController {
     );
     try {
       return await this.logoutUseCase.execute(data.userId);
-    } catch (error: any) {
-      this.logger.error(`Microservicio Auth Logout Error: ${error.message}`);
-      throw new RpcException(error.message);
+    } catch (error: unknown) {
+      this.logger.error(`Microservicio Auth Logout Error: ${(error instanceof Error ? error.message : String(error))}`);
+      throw new RpcException((error instanceof Error ? error.message : String(error)));
     }
   }
 
@@ -137,11 +137,11 @@ export class AuthController {
     );
     try {
       return await this.updateUserUseCase.execute(dto);
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error(
-        `Microservicio Auth Update Profile Error: ${error.message}`,
+        `Microservicio Auth Update Profile Error: ${(error instanceof Error ? error.message : String(error))}`,
       );
-      throw new RpcException(error.message);
+      throw new RpcException((error instanceof Error ? error.message : String(error)));
     }
   }
 }

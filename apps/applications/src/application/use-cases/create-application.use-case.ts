@@ -14,7 +14,7 @@ export class CreateApplicationUseCase {
   async execute(
     clientId: string,
     channel: string,
-    offerResult?: any,
+    offerResult?: Record<string, unknown>,
   ): Promise<Application> {
     // Control de Duplicidad: Buscar si ya existe una solicitud activa
     const existingApplication =

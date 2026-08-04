@@ -4,7 +4,7 @@ export interface ApplicationEvent {
   type: string;
   message: string;
   timestamp: string;
-  metadata?: any;
+  metadata?: Record<string, unknown>;
 }
 
 export class Application {
@@ -15,8 +15,8 @@ export class Application {
     public readonly channel: string,
     public status: ApplicationStatus,
     public readonly createdAt: Date,
-    public offerResult?: any,
-    public validationData?: any,
+    public offerResult?: Record<string, unknown>,
+    public validationData?: Record<string, unknown>,
   ) {}
 
   acceptOffer(): void {
@@ -46,7 +46,7 @@ export class Application {
     this.status = ApplicationStatus.ABANDONED;
   }
 
-  validateApplication(validationData: any): void {
+  validateApplication(validationData: Record<string, unknown>): void {
     if (this.status !== ApplicationStatus.PENDING_VALIDATION) {
       throw new Error(
         'La solicitud debe estar pendiente de validación para poder validarla.',

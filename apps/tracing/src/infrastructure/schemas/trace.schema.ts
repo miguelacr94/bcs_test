@@ -39,10 +39,10 @@ export class Trace {
   headers?: Record<string, string>;
 
   @Prop({ type: Object })
-  queryParams?: any;
+  queryParams?: Record<string, unknown>;
 
   @Prop({ type: Object })
-  body?: any;
+  body?: Record<string, unknown>;
 
   @Prop({ index: true })
   userId?: string;
@@ -51,13 +51,13 @@ export class Trace {
   correlationId?: string;
 
   @Prop({ type: Object })
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 
   @Prop()
   statusCode?: number;
 
   @Prop({ type: Object })
-  response?: any;
+  response?: Record<string, unknown>;
 
   @Prop({ type: Object })
   error?: {

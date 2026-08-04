@@ -17,15 +17,15 @@ export class CreateTraceDto {
   method?: string;
   path?: string;
   headers?: Record<string, string>;
-  queryParams?: Record<string, any>;
-  body?: any;
+  queryParams?: Record<string, unknown>;
+  body?: Record<string, unknown>;
 
   userId?: string;
   correlationId?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 
   statusCode?: number;
-  response?: any;
+  response?: Record<string, unknown>;
   error?: TraceError;
 
   tags!: string[];

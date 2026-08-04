@@ -37,17 +37,17 @@ export interface Trace {
   method?: string;
   path?: string;
   headers?: Record<string, string>;
-  queryParams?: Record<string, any>;
-  body?: any;
+  queryParams?: Record<string, unknown>;
+  body?: Record<string, unknown>;
 
   // Contexto de negocio
   userId?: string;
   correlationId?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 
   // Response info
   statusCode?: number;
-  response?: any;
+  response?: Record<string, unknown>;
   error?: TraceError;
 
   // Tags para filtrado

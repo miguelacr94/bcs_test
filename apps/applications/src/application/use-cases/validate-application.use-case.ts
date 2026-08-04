@@ -13,7 +13,7 @@ export class ValidateApplicationUseCase {
 
   async execute(
     id: string,
-    validationData: any,
+    validationData: Record<string, unknown>,
     channel?: string,
   ): Promise<{ success: boolean; message: string }> {
     const application = await this.applicationRepository.findById(id);

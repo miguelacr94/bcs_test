@@ -30,7 +30,7 @@ interface SanitizerConfig {
 /**
  * Sanitiza datos sensibles de un objeto
  */
-export function sanitizeData(data: any, config: SanitizerConfig = {}): any {
+export function sanitizeData(data: unknown, config: SanitizerConfig = {}): unknown {
   const {
     sensitiveFields = DEFAULT_SENSITIVE_FIELDS,
     maxBodySize = 1024 * 10, // 10KB por defecto
@@ -55,9 +55,11 @@ export function sanitizeData(data: any, config: SanitizerConfig = {}): any {
   }
 
   // Si es objeto, sanitizar campos sensibles
-  const sanitized: any = {};
-  for (const key in data) {
-    if (Object.prototype.hasOwnProperty.call(data, key)) {
+  const sanitized: Record<string, unknown> = {};
+  const dataRecord = data as Record<string, unknown>;
+  
+  for (const key in dataRecord) {
+    if (Object.prototype.hasOwnProperty.call(dataRecord, key)) {
       const lowerKey = key.toLowerCase();
       const isSensitive = sensitiveFields.some((field) =>
         lowerKey.includes(field.toLowerCase()),
@@ -66,7 +68,7 @@ export function sanitizeData(data: any, config: SanitizerConfig = {}): any {
       if (isSensitive) {
         sanitized[key] = maskChar;
       } else {
-        sanitized[key] = sanitizeData(data[key], config);
+        sanitized[key] = sanitizeData(dataRecord[key], config);
       }
     }
   }
@@ -113,7 +115,7 @@ export function truncateString(str: string, maxSize: number): string {
 /**
  * Convierte un objeto a string de forma segura
  */
-export function safeStringify(data: any, maxSize: number = 1024 * 10): string {
+export function safeStringify(data: unknown, maxSize: number = 1024 * 10): string {
   try {
     const str = JSON.stringify(data);
     return truncateString(str, maxSize);

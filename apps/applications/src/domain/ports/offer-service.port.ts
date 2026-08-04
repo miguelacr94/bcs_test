@@ -1,7 +1,7 @@
 export interface OfferSimulationResult {
   success: boolean;
   message: string;
-  offerDetails?: any;
+  offerDetails?: Record<string, unknown>;
 }
 
 export interface OfferServicePort {

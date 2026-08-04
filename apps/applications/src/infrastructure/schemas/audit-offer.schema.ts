@@ -22,7 +22,7 @@ export class AuditOfferDocument extends Document {
   createdAt!: Date;
 
   @Prop({ type: Object })
-  metadata?: any;
+  metadata?: Record<string, unknown>;
 }
 
 export const AuditOfferSchema =

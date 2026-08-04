@@ -60,7 +60,7 @@ export class MongooseApplicationRepository implements ApplicationRepositoryPort 
     const { page = 1, limit = 10, clientId, status } = paginationDto;
     const skip = (page - 1) * limit;
 
-    const filter: any = {};
+    const filter: Record<string, unknown> = {};
     if (clientId) {
       filter.clientId = new Types.ObjectId(clientId);
     }
@@ -103,7 +103,7 @@ export class MongooseApplicationRepository implements ApplicationRepositoryPort 
     message: string,
     previousStatus?: string,
     nextStatus?: string,
-    metadata?: any,
+    metadata?: Record<string, unknown>,
   ): Promise<void> {
     const audit = new this.auditOfferModel({
       offerId,
@@ -116,7 +116,7 @@ export class MongooseApplicationRepository implements ApplicationRepositoryPort 
     await audit.save();
   }
 
-  async findAuditsByOfferId(offerId: string): Promise<any[]> {
+  async findAuditsByOfferId(offerId: string): Promise<unknown[]> {
     return await this.auditOfferModel
       .find({ offerId })
       .sort({ createdAt: 1 })

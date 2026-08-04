@@ -5,18 +5,18 @@ import { Types } from 'mongoose';
 export class ApplicationMapper {
   static toDomain(doc: ApplicationDocument): Application {
     return new Application(
-      (doc._id as any).toString(),
+      (doc._id as unknown as Types.ObjectId).toString(),
       doc.radicado,
       doc.clientId ? doc.clientId.toString() : '',
       doc.channel,
       doc.status,
       doc.createdAt,
-      doc.offerResult,
-      doc.validationData,
+      doc.offerResult as Record<string, unknown>,
+      doc.validationData as Record<string, unknown>,
     );
   }
 
-  static toPersistence(entity: Application): any {
+  static toPersistence(entity: Application): Record<string, unknown> {
     return {
       radicado: entity.radicado,
       clientId: new Types.ObjectId(entity.clientId),

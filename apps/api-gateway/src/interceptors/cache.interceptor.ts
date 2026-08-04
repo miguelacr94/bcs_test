@@ -9,10 +9,10 @@ import { tap } from 'rxjs/operators';
 
 @Injectable()
 export class CacheInterceptor implements NestInterceptor {
-  private cache = new Map<string, { expiresAt: number; data: any }>();
+  private cache = new Map<string, { expiresAt: number; data: Record<string, unknown> }>();
   private readonly TTL_SECONDS = 10;
 
-  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+  intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     const request = context.switchToHttp().getRequest();
     const method = request.method;
 

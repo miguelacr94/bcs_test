@@ -6,25 +6,35 @@ import {
 } from '@nestjs/common';
 import { Response } from 'express';
 
+interface ExceptionPayload {
+  message?: string;
+  error?: string;
+  statusCode?: number;
+  getStatus?: () => number;
+  getResponse?: () => string | { message: string };
+}
+
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
-  catch(exception: any, host: ArgumentsHost) {
+  catch(exception: unknown, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
 
+    const exc = exception as ExceptionPayload;
+
     let status = HttpStatus.INTERNAL_SERVER_ERROR;
-    let message = exception.message || 'Error interno del servidor';
+    let message = exc.message || 'Error interno del servidor';
 
-    if (exception.getStatus && typeof exception.getStatus === 'function') {
-      status = exception.getStatus();
-      const res = exception.getResponse();
-      message = typeof res === 'object' ? res.message : res;
-    } else if (exception.error) {
-      message = exception.error;
+    if (exc.getStatus && typeof exc.getStatus === 'function') {
+      status = exc.getStatus();
+      const res = exc.getResponse ? exc.getResponse() : null;
+      message = typeof res === 'object' && res !== null ? res.message : String(res);
+    } else if (exc.error) {
+      message = exc.error;
 
-      if (exception.statusCode) {
-        status = exception.statusCode;
+      if (exc.statusCode) {
+        status = exc.statusCode;
       } else {
         if (message.includes('registrado') || message.includes('existe')) {
           status = HttpStatus.CONFLICT;

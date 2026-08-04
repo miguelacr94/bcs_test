@@ -42,7 +42,7 @@ describe('CustomerController', () => {
       const dto = { name: 'Juan', lastName: 'Perez', document: '123', email: 'a@a.com', phone: '123' };
       const expectedResult = { id: '1', ...dto };
       
-      jest.spyOn(createUseCase, 'execute').mockResolvedValue(expectedResult as any);
+      jest.spyOn(createUseCase, 'execute').mockResolvedValue(expectedResult as unknown as Awaited<ReturnType<typeof createUseCase.execute>>);
 
       const result = await controller.create(dto);
       expect(result).toEqual(expectedResult);
@@ -60,7 +60,7 @@ describe('CustomerController', () => {
   describe('findByDocument', () => {
     it('should find a customer', async () => {
       const mockCustomer = { id: '1', document: '123' };
-      jest.spyOn(findUseCase, 'execute').mockResolvedValue(mockCustomer as any);
+      jest.spyOn(findUseCase, 'execute').mockResolvedValue(mockCustomer as unknown as Awaited<ReturnType<typeof findUseCase.execute>>);
 
       const result = await controller.findByDocument({ document: '123' });
       expect(result).toEqual(mockCustomer);

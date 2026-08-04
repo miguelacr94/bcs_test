@@ -58,7 +58,7 @@ export class UserCoreGatewayController {
         existsInDb: false,
       };
     }
-    let customer: any = null;
+    let customer: Record<string, unknown> | null = null;
     try {
       customer = await firstValueFrom(
         this.customerClient

@@ -30,6 +30,6 @@ export const envs = {
   // Configuración de Seguridad
   jwt: {
     secret: process.env.JWT_SECRET || 'mi-clave-secreta-super-dificil-1234',
-    expiresIn: (process.env.JWT_EXPIRES_IN || '1h') as any,
+    expiresIn: process.env.JWT_EXPIRES_IN || '1h',
   },
 };

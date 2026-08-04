@@ -1,4 +1,4 @@
 export interface TokenServicePort {
-  generateToken(payload: any, options?: any): Promise<string>;
-  verifyToken(token: string): Promise<any>;
+  generateToken(payload: Record<string, unknown>, options?: Record<string, unknown>): Promise<string>;
+  verifyToken(token: string): Promise<unknown>;
 }

@@ -45,15 +45,20 @@ export class CustomerRepositoryAdapter implements CustomerRepositoryPort {
       const newCustomer = new this.customerModel(encryptedCustomerData);
       doc = await newCustomer.save();
     }
+    
+    if (!doc) {
+      throw new Error(`Customer with id ${customer.id} not found`);
+    }
+
     return this.mapToDomain(doc);
   }
 
   async update(document: string, data: Partial<Customer>): Promise<Customer> {
     const documentHash = this.cryptoAdapter.hash(document);
-    const updateData = { ...data } as any;
-    if (updateData.document) {
-      updateData.documentHash = this.cryptoAdapter.hash(updateData.document);
-      updateData.document = this.cryptoAdapter.encrypt(updateData.document);
+    const updateData = { ...data } as Record<string, unknown>;
+    if (data.document) {
+      updateData.documentHash = this.cryptoAdapter.hash(data.document);
+      updateData.document = this.cryptoAdapter.encrypt(data.document);
     }
 
     let doc = await this.customerModel
@@ -73,17 +78,18 @@ export class CustomerRepositoryAdapter implements CustomerRepositoryPort {
     return this.mapToDomain(doc);
   }
 
-  private mapToDomain(doc: any): Customer {
+  private mapToDomain(doc: CustomerDocument): Customer {
+    const docObj = doc as unknown as Record<string, unknown>;
     return new Customer(
-      doc._id.toString(),
-      doc.name,
-      doc.lastName,
-      this.cryptoAdapter.decrypt(doc.document),
-      doc.email,
-      doc.phone,
-      doc.createdAt,
-      doc.updatedAt,
-      doc.familyReference1,
+      (docObj._id as { toString(): string }).toString(),
+      docObj.name as string,
+      docObj.lastName as string,
+      this.cryptoAdapter.decrypt(docObj.document as string),
+      docObj.email as string,
+      docObj.phone as string,
+      docObj.createdAt as Date,
+      docObj.updatedAt as Date,
+      docObj.familyReference1 as { name: string; phone: string; relationship: string } | undefined,
     );
   }
 }

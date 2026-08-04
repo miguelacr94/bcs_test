@@ -38,7 +38,7 @@ export class ApplicationsController {
   async createApplication(
     @Payload()
     data: {
-      createDto: { clientId: string; channel: string; offerResult?: any };
+      createDto: { clientId: string; channel: string; offerResult?: Record<string, unknown> };
     },
   ) {
     try {
@@ -47,21 +47,21 @@ export class ApplicationsController {
         data.createDto.channel,
         data.createDto.offerResult,
       );
-    } catch (error: any) {
-      this.logger.error(`Error creating application: ${error.message}`);
+    } catch (error: unknown) {
+      this.logger.error(`Error creating application: ${(error instanceof Error ? error.message : String(error))}`);
       if (error instanceof RpcException) throw error;
-      throw new RpcException({ error: error.message, statusCode: 400 });
+      throw new RpcException({ error: (error instanceof Error ? error.message : String(error)), statusCode: 400 });
     }
   }
 
   @MessagePattern({ cmd: ApplicationPattern.GET_APPLICATIONS })
-  async getApplications(@Payload() data: { paginationDto: any }) {
+  async getApplications(@Payload() data: { paginationDto: Record<string, unknown> }) {
     try {
       return await this.getApplicationsUseCase.execute(data.paginationDto);
-    } catch (error: any) {
-      this.logger.error(`Error fetching applications: ${error.message}`);
+    } catch (error: unknown) {
+      this.logger.error(`Error fetching applications: ${(error instanceof Error ? error.message : String(error))}`);
       if (error instanceof RpcException) throw error;
-      throw new RpcException({ error: error.message, statusCode: 400 });
+      throw new RpcException({ error: (error instanceof Error ? error.message : String(error)), statusCode: 400 });
     }
   }
 
@@ -76,13 +76,13 @@ export class ApplicationsController {
         });
       }
       return application;
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error(
-        `Error getting application ${data.id}: ${error.message}`,
+        `Error getting application ${data.id}: ${(error instanceof Error ? error.message : String(error))}`,
       );
       // Si el error ya es un RpcException, relanzarlo
       if (error instanceof RpcException) throw error;
-      throw new RpcException({ error: error.message, statusCode: 400 });
+      throw new RpcException({ error: (error instanceof Error ? error.message : String(error)), statusCode: 400 });
     }
   }
 
@@ -98,28 +98,28 @@ export class ApplicationsController {
           activeStatuses,
         );
       return application ?? null;
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error(
-        `Error finding active application for client ${data.clientId}: ${error.message}`,
+        `Error finding active application for client ${data.clientId}: ${(error instanceof Error ? error.message : String(error))}`,
       );
       if (error instanceof RpcException) throw error;
-      throw new RpcException({ error: error.message, statusCode: 400 });
+      throw new RpcException({ error: (error instanceof Error ? error.message : String(error)), statusCode: 400 });
     }
   }
 
   @MessagePattern({ cmd: ApplicationPattern.UPDATE_APPLICATION })
-  async updateApplication(@Payload() data: { id: string; updateDto: any }) {
+  async updateApplication(@Payload() data: { id: string; updateDto: Record<string, unknown> }) {
     try {
       return await this.updateApplicationUseCase.execute(
         data.id,
         data.updateDto,
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error(
-        `Error updating application ${data.id}: ${error.message}`,
+        `Error updating application ${data.id}: ${(error instanceof Error ? error.message : String(error))}`,
       );
       if (error instanceof RpcException) throw error;
-      throw new RpcException({ error: error.message, statusCode: 400 });
+      throw new RpcException({ error: (error instanceof Error ? error.message : String(error)), statusCode: 400 });
     }
   }
 
@@ -137,12 +137,12 @@ export class ApplicationsController {
         data.simulateDto.amount,
         data.simulateDto.termMonths,
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error(
-        `Error simulating offer for ${data.id}: ${error.message}`,
+        `Error simulating offer for ${data.id}: ${(error instanceof Error ? error.message : String(error))}`,
       );
       if (error instanceof RpcException) throw error;
-      throw new RpcException({ error: error.message, statusCode: 400 });
+      throw new RpcException({ error: (error instanceof Error ? error.message : String(error)), statusCode: 400 });
     }
   }
 
@@ -150,12 +150,12 @@ export class ApplicationsController {
   async acceptOffer(@Payload() data: { id: string; channel?: string }) {
     try {
       return await this.acceptOfferUseCase.execute(data.id, data.channel);
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error(
-        `Error accepting offer for application ${data.id}: ${error.message}`,
+        `Error accepting offer for application ${data.id}: ${(error instanceof Error ? error.message : String(error))}`,
       );
       if (error instanceof RpcException) throw error;
-      throw new RpcException({ error: error.message, statusCode: 400 });
+      throw new RpcException({ error: (error instanceof Error ? error.message : String(error)), statusCode: 400 });
     }
   }
 
@@ -173,12 +173,12 @@ export class ApplicationsController {
         data.reasonDto.reason,
         data.reasonDto.channel,
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error(
-        `Error abandoning application ${data.id}: ${error.message}`,
+        `Error abandoning application ${data.id}: ${(error instanceof Error ? error.message : String(error))}`,
       );
       if (error instanceof RpcException) throw error;
-      throw new RpcException({ error: error.message, statusCode: 400 });
+      throw new RpcException({ error: (error instanceof Error ? error.message : String(error)), statusCode: 400 });
     }
   }
 
@@ -186,18 +186,18 @@ export class ApplicationsController {
   async getApplicationEvents(@Payload() data: { id: string }) {
     try {
       return await this.getApplicationEventsUseCase.execute(data.id);
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error(
-        `Error getting events for ${data.id}: ${error.message}`,
+        `Error getting events for ${data.id}: ${(error instanceof Error ? error.message : String(error))}`,
       );
       if (error instanceof RpcException) throw error;
-      throw new RpcException({ error: error.message, statusCode: 400 });
+      throw new RpcException({ error: (error instanceof Error ? error.message : String(error)), statusCode: 400 });
     }
   }
 
   @MessagePattern({ cmd: ApplicationPattern.VALIDATE_APPLICATION })
   async validateApplication(
-    @Payload() data: { id: string; validationData: any },
+    @Payload() data: { id: string; validationData: Record<string, unknown> },
   ) {
     try {
       const { channel, ...rest } = data.validationData;
@@ -206,12 +206,12 @@ export class ApplicationsController {
         rest,
         channel,
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error(
-        `Error validating application ${data.id}: ${error.message}`,
+        `Error validating application ${data.id}: ${(error instanceof Error ? error.message : String(error))}`,
       );
       if (error instanceof RpcException) throw error;
-      throw new RpcException({ error: error.message, statusCode: 400 });
+      throw new RpcException({ error: (error instanceof Error ? error.message : String(error)), statusCode: 400 });
     }
   }
 
@@ -230,12 +230,12 @@ export class ApplicationsController {
         data.withDisbursement,
         data.channel,
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.logger.error(
-        `Error finalizing application ${data.id}: ${error.message}`,
+        `Error finalizing application ${data.id}: ${(error instanceof Error ? error.message : String(error))}`,
       );
       if (error instanceof RpcException) throw error;
-      throw new RpcException({ error: error.message, statusCode: 400 });
+      throw new RpcException({ error: (error instanceof Error ? error.message : String(error)), statusCode: 400 });
     }
   }
 }

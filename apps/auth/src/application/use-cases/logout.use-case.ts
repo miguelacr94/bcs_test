@@ -30,8 +30,8 @@ export class LogoutUseCase {
       await this.userRepository.save(updatedUser);
 
       return { success: true };
-    } catch (error: any) {
-      throw new RpcException(error.message || 'Error al cerrar sesión.');
+    } catch (error: unknown) {
+      throw new RpcException((error instanceof Error ? error.message : String(error)) || 'Error al cerrar sesión.');
     }
   }
 }

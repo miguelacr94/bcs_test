@@ -14,7 +14,7 @@ export class ApplicationEventSchema {
   timestamp!: string;
 
   @Prop({ type: Object })
-  metadata?: any;
+  metadata?: Record<string, unknown>;
 }
 
 @Schema({ collection: 'applications' })

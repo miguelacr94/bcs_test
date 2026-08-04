@@ -57,10 +57,10 @@ export class AuthGuard implements CanActivate {
 
       request['user'] = result.user;
       return true;
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (isPublic) return true;
       throw new UnauthorizedException(
-        error.message || 'Error de autenticación.',
+        (error instanceof Error ? error.message : String(error)) || 'Error de autenticación.',
       );
     }
   }
