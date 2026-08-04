@@ -12,7 +12,7 @@
     "start:dev": "nest start --watch",
     "kill-stale": "lsof -ti :3000 | xargs kill -9 2>/dev/null; pkill -f 'nest.js start --watch' 2>/dev/null; echo 'Procesos anteriores eliminados.'",
     "prestart:all": "npm run kill-stale",
-    "start:all": "concurrently \"npm run start:dev api-gateway\" \"npm run start:dev auth\" \"npm run start:dev customer\" \"npm run start:dev applications\" \"npm run start:dev user-core\" \"npm run start:dev disbursements\"",
+    "start:all": "concurrently \"npm run start:dev api-gateway\" \"npm run start:dev auth\" \"npm run start:dev customer\" \"npm run start:dev applications\" \"npm run start:dev user-core\" \"npm run start:dev disbursements\" \"npm run start:dev tracing\"",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/apps/api-gateway/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",

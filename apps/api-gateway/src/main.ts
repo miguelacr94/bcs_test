@@ -8,7 +8,10 @@ import { TimeoutInterceptor } from './interceptors/timeout.interceptor';
 import { TransformInterceptor } from './interceptors/transform.interceptor';
 import { CacheInterceptor } from './interceptors/cache.interceptor';
 import { configureTracing } from '@app/shared/tracing/tracing.config';
-import { TracingInterceptor } from './modules/tracing/tracing.interceptor';
+import { TracingInterceptor } from '@app/shared/interceptors/tracing.interceptor';
+import { EncryptIdInterceptor } from '@app/shared/interceptors/encrypt-id.interceptor';
+import { ClientProxyFactory, Transport } from '@nestjs/microservices';
+import { envs } from '@app/shared/config/envs';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -21,6 +24,11 @@ async function bootstrap() {
     sampleRate: 1.0,
     logLevel: 'INFO',
     logToConsole: true,
+  });
+
+  const tracingClient = ClientProxyFactory.create({
+    transport: Transport.REDIS,
+    options: { host: envs.redis.host, port: envs.redis.port },
   });
 
   // Activamos validaciones globales
@@ -43,15 +51,15 @@ async function bootstrap() {
   // Activamos el filtro global de excepciones unificado
   app.useGlobalFilters(new AllExceptionsFilter());
 
-  // Activamos el interceptor global de rendimiento
+  // Activamos el interceptor global de rendimiento y cifrado de IDs
   app.useGlobalInterceptors(
     new CacheInterceptor(),
     new PerformanceInterceptor(),
     new TimeoutInterceptor(),
     new TransformInterceptor(),
-    new TracingInterceptor(app.get('TraceRepository')),
+    new EncryptIdInterceptor(),
+    new TracingInterceptor(tracingClient),
   );
-
   // Configuración de Swagger (OpenAPI) para documentación de APIs
   const config = new DocumentBuilder()
     .setTitle('Store Monorepo API')

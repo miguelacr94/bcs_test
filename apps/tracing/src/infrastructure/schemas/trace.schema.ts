@@ -35,13 +35,13 @@ export class Trace {
   @Prop()
   path?: string;
 
-  @Prop()
+  @Prop({ type: Object })
   headers?: Record<string, string>;
 
-  @Prop()
+  @Prop({ type: Object })
   queryParams?: any;
 
-  @Prop()
+  @Prop({ type: Object })
   body?: any;
 
   @Prop({ index: true })
@@ -50,16 +50,16 @@ export class Trace {
   @Prop()
   correlationId?: string;
 
-  @Prop()
+  @Prop({ type: Object })
   metadata?: Record<string, any>;
 
   @Prop()
   statusCode?: number;
 
-  @Prop()
+  @Prop({ type: Object })
   response?: any;
 
-  @Prop()
+  @Prop({ type: Object })
   error?: {
     name: string;
     message: string;
@@ -76,7 +76,8 @@ export class Trace {
 
 export const TraceSchema = SchemaFactory.createForClass(Trace);
 
+// Índices compuestos para búsquedas comunes
 TraceSchema.index({ traceId: 1, timestamp: -1 });
 TraceSchema.index({ service: 1, timestamp: -1 });
 TraceSchema.index({ userId: 1, timestamp: -1 });
-TraceSchema.index({ timestamp: -1 });
+TraceSchema.index({ timestamp: -1 }); // Para TTL si se implementa

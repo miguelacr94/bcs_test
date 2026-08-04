@@ -17,8 +17,17 @@ export * from './exceptions/domain.exception';
 // Interfaces
 export * from './interfaces';
 
+// Ports & Adapters
+export * from './ports/encryption.port';
+export * from './adapters/aes-encryption.adapter';
+
+// Interceptors
+export * from './interceptors/encrypt-id.interceptor';
+
 // Pipes
 export * from './pipes/parse-mongo-id.pipe';
+
+export * from './pipes/decrypt-id.pipe';
 
 // Validators
 export * from './validators/is-strong-password.validator';

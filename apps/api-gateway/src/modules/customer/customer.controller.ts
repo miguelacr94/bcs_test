@@ -68,7 +68,7 @@ export class CustomerController {
           { cmd: ApplicationPattern.CREATE_APPLICATION },
           { 
             createDto: { 
-              clientId: dto.customerData.document, 
+              clientId: customer.id, 
               channel: 'Autogestionado',
               offerResult: dto.offerResult 
             } 

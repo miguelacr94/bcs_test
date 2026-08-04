@@ -1,12 +1,9 @@
 import {
   Controller,
-  Get,
   Post,
-  Param,
   Body,
   Logger,
   Inject,
-  NotFoundException,
 } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
@@ -77,23 +74,21 @@ export class UserCoreGatewayController {
     }
 
     // 2. Validamos si existe en la Base de Datos local del banco (Customer)
-    let customerExists = false;
+    let customer: any = null;
     try {
-      const customer = await firstValueFrom(
+      customer = await firstValueFrom(
         this.customerClient
           .send({ cmd: CustomerPattern.GET_CUSTOMER_BY_DOCUMENT }, { document: body.document })
           .pipe(timeout(5000), retry(3)),
       );
-      if (customer) {
-        customerExists = true;
-      }
     } catch (error) {
       this.logger.log(
         `Gateway-Compose: Cliente ${body.document} no registrado localmente en la db`,
       );
     }
 
-    if (!customerExists) {
+    if (!customer) {
+      // Elegible pero no tiene registro local → debe crear aplicación
       return {
         isEligible: true,
         existsInDb: false,
@@ -101,41 +96,39 @@ export class UserCoreGatewayController {
       };
     }
 
-    // 3. Si existe en la base de datos local, miramos si tiene solicitudes activas
+    // 3. Si existe en la DB local, buscamos solicitud activa.
+    //    IMPORTANTE: el clientId guardado en las aplicaciones es el DOCUMENTO del cliente,
+    //    no el ObjectId del customer (así se crea desde el gateway al llamar CREATE_APPLICATION).
+    const clientId = body.document;
     let activeApplicationId: string | null = null;
+
     try {
-      const appsResponse = await firstValueFrom(
+      const activeApp = await firstValueFrom(
         this.applicationsClient
           .send(
-            { cmd: ApplicationPattern.GET_APPLICATIONS },
-            { paginationDto: { limit: 100, page: 1 } },
+            { cmd: ApplicationPattern.GET_ACTIVE_APPLICATION_BY_CLIENT_ID },
+            { clientId },
           )
           .pipe(timeout(5000), retry(3)),
       );
 
-      // Filtramos las solicitudes del cliente que estén activas (estados que no estén cerrados)
-      if (appsResponse && appsResponse.data) {
-        const activeApp = appsResponse.data.find(
-          (app: any) =>
-            app.clientId === document &&
-            app.status !== 'Finalizada' &&
-            app.status !== 'Abandonada',
+      if (activeApp) {
+        activeApplicationId = activeApp.id || activeApp._id || null;
+        this.logger.log(
+          `Gateway-Compose: Solicitud activa encontrada para ${body.document}`,
         );
-        if (activeApp) {
-          activeApplicationId = activeApp.id || activeApp._id || null;
-        }
       }
     } catch (error) {
-      this.logger.error(
-        `Gateway-Compose: Error consultando solicitudes para ${body.document}`,
-        error,
+      // Si el microservicio no encuentra app activa, simplemente retornamos null
+      this.logger.log(
+        `Gateway-Compose: No se encontró solicitud activa para clientId ${clientId}`,
       );
     }
 
     return {
       isEligible: true,
       existsInDb: true,
-      activeApplicationId,
+      activeApplicationId, // null → frontend crea nueva; string base64 → frontend redirige al detalle
     };
   }
 }

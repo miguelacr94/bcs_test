@@ -60,7 +60,7 @@ export class MongooseApplicationRepository implements ApplicationRepositoryPort 
 
     const filter: any = {};
     if (clientId) {
-      filter.clientId = clientId;
+      filter.clientId = new Types.ObjectId(clientId);
     }
     if (status) {
       filter.status = status;
@@ -77,7 +77,7 @@ export class MongooseApplicationRepository implements ApplicationRepositoryPort 
 
   async findByClientIdAndStatus(clientId: string, status: string | string[]): Promise<Application | null> {
     const queryStatus = Array.isArray(status) ? { $in: status as ApplicationStatus[] } : (status as ApplicationStatus);
-    const doc = await this.applicationModel.findOne({ clientId, status: queryStatus }).exec();
+    const doc = await this.applicationModel.findOne({ clientId: new Types.ObjectId(clientId), status: queryStatus }).exec();
     if (!doc) {
       return null;
     }

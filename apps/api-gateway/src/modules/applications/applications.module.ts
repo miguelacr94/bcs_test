@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { ApplicationsController } from './applications.controller';
 import { envs } from '@app/shared/config/envs';
+import { SensitiveDataMaskAdapter } from './adapters/sensitive-data-mask.adapter';
 
 @Module({
   imports: [
@@ -35,5 +36,6 @@ import { envs } from '@app/shared/config/envs';
     ]),
   ],
   controllers: [ApplicationsController],
+  providers: [SensitiveDataMaskAdapter],
 })
 export class ApplicationsModule {}

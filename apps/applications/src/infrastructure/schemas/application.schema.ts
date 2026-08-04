@@ -1,6 +1,6 @@
 import { ApplicationStatus } from '@app/shared/enums';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, Types } from 'mongoose';
 
 @Schema({ _id: false })
 export class ApplicationEventSchema {
@@ -22,8 +22,8 @@ export class ApplicationDocument extends Document {
   @Prop({ required: true, unique: true })
   radicado!: string;
 
-  @Prop({ required: true })
-  clientId!: string;
+  @Prop({ required: true, type: Types.ObjectId, ref: 'Customer' })
+  clientId!: Types.ObjectId;
 
   @Prop({ required: true })
   channel!: string;

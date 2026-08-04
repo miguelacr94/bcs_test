@@ -9,16 +9,13 @@ import {
   Inject,
   Logger,
   UseGuards,
+  Req,
+  BadRequestException,
 } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
 import { timeout, retry } from 'rxjs/operators';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiBody,
-  ApiBearerAuth,
-} from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
 import { ApplicationPattern, CustomerPattern } from '@app/shared/enums';
 import { PaginationDto } from '@app/shared/dtos';
 import { CreateApplicationDto } from './dtos/create-application.dto';
@@ -28,7 +25,9 @@ import { SimulateOfferDto } from './dtos/simulate-offer.dto';
 import { AuthGuard } from '../../guards/auth.guard';
 import { RolesGuard } from '../../guards/roles.guard';
 import { Roles } from '../../decorators/roles.decorator';
+import { Public } from '../../decorators/public.decorator';
 import { Role } from '@app/shared/enums';
+import { SensitiveDataMaskAdapter } from './adapters/sensitive-data-mask.adapter';
 
 @ApiTags('Solicitudes de Financiación (Applications)')
 @Controller('applications')
@@ -40,18 +39,46 @@ export class ApplicationsController {
     private readonly applicationsClient: ClientProxy,
     @Inject('CUSTOMER_SERVICE')
     private readonly customerClient: ClientProxy,
+    private readonly sensitiveDataMask: SensitiveDataMaskAdapter,
   ) {}
 
   @ApiOperation({ summary: 'Crear solicitud de financiación' })
   @Post()
   @ApiBody({ type: CreateApplicationDto })
-  async createApplication(
-    @Body() createDto: CreateApplicationDto,
-  ) {
+  async createApplication(@Body() createDto: CreateApplicationDto) {
     this.logger.log(`Gateway: Solicitud para crear aplicación`);
+
+    let finalClientId = createDto.clientId;
+
+    // Si el clientId no tiene 24 caracteres (no es un ObjectId válido), asumimos que es el documento
+    if (finalClientId && finalClientId.length !== 24) {
+      try {
+        const customer = await firstValueFrom(
+          this.customerClient
+            .send({ cmd: CustomerPattern.GET_CUSTOMER_BY_DOCUMENT }, { document: finalClientId })
+            .pipe(timeout(3000)),
+        );
+        
+        if (customer && customer.id) {
+          finalClientId = customer.id;
+        } else {
+          throw new BadRequestException('No existe un cliente asociado a ese documento.');
+        }
+      } catch (error: any) {
+        throw new BadRequestException(
+          error?.message || 'Error al validar el cliente asociado al documento.',
+        );
+      }
+    }
+
+    const payload = {
+      ...createDto,
+      clientId: finalClientId,
+    };
+
     return await firstValueFrom(
       this.applicationsClient
-        .send({ cmd: ApplicationPattern.CREATE_APPLICATION }, { createDto })
+        .send({ cmd: ApplicationPattern.CREATE_APPLICATION }, { createDto: payload })
         .pipe(timeout(5000), retry(3)),
     );
   }
@@ -77,20 +104,22 @@ export class ApplicationsController {
             // Obtener información del cliente usando el clientId como documento
             const customer = await firstValueFrom(
               this.customerClient
-                .send({ cmd: CustomerPattern.GET_CUSTOMER_BY_DOCUMENT }, { document: app.clientId })
+                .send(
+                  { cmd: CustomerPattern.GET_CUSTOMER_BY_DOCUMENT },
+                  { document: app.clientId },
+                )
                 .pipe(timeout(5000), retry(3)),
             );
-            
+
             return {
               ...app,
-              customer: {
-                name: customer.name,
-                lastName: customer.lastName,
-                document: customer.document,
-              },
+              customer:
+                this.sensitiveDataMask.sanitizeCustomerForList(customer),
             };
           } catch (error) {
-            this.logger.error(`Error fetching customer for clientId ${app.clientId}: ${error}`);
+            this.logger.error(
+              `Error fetching customer for clientId ${app.clientId}: ${error}`,
+            );
             return {
               ...app,
               customer: null,
@@ -108,17 +137,60 @@ export class ApplicationsController {
     return applications;
   }
 
+  @Public()
+  @UseGuards(AuthGuard)
   @ApiOperation({ summary: 'Consultar detalle de solicitud' })
   @Post('get-by-id')
-  async getApplicationById(
-    @Body() body: { id: string },
-  ) {
+  async getApplicationById(@Req() req: any, @Body() body: { id: string }) {
     this.logger.log(`Gateway: Petición para consultar solicitud ${body.id}`);
-    return await firstValueFrom(
+    const application: any = await firstValueFrom(
       this.applicationsClient
-        .send({ cmd: ApplicationPattern.GET_APPLICATION_BY_ID }, { id: body.id })
+        .send(
+          { cmd: ApplicationPattern.GET_APPLICATION_BY_ID },
+          { id: body.id },
+        )
         .pipe(timeout(5000), retry(3)),
     );
+
+    if (application && application.clientId) {
+      try {
+        const customer = await firstValueFrom(
+          this.customerClient
+            .send(
+              { cmd: CustomerPattern.GET_CUSTOMER_BY_DOCUMENT },
+              { document: application.clientId },
+            )
+            .pipe(timeout(5000)),
+        );
+        
+        if (customer) {
+          const isAdmin = req.user?.role === Role.ADMIN;
+          
+          // Enmascarar el documento dejando solo los últimos 4 dígitos
+          const docStr = customer.document || '';
+          if (docStr.length > 4) {
+            customer.document = '*'.repeat(docStr.length - 4) + docStr.slice(-4);
+          }
+
+          // Enmascarar el teléfono dejando solo los últimos 4 dígitos SI NO ES ADMIN
+          if (!isAdmin) {
+            const phoneStr = customer.phone || '';
+            if (phoneStr.length > 4) {
+              customer.phone = '*'.repeat(phoneStr.length - 4) + phoneStr.slice(-4);
+            }
+          }
+          
+          application.customer = customer;
+        }
+      } catch (error) {
+        this.logger.warn(`No se pudo obtener la información del cliente para la solicitud ${body.id}`);
+      }
+
+      // Eliminar el clientId de la respuesta como solicitaste
+      delete application.clientId;
+    }
+
+    return application;
   }
 
   @ApiOperation({ summary: 'Actualizar parcialmente la solicitud' })
@@ -130,7 +202,10 @@ export class ApplicationsController {
     this.logger.log(`Gateway: Petición para actualizar solicitud ${body.id}`);
     return await firstValueFrom(
       this.applicationsClient
-        .send({ cmd: ApplicationPattern.UPDATE_APPLICATION }, { id: body.id, updateDto: body.updateDto })
+        .send(
+          { cmd: ApplicationPattern.UPDATE_APPLICATION },
+          { id: body.id, updateDto: body.updateDto },
+        )
         .pipe(timeout(5000), retry(3)),
     );
   }
@@ -146,36 +221,45 @@ export class ApplicationsController {
     );
     return await firstValueFrom(
       this.applicationsClient
-        .send({ cmd: ApplicationPattern.SIMULATE_OFFER }, { id: body.id, simulateDto: body.simulateDto })
+        .send(
+          { cmd: ApplicationPattern.SIMULATE_OFFER },
+          { id: body.id, simulateDto: body.simulateDto },
+        )
         .pipe(timeout(5000), retry(3)),
     );
   }
 
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Aceptar oferta de crédito' })
-  @UseGuards(AuthGuard)
   @Post('accept-offer')
-  async acceptOffer(
-    @Body() body: { id: string; channel?: string },
-  ) {
+  async acceptOffer(@Body() body: { id: string; channel?: string }) {
     return await firstValueFrom(
       this.applicationsClient
-        .send({ cmd: ApplicationPattern.ACCEPT_OFFER }, { id: body.id, channel: body?.channel })
+        .send(
+          { cmd: ApplicationPattern.ACCEPT_OFFER },
+          { id: body.id, channel: body?.channel },
+        )
         .pipe(timeout(5000), retry(3)),
     );
   }
 
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Abandonar solicitud' })
-  @UseGuards(AuthGuard)
   @Post('abandon')
   @ApiBody({ type: AbandonApplicationDto })
   async abandonApplication(
-    @Body() body: { id: string; reasonDto: AbandonApplicationDto & { channel?: string } },
+    @Body()
+    body: {
+      id: string;
+      reasonDto: AbandonApplicationDto & { channel?: string };
+    },
   ) {
     return await firstValueFrom(
       this.applicationsClient
-        .send({ cmd: ApplicationPattern.ABANDON_APPLICATION }, { id: body.id, reasonDto: body.reasonDto })
+        .send(
+          { cmd: ApplicationPattern.ABANDON_APPLICATION },
+          { id: body.id, reasonDto: body.reasonDto },
+        )
         .pipe(timeout(5000), retry(3)),
     );
   }
@@ -191,7 +275,10 @@ export class ApplicationsController {
     );
     return await firstValueFrom(
       this.applicationsClient
-        .send({ cmd: ApplicationPattern.GET_APPLICATION_EVENTS }, { id: body.id })
+        .send(
+          { cmd: ApplicationPattern.GET_APPLICATION_EVENTS },
+          { id: body.id },
+        )
         .pipe(timeout(5000), retry(3)),
     );
   }
@@ -201,12 +288,13 @@ export class ApplicationsController {
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
   @Post('validate')
-  async validateApplication(
-    @Body() body: { id: string; validationData: any },
-  ) {
+  async validateApplication(@Body() body: { id: string; validationData: any }) {
     return await firstValueFrom(
       this.applicationsClient
-        .send({ cmd: ApplicationPattern.VALIDATE_APPLICATION }, { id: body.id, validationData: body.validationData })
+        .send(
+          { cmd: ApplicationPattern.VALIDATE_APPLICATION },
+          { id: body.id, validationData: body.validationData },
+        )
         .pipe(timeout(5000), retry(3)),
     );
   }
@@ -221,7 +309,14 @@ export class ApplicationsController {
   ) {
     return await firstValueFrom(
       this.applicationsClient
-        .send({ cmd: ApplicationPattern.FINALIZE_APPLICATION }, { id: body.id, withDisbursement: body.withDisbursement, channel: body.channel })
+        .send(
+          { cmd: ApplicationPattern.FINALIZE_APPLICATION },
+          {
+            id: body.id,
+            withDisbursement: body.withDisbursement,
+            channel: body.channel,
+          },
+        )
         .pipe(timeout(5000), retry(3)),
     );
   }

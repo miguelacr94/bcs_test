@@ -1,4 +1,4 @@
-import { Controller, Logger } from '@nestjs/common';
+import { Controller, Logger, Inject } from '@nestjs/common';
 import { MessagePattern, Payload, RpcException } from '@nestjs/microservices';
 import { ApplicationPattern } from '@app/shared/enums';
 import {
@@ -13,6 +13,7 @@ import {
   ValidateApplicationUseCase,
   FinalizeApplicationUseCase,
 } from './application/use-cases';
+import { ApplicationRepositoryPort } from './domain/ports/application-repository.port';
 
 @Controller()
 export class ApplicationsController {
@@ -29,6 +30,8 @@ export class ApplicationsController {
     private readonly getApplicationEventsUseCase: GetApplicationEventsUseCase,
     private readonly validateApplicationUseCase: ValidateApplicationUseCase,
     private readonly finalizeApplicationUseCase: FinalizeApplicationUseCase,
+    @Inject('ApplicationRepositoryPort')
+    private readonly applicationRepository: ApplicationRepositoryPort,
   ) {}
 
   @MessagePattern({ cmd: ApplicationPattern.CREATE_APPLICATION })
@@ -68,6 +71,23 @@ export class ApplicationsController {
       throw new RpcException({ error: error.message, statusCode: 400 });
     }
   }
+
+  @MessagePattern({ cmd: ApplicationPattern.GET_ACTIVE_APPLICATION_BY_CLIENT_ID })
+  async getActiveApplicationByClientId(@Payload() data: { clientId: string }) {
+    try {
+      const activeStatuses = ['En Proceso', 'Pendiente Validación'];
+      const application = await this.applicationRepository.findByClientIdAndStatus(
+        data.clientId,
+        activeStatuses,
+      );
+      return application ?? null;
+    } catch (error: any) {
+      this.logger.error(`Error finding active application for client ${data.clientId}: ${error.message}`);
+      if (error instanceof RpcException) throw error;
+      throw new RpcException({ error: error.message, statusCode: 400 });
+    }
+  }
+
 
   @MessagePattern({ cmd: ApplicationPattern.UPDATE_APPLICATION })
   async updateApplication(@Payload() data: { id: string; updateDto: any }) {

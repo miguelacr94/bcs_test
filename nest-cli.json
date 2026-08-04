@@ -56,6 +56,14 @@
         "tsConfigPath": "apps/disbursements/tsconfig.app.json"
       }
     },
+    "shared": {
+      "type": "library",
+      "root": "libs/shared",
+      "sourceRoot": "libs/shared/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/shared/tsconfig.json"
+      }
+    },
     "technical-test": {
       "type": "application",
       "root": "apps/technical-test",
@@ -65,6 +73,15 @@
         "tsConfigPath": "apps/technical-test/tsconfig.app.json"
       }
     },
+    "tracing": {
+      "type": "application",
+      "root": "apps/tracing",
+      "entryFile": "main",
+      "sourceRoot": "apps/tracing/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/tracing/tsconfig.app.json"
+      }
+    },
     "user-core": {
       "type": "application",
       "root": "apps/user-core",
@@ -72,14 +89,6 @@
       "sourceRoot": "apps/user-core/src",
       "compilerOptions": {
         "tsConfigPath": "apps/user-core/tsconfig.app.json"
-      }
-    },
-    "shared": {
-      "type": "library",
-      "root": "libs/shared",
-      "sourceRoot": "libs/shared/src",
-      "compilerOptions": {
-        "tsConfigPath": "libs/shared/tsconfig.json"
       }
     }
   }

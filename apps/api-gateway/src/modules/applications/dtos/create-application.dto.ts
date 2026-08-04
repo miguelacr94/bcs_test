@@ -1,9 +1,9 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, IsIn, IsObject, IsOptional } from 'class-validator';
+import { IsNotEmpty, IsString, IsIn, IsObject, IsOptional, IsMongoId } from 'class-validator';
 
 export class CreateApplicationDto {
   @ApiProperty({
-    description: 'ID del cliente solicitante (generalmente se toma del token JWT, pero se incluye aquí para flexibilidad si es llamado por un admin)',
+    description: 'ID del cliente solicitante o Número de Documento',
     example: '64a7f9b8e4b0f5a1c2d3e4f5',
   })
   @IsNotEmpty({ message: 'El ID del cliente es obligatorio' })

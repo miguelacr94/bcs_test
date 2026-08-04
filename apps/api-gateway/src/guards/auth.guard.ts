@@ -24,13 +24,13 @@ export class AuthGuard implements CanActivate {
       context.getClass(),
     ]);
 
-    // Si es pública, dejamos pasar la petición sin verificar el token
-    if (isPublic) {
-      return true;
-    }
-
     const request = context.switchToHttp().getRequest();
     const authHeader = request.headers['authorization'];
+
+    // Si es pública y no hay token, dejamos pasar directamente
+    if (isPublic && !authHeader) {
+      return true;
+    }
 
     if (!authHeader) {
       throw new UnauthorizedException('Token no provisto.');
@@ -39,6 +39,7 @@ export class AuthGuard implements CanActivate {
     const [type, token] = authHeader.split(' ');
 
     if (type !== 'Bearer' || !token) {
+      if (isPublic) return true;
       throw new UnauthorizedException(
         'Formato de token inválido. Debe ser Bearer <token>.',
       );
@@ -50,8 +51,9 @@ export class AuthGuard implements CanActivate {
         this.authClient.send({ cmd: AuthPattern.VALIDATE_TOKEN }, { token }),
       );
 
-      // 3. Si el microservicio responde que no es válido, lanzar excepción
+      // 3. Si el microservicio responde que no es válido, lanzar excepción (o ignorar si es pública)
       if (!result || !result.isValid) {
+        if (isPublic) return true;
         throw new UnauthorizedException(
           result?.error || 'Token inválido o expirado.',
         );
@@ -61,6 +63,7 @@ export class AuthGuard implements CanActivate {
       request['user'] = result.user;
       return true;
     } catch (error: any) {
+      if (isPublic) return true;
       throw new UnauthorizedException(
         error.message || 'Error de autenticación.',
       );

@@ -2,6 +2,7 @@ export enum ApplicationPattern {
   CREATE_APPLICATION = 'create_application',
   GET_APPLICATIONS = 'get_applications',
   GET_APPLICATION_BY_ID = 'get_application_by_id',
+  GET_ACTIVE_APPLICATION_BY_CLIENT_ID = 'get_active_application_by_client_id',
   UPDATE_APPLICATION = 'update_application',
   SIMULATE_OFFER = 'simulate_offer',
   ACCEPT_OFFER = 'accept_offer',
@@ -32,4 +33,8 @@ export enum UserPattern {
 export enum DisbursementPattern {
   CREATE_DISBURSEMENT = 'create_disbursement',
   GET_DISBURSEMENT = 'get_disbursement',
+}
+
+export enum TracingPattern {
+  CREATE_TRACE = 'create_trace',
 }
