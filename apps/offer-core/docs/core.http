@@ -1,0 +1,42 @@
+### MOTOR DE OFERTAS (OFFER CORE) - CORE.HTTP (MOCKS)
+### Mocks simulando la integración externa con motores de riesgo, matrices de decisión o el Core Bancario.
+
+### 1. Simulación de Petición HTTP al Motor de Riesgos (Mock)
+# POST https://riesgos.banco.ejemplo.com/api/v1/simular-oferta
+# Content-Type: application/json
+# Authorization: Bearer TOKEN_EXTERNO_RIESGOS
+#
+# {
+#   "applicationId": "id_solicitud_123",
+#   "clientId": "id_cliente_456",
+#   "requestedAmount": 50000000,
+#   "requestedTerm": 60
+# }
+
+### Respuesta Mock Exitosa (Oferta Aprobada Tal Cual)
+# {
+#   "success": true,
+#   "message": "Oferta pre-aprobada disponible",
+#   "offerDetails": {
+#     "approvedAmount": 50000000,
+#     "interestRate": 1.45,
+#     "termMonths": 60
+#   }
+# }
+
+### Respuesta Mock Parcial (Monto no viable, se ofrece alternativa menor)
+# {
+#   "success": false,
+#   "message": "Monto solicitado de 50,000,000 no es viable según perfil crediticio.",
+#   "offerDetails": {
+#     "approvedAmount": 35000000,
+#     "interestRate": 1.85,
+#     "termMonths": 48
+#   }
+# }
+
+### Respuesta Mock Error (Falla Técnica en el Core de Riesgos)
+# {
+#   "error": "Timeout",
+#   "message": "Error técnico temporal conectando con el Core Bancario de Ofertas. Intente nuevamente."
+# }

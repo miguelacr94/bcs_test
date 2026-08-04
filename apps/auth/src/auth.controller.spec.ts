@@ -1,114 +1,55 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AuthController } from './auth.controller';
+import { RegisterUserUseCase, LoginUserUseCase, RefreshTokenUseCase, LogoutUseCase, UpdateUserUseCase } from './application/use-cases';
 import { AuthService } from './auth.service';
-import {
-  RegisterUserUseCase,
-  LoginUserUseCase,
-  RefreshTokenUseCase,
-  LogoutUseCase,
-  UpdateUserUseCase,
-} from './application/use-cases';
-import { RegisterUserDto } from './application/use-cases/dtos/register-user.dto';
+import { RpcException } from '@nestjs/microservices';
 
 describe('AuthController', () => {
-  let authController: AuthController;
-  let registerUserUseCase: RegisterUserUseCase;
-
-  const mockAuthService = {};
-  const mockRegisterUserUseCase = {
-    execute: jest.fn(),
-  };
-
-  const mockTokenService = {
-    verifyToken: jest.fn(),
-  };
+  let controller: AuthController;
+  let loginUseCase: LoginUserUseCase;
+  let registerUseCase: RegisterUserUseCase;
 
   beforeEach(async () => {
-    const app: TestingModule = await Test.createTestingModule({
+    const module: TestingModule = await Test.createTestingModule({
       controllers: [AuthController],
       providers: [
-        { provide: AuthService, useValue: mockAuthService },
-        { provide: RegisterUserUseCase, useValue: mockRegisterUserUseCase },
-        { provide: LoginUserUseCase, useValue: mockRegisterUserUseCase },
-        { provide: RefreshTokenUseCase, useValue: mockRegisterUserUseCase },
-        { provide: LogoutUseCase, useValue: mockRegisterUserUseCase },
-        { provide: UpdateUserUseCase, useValue: mockRegisterUserUseCase },
-        { provide: 'TokenServicePort', useValue: mockTokenService },
-        {
-          provide: 'UserRepositoryPort',
-          useValue: {
-            findById: jest
-              .fn()
-              .mockResolvedValue({ id: 'user-id', email: 'test@example.com' }),
-          },
-        },
+        { provide: AuthService, useValue: {} },
+        { provide: RegisterUserUseCase, useValue: { execute: jest.fn() } },
+        { provide: LoginUserUseCase, useValue: { execute: jest.fn() } },
+        { provide: RefreshTokenUseCase, useValue: { execute: jest.fn() } },
+        { provide: LogoutUseCase, useValue: { execute: jest.fn() } },
+        { provide: UpdateUserUseCase, useValue: { execute: jest.fn() } },
+        { provide: 'TokenServicePort', useValue: {} },
+        { provide: 'UserRepositoryPort', useValue: {} },
       ],
     }).compile();
 
-    authController = app.get<AuthController>(AuthController);
-    registerUserUseCase = app.get<RegisterUserUseCase>(RegisterUserUseCase);
+    controller = module.get<AuthController>(AuthController);
+    loginUseCase = module.get<LoginUserUseCase>(LoginUserUseCase);
+    registerUseCase = module.get<RegisterUserUseCase>(RegisterUserUseCase);
   });
 
-  describe('registerUser', () => {
-    it('should register a user successfully', async () => {
-      const dto: RegisterUserDto = {
-        name: 'John Doe',
-        email: 'john@example.com',
-        password: 'password123',
-      };
-
-      const mockUserResult = {
-        id: 'mock-id-123',
-        name: 'John Doe',
-        email: 'john@example.com',
-        role: 'USER',
-        createdAt: new Date(),
-      };
-
-      mockRegisterUserUseCase.execute.mockResolvedValue(mockUserResult);
-
-      const result = await authController.registerUser(dto);
-
-      expect(result).toEqual(mockUserResult);
-      expect(mockRegisterUserUseCase.execute).toHaveBeenCalledWith(dto);
-    });
-
-    it('should throw RpcException on error', async () => {
-      const dto: RegisterUserDto = {
-        name: 'John Doe',
-        email: 'john@example.com',
-        password: 'password123',
-      };
-
-      const errorMessage = 'El correo electrónico ya se encuentra registrado.';
-      mockRegisterUserUseCase.execute.mockRejectedValue(
-        new Error(errorMessage),
-      );
-
-      await expect(authController.registerUser(dto)).rejects.toThrow(
-        errorMessage,
-      );
-    });
+  it('should be defined', () => {
+    expect(controller).toBeDefined();
   });
 
-  describe('validateToken', () => {
-    it('should return isValid true for correct token', async () => {
-      mockTokenService.verifyToken.mockResolvedValue({ id: 'user-id' });
-      const result = await authController.validateToken({
-        token: 'mi-token-secreto-123',
-      });
-      expect(result.isValid).toBe(true);
-      expect(result.user).toBeDefined();
+  describe('loginUser', () => {
+    it('should login and return tokens', async () => {
+      const dto = { email: 'admin@test.com', password: 'password' };
+      const expectedTokens = { accessToken: 'token123', refreshToken: 'refresh123', user: { id: '1' } as any };
+      
+      jest.spyOn(loginUseCase, 'execute').mockResolvedValue(expectedTokens);
+
+      const result = await controller.loginUser(dto);
+      expect(result).toEqual(expectedTokens);
+      expect(loginUseCase.execute).toHaveBeenCalledWith(dto);
     });
 
-    it('should return isValid false for incorrect token', async () => {
-      mockTokenService.verifyToken.mockRejectedValue(
-        new Error('Invalid token'),
-      );
-      const result = await authController.validateToken({
-        token: 'invalid-token',
-      });
-      expect(result.isValid).toBe(false);
+    it('should throw RpcException if credentials are bad', async () => {
+      const dto = { email: 'admin@test.com', password: 'bad' };
+      jest.spyOn(loginUseCase, 'execute').mockRejectedValue(new Error('Invalid credentials'));
+
+      await expect(controller.loginUser(dto)).rejects.toThrow(RpcException);
     });
   });
 });

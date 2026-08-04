@@ -56,6 +56,15 @@
         "tsConfigPath": "apps/disbursements/tsconfig.app.json"
       }
     },
+    "offer-core": {
+      "type": "application",
+      "root": "apps/offer-core",
+      "entryFile": "main",
+      "sourceRoot": "apps/offer-core/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/offer-core/tsconfig.app.json"
+      }
+    },
     "shared": {
       "type": "library",
       "root": "libs/shared",

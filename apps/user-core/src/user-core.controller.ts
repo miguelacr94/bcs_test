@@ -1,19 +1,18 @@
-import { Controller, Get, Param, NotFoundException } from '@nestjs/common';
+import { Controller, Logger } from '@nestjs/common';
+import { MessagePattern, Payload } from '@nestjs/microservices';
 import { UserCoreService } from './user-core.service';
-import { UserInfo } from './infrastructure/adapters/mock-user.adapter';
+import { UserPattern } from '@app/shared/enums';
 
-@Controller('users')
+@Controller()
 export class UserCoreController {
+  private readonly logger = new Logger(UserCoreController.name);
+
   constructor(private readonly userService: UserCoreService) {}
 
-  @Get('document/:document')
-  async getByDocument(@Param('document') document: string): Promise<UserInfo> {
-    const user = await this.userService.getUserByDocument(document);
-    if (!user) {
-      throw new NotFoundException(
-        `Usuario con documento ${document} no encontrado`,
-      );
-    }
-    return user;
+  @MessagePattern({ cmd: UserPattern.GET_USER_BY_DOCUMENT })
+  async getByDocument(@Payload() data: { document: string }) {
+    this.logger.log(`User-Core: Consultando documento ${data.document}`);
+    const user = await this.userService.getUserByDocument(data.document);
+    return user || null;
   }
 }

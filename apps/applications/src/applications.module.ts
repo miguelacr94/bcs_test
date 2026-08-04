@@ -12,7 +12,7 @@ import {
   AuditOfferSchema,
 } from './infrastructure/schemas/audit-offer.schema';
 import { MongooseApplicationRepository } from './infrastructure/adapters/mongoose-application.repository';
-import { MockOfferServiceAdapter } from './infrastructure/adapters/mock-offer-service.adapter';
+import { RedisOfferServiceAdapter } from './infrastructure/adapters/redis-offer-service.adapter';
 import {
   CreateApplicationUseCase,
   GetApplicationsUseCase,
@@ -50,6 +50,14 @@ import {
           port: envs.redis.port,
         },
       },
+      {
+        name: 'OFFER_CORE_SERVICE',
+        transport: Transport.REDIS,
+        options: {
+          host: envs.redis.host,
+          port: envs.redis.port,
+        },
+      },
     ]),
   ],
   controllers: [ApplicationsController],
@@ -73,7 +81,7 @@ import {
     },
     {
       provide: 'OfferServicePort',
-      useClass: MockOfferServiceAdapter,
+      useClass: RedisOfferServiceAdapter,
     },
   ],
 })

@@ -38,3 +38,7 @@ export enum DisbursementPattern {
 export enum TracingPattern {
   CREATE_TRACE = 'create_trace',
 }
+
+export enum OfferPattern {
+  SIMULATE_OFFER = 'simulate_offer',
+}

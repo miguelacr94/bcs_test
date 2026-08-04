@@ -1,12 +1,18 @@
 import { Injectable, Logger } from '@nestjs/common';
-import {
-  OfferServicePort,
-  OfferSimulationResult,
-} from '../../domain/ports/offer-service.port';
+
+export interface OfferSimulationResult {
+  success: boolean;
+  message: string;
+  offerDetails?: {
+    approvedAmount: number;
+    interestRate: number;
+    termMonths: number;
+  };
+}
 
 @Injectable()
-export class MockOfferServiceAdapter implements OfferServicePort {
-  private readonly logger = new Logger(MockOfferServiceAdapter.name);
+export class OfferCoreService {
+  private readonly logger = new Logger(OfferCoreService.name);
 
   async simulateOffer(
     applicationId: string,
@@ -15,7 +21,7 @@ export class MockOfferServiceAdapter implements OfferServicePort {
     termMonths: number,
   ): Promise<OfferSimulationResult> {
     this.logger.log(
-      `Iniciando simulación mock para la solicitud ${applicationId} por monto ${amount} y plazo ${termMonths}...`,
+      `Offer-Core: Iniciando simulación para la solicitud ${applicationId} por monto ${amount} y plazo ${termMonths}...`,
     );
 
     // Simulamos latencia de red (1 segundo)
@@ -26,7 +32,7 @@ export class MockOfferServiceAdapter implements OfferServicePort {
     // 33% de probabilidad: Error técnico temporal
     if (random < 0.33) {
       throw new Error(
-        'Error técnico temporal conectando con el Core Bancario. Intente nuevamente.',
+        'Error técnico temporal conectando con el Core Bancario de Ofertas. Intente nuevamente.',
       );
     }
 
