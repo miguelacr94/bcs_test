@@ -163,33 +163,46 @@ export class ApplicationsController {
     );
 
     if (application && application.clientId) {
+      // Endpoint público/cliente: NO debe traer info del customer según regla de negocio
+      delete application.clientId;
+    }
+
+    return application;
+  }
+
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Consultar detalle completo de solicitud (Admin)' })
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  @Post('admin/get-by-id')
+  async getApplicationByIdAdmin(@Req() req: Record<string, unknown>, @Body() body: { id: string }) {
+    this.logger.log(`Gateway: Petición ADMIN para consultar solicitud ${body.id}`);
+    const application: Record<string, unknown> = await firstValueFrom(
+      this.applicationsClient
+        .send(
+          { cmd: ApplicationPattern.GET_APPLICATION_BY_ID },
+          { id: body.id },
+        )
+        .pipe(timeout(5000), retry(3)),
+    );
+
+    if (application && application.clientId) {
       try {
         const customer = await firstValueFrom(
           this.customerClient
             .send(
-              { cmd: CustomerPattern.GET_CUSTOMER_BY_DOCUMENT },
-              { document: application.clientId },
+              { cmd: CustomerPattern.GET_CUSTOMER_BY_ID },
+              { id: application.clientId },
             )
             .pipe(timeout(5000)),
         );
 
         if (customer) {
-          const isAdmin = (req.user as any)?.role === Role.ADMIN;
-
-          const docStr = customer.document || '';
-          if (docStr.length > 4) {
-            customer.document =
-              '*'.repeat(docStr.length - 4) + docStr.slice(-4);
+          // Regla: Siempre que se exponga el documento en el front debe ir enmascarado
+          if (customer.document) {
+            customer.document = this.sensitiveDataMask.maskDocument(customer.document);
           }
-
-          if (!isAdmin) {
-            const phoneStr = customer.phone || '';
-            if (phoneStr.length > 4) {
-              customer.phone =
-                '*'.repeat(phoneStr.length - 4) + phoneStr.slice(-4);
-            }
-          }
-
+          // Admin: El resto de datos viajan completos (sin enmascarar)
           application.customer = customer;
         }
       } catch (error) {

@@ -10,6 +10,7 @@ export enum ApplicationPattern {
   GET_APPLICATION_EVENTS = 'get_application_events',
   VALIDATE_APPLICATION = 'validate_application',
   FINALIZE_APPLICATION = 'finalize_application',
+  CHECK_RECENT_FINALIZED_APPLICATION_BY_CLIENT_ID = 'check_recent_finalized_application_by_client_id',
 }
 
 export enum AuthPattern {

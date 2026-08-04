@@ -1,0 +1,17 @@
+### API GATEWAY - USERS ENDPOINTS (LOCAL)
+### Estas peticiones corresponden a la orquestación del gateway para usuarios
+
+@host = http://localhost:3000/api/v1
+@contentType = application/json
+
+### 1. Validar estado del usuario (Regla de 30 días y Centrales)
+POST {{host}}/users/validate
+Content-Type: {{contentType}}
+
+{
+  "document": "111111111"
+}
+
+### Nota: Si el usuario tiene una solicitud FINALIZADA hace menos de 30 días,
+### este endpoint arrojará un HTTP 400 (Bad Request) informando la fecha en la que
+### podrá volver a aplicar, y los días restantes.

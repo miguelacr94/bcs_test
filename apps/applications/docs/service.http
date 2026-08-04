@@ -58,5 +58,49 @@ Authorization: Bearer {{token}}
   "id": "AQUÍ_VA_EL_ID_DE_LA_SOLICITUD",
   "withDisbursement": true,
   "channel": "Oficina",
-  "reason": "Finalización aprobada por comité"
+  "reason": "Finalización aprobada por comité y desembolsada exitosamente"
+}
+
+### 6. Crear solicitud de financiación
+POST {{host}}/applications
+Content-Type: {{contentType}}
+
+{
+  "clientId": "AQUÍ_VA_EL_ID_O_DOCUMENTO_DEL_CLIENTE",
+  "channel": "Web"
+}
+
+### 7. Simular Oferta
+POST {{host}}/applications/simulate-offer
+Content-Type: {{contentType}}
+
+{
+  "id": "AQUÍ_VA_EL_ID_DE_LA_SOLICITUD",
+  "simulateDto": {
+    "amount": 10000000,
+    "termMonths": 24
+  }
+}
+
+### 8. Aceptar Oferta
+POST {{host}}/applications/accept-offer
+Content-Type: {{contentType}}
+Authorization: Bearer {{token}}
+
+{
+  "id": "AQUÍ_VA_EL_ID_DE_LA_SOLICITUD",
+  "channel": "Web"
+}
+
+### 9. Abandonar Solicitud
+POST {{host}}/applications/abandon
+Content-Type: {{contentType}}
+Authorization: Bearer {{token}}
+
+{
+  "id": "AQUÍ_VA_EL_ID_DE_LA_SOLICITUD",
+  "reasonDto": {
+    "reason": "El cliente perdió interés en la oferta",
+    "channel": "Oficina"
+  }
 }

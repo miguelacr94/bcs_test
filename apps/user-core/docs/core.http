@@ -1,7 +1,35 @@
-### VALIDACIÓN CORE (USERS) - CORE.HTTP (MOCKS)
-### Mocks simulando la integración externa con las Centrales de Riesgo u otros Cores Bancarios.
+### VALIDACIÓN CORE (USERS) - CASOS DE USO MOCK
+### Este microservicio simula la integración con Centrales de Riesgo.
+### Actualmente existen dos escenarios de uso dependiendo del documento ingresado:
 
-### 1. Simulación de Petición HTTP Directa a la Central de Riesgos Externa (Mock)
+### ---------------------------------------------------------
+### CASO 1: EL USUARIO EXISTE (CLIENTE ELEGIBLE)
+### ---------------------------------------------------------
+### En el adaptador mock (`mock-user.adapter.ts`), están quemados los siguientes documentos:
+### - "111111111" (Juan Pérez, Salario: 5000)
+### - "222222222" (María Gómez, Salario: 7500)
+### - "333333333" (Pedro García, Salario: 10000)
+###
+### Si envías cualquiera de estos documentos en la petición de validación, el microservicio
+### retornará la información del usuario exitosamente, permitiendo continuar con el proceso.
+
+### ---------------------------------------------------------
+### CASO 2: EL USUARIO NO EXISTE (CLIENTE NO ELEGIBLE / NO ENCONTRADO)
+### ---------------------------------------------------------
+### Si envías cualquier OTRO documento diferente a los tres mencionados arriba (ej. "999999999"),
+### el adaptador lanzará una excepción RPC con código 4001:
+### "Usuario con documento 999999999 no encontrado".
+###
+### El API Gateway captura este error y, al no encontrar al usuario en las centrales,
+### retornará `isEligible: false` hacia el frontend.
+
+### =========================================================
+### EJEMPLOS DE PETICIONES AL CORE BANCARIO (MOCK)
+### =========================================================
+### Nota: Estas peticiones son simuladas y no se ejecutan contra localhost,
+### sirven como referencia de la integración con el sistema externo.
+
+### Simulación de Validación Exitosa (Caso 1)
 # POST https://api.datacredito.ejemplo.com/v1/consultar
 # Content-Type: application/json
 # Authorization: Bearer TOKEN_EXTERNO
@@ -11,7 +39,7 @@
 #   "tipoDocumento": "CC"
 # }
 
-### Respuesta Mock Exitosa (Cliente Elegible)
+### Respuesta Mock Exitosa
 # {
 #   "status": "APPROVED",
 #   "score": 850,
@@ -19,7 +47,17 @@
 #   "reportedDebts": 0
 # }
 
-### Respuesta Mock Rechazada (Cliente con Reportes)
+### Simulación de Validación Rechazada (Caso 2)
+# POST https://api.datacredito.ejemplo.com/v1/consultar
+# Content-Type: application/json
+# Authorization: Bearer TOKEN_EXTERNO
+#
+# {
+#   "documento": "999999999",
+#   "tipoDocumento": "CC"
+# }
+
+### Respuesta Mock Rechazada
 # {
 #   "status": "REJECTED",
 #   "score": 400,

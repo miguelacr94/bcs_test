@@ -23,6 +23,12 @@ export class MockUserAdapter {
       employer: 'Beta Ltd',
       salary: 7500,
     },
+    {
+      document: '333333333',
+      name: 'Pedro García',
+      employer: 'Gamma S.A.',
+      salary: 10000,
+    },
   ];
 
   async findByDocument(document: string): Promise<UserInfo> {

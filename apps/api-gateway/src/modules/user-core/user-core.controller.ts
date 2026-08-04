@@ -1,6 +1,6 @@
 import { Controller, Post, Body, Logger, Inject } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
-import { ClientProxy } from '@nestjs/microservices';
+import { ClientProxy, RpcException } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
 import { timeout, retry } from 'rxjs/operators';
 import {
@@ -105,6 +105,37 @@ export class UserCoreGatewayController {
       this.logger.log(
         `Gateway-Compose: No se encontró solicitud activa para clientId ${clientId}`,
       );
+    }
+
+    if (!activeApplicationId) {
+      // Si no tiene solicitud activa, verificamos si tiene una restricción de 30 días
+      try {
+        const restriction = await firstValueFrom<{ restricted: boolean; availableDate?: string; daysRemaining?: number }>(
+          this.applicationsClient
+            .send(
+              { cmd: ApplicationPattern.CHECK_RECENT_FINALIZED_APPLICATION_BY_CLIENT_ID },
+              { clientId },
+            )
+            .pipe(timeout(5000), retry(3)),
+        );
+
+        if (restriction && restriction.restricted) {
+          const dateStr = restriction.availableDate 
+            ? new Date(restriction.availableDate).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })
+            : '';
+          const { BadRequestException } = await import('@nestjs/common');
+          const errorMsg = `Tiene una solicitud finalizada recientemente. Podrá iniciar un nuevo proceso a partir del ${dateStr}.`;
+          const err = new BadRequestException(errorMsg);
+          (err as any).availableDate = restriction.availableDate;
+          (err as any).daysRemaining = restriction.daysRemaining;
+          throw err;
+        }
+      } catch (error) {
+        if (error && (error as any).getStatus) throw error;
+        this.logger.log(
+          `Gateway-Compose: Error verificando solicitudes recientes para clientId ${clientId}`,
+        );
+      }
     }
 
     return {

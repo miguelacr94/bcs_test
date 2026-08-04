@@ -6,6 +6,7 @@ import {
   Param,
   Inject,
   Logger,
+  BadRequestException,
 } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
@@ -32,11 +33,15 @@ export class CustomerController {
   @Post()
   async create(@Body() createCustomerDto: CreateCustomerDto) {
     this.logger.log(`Gateway: Petición para crear cliente`);
-    return await firstValueFrom(
-      this.customerClient
-        .send({ cmd: CustomerPattern.CREATE_CUSTOMER }, createCustomerDto)
-        .pipe(timeout(5000), retry(3)),
-    );
+    try {
+      return await firstValueFrom(
+        this.customerClient
+          .send({ cmd: CustomerPattern.CREATE_CUSTOMER }, createCustomerDto)
+          .pipe(timeout(5000), retry(3)),
+      );
+    } catch (error: any) {
+      throw new BadRequestException(error.error || error.message || 'Error al crear el cliente');
+    }
   }
 
   @ApiOperation({
@@ -68,11 +73,15 @@ export class CustomerController {
     }
 
     if (!customer) {
-      customer = await firstValueFrom(
-        this.customerClient
-          .send({ cmd: CustomerPattern.CREATE_CUSTOMER }, dto.customerData)
-          .pipe(timeout(5000), retry(3)),
-      );
+      try {
+        customer = await firstValueFrom(
+          this.customerClient
+            .send({ cmd: CustomerPattern.CREATE_CUSTOMER }, dto.customerData)
+            .pipe(timeout(5000), retry(3)),
+        );
+      } catch (error: any) {
+        throw new BadRequestException(error.error || error.message || 'Error al crear el cliente');
+      }
     } else {
       this.logger.log(
         `Gateway-Compose: Cliente con documento ${dto.customerData.document} ya registrado. Continuando con la solicitud...`,

@@ -13,6 +13,8 @@ interface ExceptionPayload {
   code?: number;
   getStatus?: () => number;
   getResponse?: () => string | { message: string };
+  availableDate?: string;
+  daysRemaining?: number;
 }
 
 @Catch()
@@ -64,11 +66,20 @@ export class AllExceptionsFilter implements ExceptionFilter {
       }
     }
 
-    response.status(status).json({
+    const responsePayload: any = {
       statusCode: status,
       timestamp: new Date().toISOString(),
       path: request.url,
       message: Array.isArray(message) ? message : [message],
-    });
+    };
+
+    if (exc.availableDate) {
+      responsePayload.availableDate = exc.availableDate;
+    }
+    if (exc.daysRemaining !== undefined) {
+      responsePayload.daysRemaining = exc.daysRemaining;
+    }
+
+    response.status(status).json(responsePayload);
   }
 }

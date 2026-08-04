@@ -24,6 +24,7 @@ import {
   GetApplicationEventsUseCase,
   ValidateApplicationUseCase,
   FinalizeApplicationUseCase,
+  CheckRecentFinalizedApplicationUseCase,
 } from './application/use-cases';
 
 @Module({
@@ -73,6 +74,7 @@ import {
     GetApplicationEventsUseCase,
     ValidateApplicationUseCase,
     FinalizeApplicationUseCase,
+    CheckRecentFinalizedApplicationUseCase,
 
     // Inversión de Dependencias (Puertos -> Adaptadores)
     {

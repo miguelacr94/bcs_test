@@ -12,6 +12,7 @@ import {
   GetApplicationEventsUseCase,
   ValidateApplicationUseCase,
   FinalizeApplicationUseCase,
+  CheckRecentFinalizedApplicationUseCase,
 } from './application/use-cases';
 import { ApplicationRepositoryPort } from './domain/ports/application-repository.port';
 
@@ -30,6 +31,7 @@ export class ApplicationsController {
     private readonly getApplicationEventsUseCase: GetApplicationEventsUseCase,
     private readonly validateApplicationUseCase: ValidateApplicationUseCase,
     private readonly finalizeApplicationUseCase: FinalizeApplicationUseCase,
+    private readonly checkRecentFinalizedApplicationUseCase: CheckRecentFinalizedApplicationUseCase,
     @Inject('ApplicationRepositoryPort')
     private readonly applicationRepository: ApplicationRepositoryPort,
   ) {}
@@ -47,10 +49,13 @@ export class ApplicationsController {
         data.createDto.channel,
         data.createDto.offerResult,
       );
-    } catch (error: unknown) {
-      this.logger.error(`Error creating application: ${(error instanceof Error ? error.message : String(error))}`);
+    } catch (error: any) {
+      this.logger.error(`Error creating application: ${error.message || String(error)}`);
       if (error instanceof RpcException) throw error;
-      throw new RpcException({ error: (error instanceof Error ? error.message : String(error)), statusCode: 400 });
+      const payload: any = { error: error.message || String(error), statusCode: 400 };
+      if (error.availableDate) payload.availableDate = error.availableDate;
+      if (error.daysRemaining) payload.daysRemaining = error.daysRemaining;
+      throw new RpcException(payload);
     }
   }
 
@@ -101,6 +106,21 @@ export class ApplicationsController {
     } catch (error: unknown) {
       this.logger.error(
         `Error finding active application for client ${data.clientId}: ${(error instanceof Error ? error.message : String(error))}`,
+      );
+      if (error instanceof RpcException) throw error;
+      throw new RpcException({ error: (error instanceof Error ? error.message : String(error)), statusCode: 400 });
+    }
+  }
+
+  @MessagePattern({
+    cmd: ApplicationPattern.CHECK_RECENT_FINALIZED_APPLICATION_BY_CLIENT_ID,
+  })
+  async checkRecentFinalizedApplicationByClientId(@Payload() data: { clientId: string }) {
+    try {
+      return await this.checkRecentFinalizedApplicationUseCase.execute(data.clientId);
+    } catch (error: unknown) {
+      this.logger.error(
+        `Error checking recent finalized application for client ${data.clientId}: ${(error instanceof Error ? error.message : String(error))}`,
       );
       if (error instanceof RpcException) throw error;
       throw new RpcException({ error: (error instanceof Error ? error.message : String(error)), statusCode: 400 });

@@ -61,6 +61,16 @@ pnpm start:all
 ```
 *Este comando se encarga automáticamente de matar procesos anteriores que se hayan quedado colgados en el puerto 3000 y levanta todos los servicios en modo de desarrollo (`--watch`).*
 
+### Paso 3: Probar los Endpoints (REST Client)
+Una vez que el API Gateway y los microservicios estén corriendo, puedes probar las peticiones directamente desde tu editor de código (se recomienda usar **VSCode** con la extensión [REST Client](https://marketplace.visualstudio.com/items?itemName=humao.rest-client)).
+
+Cada microservicio cuenta con un archivo interactivo de pruebas ubicado en su carpeta `docs`:
+1. **API Gateway / Orquestación (Validaciones):** Abre el archivo `apps/api-gateway/docs/users.http`. Allí encontrarás la petición para simular la validación de un usuario (incluyendo la regla de los 30 días).
+2. **Solicitudes (Applications):** Abre el archivo `apps/applications/docs/service.http`. Allí encontrarás todo el flujo (Crear solicitud, Simular oferta, Aceptar, Abandonar, Finalizar, etc.).
+3. **Autenticación (Auth):** Puedes generar tokens de prueba usando las peticiones en `apps/auth/docs/service.http`. (Recuerda copiar el token generado y pegarlo en la variable `@token` del archivo `service.http` de las solicitudes).
+
+Simplemente abre cualquiera de esos archivos en VSCode y haz clic en el botón `Send Request` que aparece arriba de cada bloque de petición.
+
 ---
 
 ## 🐳 Alternativa: Levantar todo con Docker
@@ -88,3 +98,27 @@ El código fuente está dividido principalmente en dos carpetas dentro de la ra�
 - **`npm run lint`**: Analiza el código con ESLint y corrige problemas menores.
 - **`npm run format`**: Aplica formato a todo el código utilizando Prettier.
 - **`npm run kill-stale`**: Fuerza el cierre de aplicaciones previas que estén usando el puerto 3000 o procesos de Nest que se hayan quedado colgados.
+
+---
+
+## 🧠 Reglas de Negocio (Business Rules)
+
+### 1. Restricción de 30 Días para Solicitudes Finalizadas
+Para evitar abusos en el sistema, se ha implementado una regla transversal en la API y Microservicios:
+- Si un cliente tiene una solicitud en estado **FINALIZADA**, no podrá iniciar un nuevo proceso de simulación ni crear una nueva solicitud hasta que hayan transcurrido **30 días** desde la fecha de finalización.
+- **Endpoint afectado (`/api/v1/users/validate`)**: Al momento de validar el documento, el Gateway consulta al microservicio de `applications` mediante el patrón `CHECK_RECENT_FINALIZED_APPLICATION_BY_CLIENT_ID`.
+- **Endpoint afectado (`/api/v1/applications` POST)**: Como medida de seguridad secundaria, el caso de uso `CreateApplicationUseCase` vuelve a validar esta restricción al momento de la creación.
+- **Respuesta Esperada**: Cuando se activa el bloqueo, el API Gateway retorna un error HTTP 400 (Bad Request) con el siguiente formato:
+  ```json
+  {
+    "message": "Tiene una solicitud finalizada recientemente. Podrá iniciar un nuevo proceso a partir del 15 de septiembre de 2026.",
+    "error": "Bad Request",
+    "statusCode": 400,
+    "availableDate": "2026-09-15T00:00:00.000Z",
+    "daysRemaining": 15
+  }
+  ```
+
+### 2. Manejo de Razones de Abandono y Finalización
+- Al finalizar una solicitud **SIN DESEMBOLSO** o al **ABANDONAR**, es obligatorio proveer un motivo (`reason`).
+- Estos motivos quedan registrados tanto en la entidad principal de la base de datos (Application) como en el historial inmutable de auditoría (Events), asegurando trazabilidad para el equipo administrativo.

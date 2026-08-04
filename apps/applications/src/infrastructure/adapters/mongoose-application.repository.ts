@@ -90,6 +90,7 @@ export class MongooseApplicationRepository implements ApplicationRepositoryPort 
       : (status as ApplicationStatus);
     const doc = await this.applicationModel
       .findOne({ clientId: new Types.ObjectId(clientId), status: queryStatus })
+      .sort({ createdAt: -1 })
       .exec();
     if (!doc) {
       return null;

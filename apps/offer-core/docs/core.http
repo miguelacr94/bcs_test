@@ -1,7 +1,40 @@
-### MOTOR DE OFERTAS (OFFER CORE) - CORE.HTTP (MOCKS)
-### Mocks simulando la integración externa con motores de riesgo, matrices de decisión o el Core Bancario.
+### OFERTAS CORE (OFFERS) - CASOS DE USO MOCK
+### Este microservicio simula la evaluación crediticia y la generación de ofertas pre-aprobadas.
+### Utiliza una lógica aleatoria (Math.random()) para simular diferentes respuestas del Core Bancario.
+### Actualmente existen tres (3) escenarios o casos de uso posibles al intentar simular una oferta:
 
-### 1. Simulación de Petición HTTP al Motor de Riesgos (Mock)
+### ---------------------------------------------------------
+### CASO 1: ERROR TÉCNICO TEMPORAL (33% de probabilidad)
+### ---------------------------------------------------------
+### Simula un fallo de conexión o caída en el Core Bancario.
+### El microservicio lanza un Error: "Error técnico temporal conectando con el Core Bancario de Ofertas."
+### Esto permite probar cómo el Frontend y el API Gateway manejan errores inesperados 500 o 400.
+
+### ---------------------------------------------------------
+### CASO 2: OFERTA NO VIABLE - PROPUESTA ALTERNATIVA (33% de probabilidad)
+### ---------------------------------------------------------
+### El perfil crediticio del cliente no alcanza para el monto solicitado original.
+### El microservicio rechaza el monto exacto, pero devuelve una "Contraoferta":
+### - `success`: false
+### - `message`: "Monto solicitado no es viable según perfil crediticio."
+### - `offerDetails`: Retorna una oferta alternativa equivalente al 70% del monto solicitado, con una tasa de interés del 1.85% y un plazo máximo de 48 meses.
+
+### ---------------------------------------------------------
+### CASO 3: OFERTA VIABLE Y PRE-APROBADA (34% de probabilidad)
+### ---------------------------------------------------------
+### El cliente cuenta con capacidad de endeudamiento completa.
+### El microservicio aprueba exactamente lo que el cliente solicitó:
+### - `success`: true
+### - `message`: "Oferta pre-aprobada disponible"
+### - `offerDetails`: Retorna el 100% del monto solicitado original, con una excelente tasa de interés preferencial del 1.45% y respetando el plazo exacto solicitado por el cliente.
+
+### =========================================================
+### EJEMPLOS DE PETICIONES AL CORE BANCARIO (MOCK)
+### =========================================================
+### Nota: Estas peticiones son simuladas y no se ejecutan contra localhost,
+### sirven como referencia de la integración con el motor de decisiones.
+
+### Simulación de Petición HTTP al Motor de Riesgos
 # POST https://riesgos.banco.ejemplo.com/api/v1/simular-oferta
 # Content-Type: application/json
 # Authorization: Bearer TOKEN_EXTERNO_RIESGOS
@@ -13,7 +46,7 @@
 #   "requestedTerm": 60
 # }
 
-### Respuesta Mock Exitosa (Oferta Aprobada Tal Cual)
+### Respuesta Mock Exitosa (Oferta Viable)
 # {
 #   "success": true,
 #   "message": "Oferta pre-aprobada disponible",
@@ -24,7 +57,7 @@
 #   }
 # }
 
-### Respuesta Mock Parcial (Monto no viable, se ofrece alternativa menor)
+### Respuesta Mock Contraoferta (Oferta No Viable - Alternativa)
 # {
 #   "success": false,
 #   "message": "Monto solicitado de 50,000,000 no es viable según perfil crediticio.",
@@ -33,10 +66,4 @@
 #     "interestRate": 1.85,
 #     "termMonths": 48
 #   }
-# }
-
-### Respuesta Mock Error (Falla Técnica en el Core de Riesgos)
-# {
-#   "error": "Timeout",
-#   "message": "Error técnico temporal conectando con el Core Bancario de Ofertas. Intente nuevamente."
 # }

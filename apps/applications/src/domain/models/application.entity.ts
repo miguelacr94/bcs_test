@@ -56,8 +56,6 @@ export class Application {
     }
 
     this.validationData = validationData;
-    // status can remain PENDING_VALIDATION or change, let's keep it PENDING_VALIDATION
-    // but the presence of validationData will unlock finalization.
   }
 
   finalizeApplication(withDisbursement: boolean, reason?: string): void {
