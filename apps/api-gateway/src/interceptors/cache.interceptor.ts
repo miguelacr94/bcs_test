@@ -9,7 +9,7 @@ import { tap } from 'rxjs/operators';
 
 @Injectable()
 export class CacheInterceptor implements NestInterceptor {
-  private cache = new Map<string, { expiresAt: number; data: Record<string, unknown> }>();
+  private cache = new Map<string, { expiresAt: number; data: unknown }>();
   private readonly TTL_SECONDS = 10;
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {

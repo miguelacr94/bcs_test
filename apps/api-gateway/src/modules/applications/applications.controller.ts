@@ -70,8 +70,8 @@ export class ApplicationsController {
           );
         }
       } catch (error: unknown) {
-      throw new BadRequestException(
-          (error as any)?.message ||
+        throw new BadRequestException(
+          (error instanceof Error ? error.message : undefined) ||
             'Error al validar el cliente asociado al documento.',
         );
       }
@@ -118,7 +118,7 @@ export class ApplicationsController {
                 .pipe(timeout(5000), retry(3)),
             );
 
-            const { clientId, offerResult, ...appWithoutSensitiveData } = app as any;
+            const { clientId, offerResult, ...appWithoutSensitiveData } = app;
 
             return {
               ...appWithoutSensitiveData,
@@ -129,7 +129,7 @@ export class ApplicationsController {
             this.logger.error(
               `Error fetching customer for clientId ${app.clientId}: ${error}`,
             );
-            const { clientId, offerResult, ...appWithoutSensitiveData } = app as any;
+            const { clientId, offerResult, ...appWithoutSensitiveData } = app;
             return {
               ...appWithoutSensitiveData,
               customer: null,

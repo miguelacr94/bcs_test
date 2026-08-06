@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Logger, Inject } from '@nestjs/common';
+import { Controller, Post, Body, Logger, Inject, BadRequestException, HttpException } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { ClientProxy, RpcException } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
@@ -123,15 +123,14 @@ export class UserCoreGatewayController {
           const dateStr = restriction.availableDate 
             ? new Date(restriction.availableDate).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })
             : '';
-          const { BadRequestException } = await import('@nestjs/common');
           const errorMsg = `Tiene una solicitud finalizada recientemente. Podrá iniciar un nuevo proceso a partir del ${dateStr}.`;
-          const err = new BadRequestException(errorMsg);
-          (err as any).availableDate = restriction.availableDate;
-          (err as any).daysRemaining = restriction.daysRemaining;
+          const err = new BadRequestException(errorMsg) as BadRequestException & { availableDate?: string; daysRemaining?: number };
+          err.availableDate = restriction.availableDate;
+          err.daysRemaining = restriction.daysRemaining;
           throw err;
         }
-      } catch (error) {
-        if (error && (error as any).getStatus) throw error;
+      } catch (error: unknown) {
+        if (error instanceof HttpException) throw error;
         this.logger.log(
           `Gateway-Compose: Error verificando solicitudes recientes para clientId ${clientId}`,
         );

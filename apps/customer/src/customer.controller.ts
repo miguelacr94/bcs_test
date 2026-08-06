@@ -20,11 +20,12 @@ export class CustomerController {
   async create(@Payload() createCustomerDto: CreateCustomerDto) {
     try {
       return await this.createCustomerUseCase.execute(createCustomerDto);
-    } catch (error: any) {
-      this.logger.error(`Error creating customer: ${error.message || String(error)}`);
+    } catch (error: unknown) {
+      const err = error as { message?: string; code?: number; keyValue?: Record<string, unknown> };
+      this.logger.error(`Error creating customer: ${err.message || String(error)}`);
       
-      if (error.code === 11000) {
-        const field = Object.keys(error.keyValue || {})[0] || 'email';
+      if (err.code === 11000) {
+        const field = Object.keys(err.keyValue || {})[0] || 'email';
         throw new RpcException({ 
           error: `El ${field} ya se encuentra registrado.`,
           statusCode: 400
@@ -32,7 +33,7 @@ export class CustomerController {
       }
 
       throw new RpcException({ 
-        error: error.message || String(error),
+        error: err.message || String(error),
         statusCode: 400 
       });
     }

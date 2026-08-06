@@ -126,14 +126,15 @@ export class TracingInterceptor implements NestInterceptor {
           );
         }
       }),
-      catchError((error) => {
+      catchError((error: unknown) => {
+        const err = error as { status?: number; code?: unknown; name?: string; message?: string; stack?: string };
         trace.duration = Date.now() - startTime;
-        trace.statusCode = error.status || 500;
+        trace.statusCode = err.status || 500;
         trace.error = {
-          name: (error instanceof Error ? error.name : "Error"),
-          message: (error instanceof Error ? error.message : String(error)),
-          stack: config.includeStackTrace ? (error instanceof Error ? error.stack : undefined) : undefined,
-          code: (error as any).code ? String((error as any).code) : undefined,
+          name: err.name || "Error",
+          message: err.message || String(error),
+          stack: config.includeStackTrace ? err.stack : undefined,
+          code: err.code ? String(err.code) : undefined,
         };
 
         this.persistTrace(trace);

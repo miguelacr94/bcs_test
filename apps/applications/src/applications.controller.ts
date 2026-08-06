@@ -1,6 +1,7 @@
 import { Controller, Logger, Inject } from '@nestjs/common';
 import { MessagePattern, Payload, RpcException } from '@nestjs/microservices';
 import { ApplicationPattern } from '@app/shared/enums';
+import { RestrictionException } from '@app/shared';
 import {
   CreateApplicationUseCase,
   GetApplicationsUseCase,
@@ -49,13 +50,25 @@ export class ApplicationsController {
         data.createDto.channel,
         data.createDto.offerResult,
       );
-    } catch (error: any) {
-      this.logger.error(`Error creating application: ${error.message || String(error)}`);
+    } catch (error: unknown) {
       if (error instanceof RpcException) throw error;
-      const payload: any = { error: error.message || String(error), statusCode: 400 };
-      if (error.availableDate) payload.availableDate = error.availableDate;
-      if (error.daysRemaining) payload.daysRemaining = error.daysRemaining;
-      throw new RpcException(payload);
+
+      if (error instanceof RestrictionException) {
+        this.logger.error(`Restriction error creating application: ${error.message}`);
+        throw new RpcException({
+          error: error.message,
+          statusCode: 400,
+          availableDate: error.availableDate,
+          daysRemaining: error.daysRemaining,
+        });
+      }
+
+      const err = error as { message?: string };
+      this.logger.error(`Error creating application: ${err.message || String(error)}`);
+      throw new RpcException({
+        error: err.message || String(error),
+        statusCode: 400,
+      });
     }
   }
 

@@ -13,6 +13,7 @@ export * from './enums/message-patterns.enum';
 
 // Exceptions
 export * from './exceptions/domain.exception';
+export * from './exceptions/restriction.exception';
 
 // Interfaces
 export * from './interfaces';
@@ -34,3 +35,6 @@ export * from './validators/is-strong-password.validator';
 
 // Tracing
 export * from './tracing';
+
+// Constants
+export * from './constants/messages.constant';

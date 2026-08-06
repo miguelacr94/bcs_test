@@ -66,7 +66,14 @@ export class AllExceptionsFilter implements ExceptionFilter {
       }
     }
 
-    const responsePayload: any = {
+    const responsePayload: {
+      statusCode: number;
+      timestamp: string;
+      path: string;
+      message: string | string[];
+      availableDate?: string;
+      daysRemaining?: number;
+    } = {
       statusCode: status,
       timestamp: new Date().toISOString(),
       path: request.url,

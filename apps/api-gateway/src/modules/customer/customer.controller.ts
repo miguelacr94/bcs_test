@@ -39,8 +39,9 @@ export class CustomerController {
           .send({ cmd: CustomerPattern.CREATE_CUSTOMER }, createCustomerDto)
           .pipe(timeout(5000), retry(3)),
       );
-    } catch (error: any) {
-      throw new BadRequestException(error.error || error.message || 'Error al crear el cliente');
+    } catch (error: unknown) {
+      const err = error as { error?: string; message?: string };
+      throw new BadRequestException(err.error || err.message || 'Error al crear el cliente');
     }
   }
 
@@ -79,8 +80,9 @@ export class CustomerController {
             .send({ cmd: CustomerPattern.CREATE_CUSTOMER }, dto.customerData)
             .pipe(timeout(5000), retry(3)),
         );
-      } catch (error: any) {
-        throw new BadRequestException(error.error || error.message || 'Error al crear el cliente');
+      } catch (error: unknown) {
+        const err = error as { error?: string; message?: string };
+        throw new BadRequestException(err.error || err.message || 'Error al crear el cliente');
       }
     } else {
       this.logger.log(

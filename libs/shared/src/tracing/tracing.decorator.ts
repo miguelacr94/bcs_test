@@ -21,7 +21,7 @@ import { getTracingConfig, shouldSample } from './tracing.config';
  */
 export function Trace(options: TraceOptions = {}): MethodDecorator {
   return (
-    target: Record<string, unknown>,
+    target: any,
     propertyKey: string | symbol,
     descriptor: PropertyDescriptor,
   ) => {
@@ -40,7 +40,8 @@ export function Trace(options: TraceOptions = {}): MethodDecorator {
 
       // Intentar extraer de headers si está disponible
       const headersArg = args.find(
-        (arg) => arg && typeof arg === 'object' && arg.headers,
+        (arg): arg is { headers: Record<string, string> } =>
+          typeof arg === 'object' && arg !== null && 'headers' in arg,
       );
 
       if (headersArg?.headers) {
@@ -55,7 +56,7 @@ export function Trace(options: TraceOptions = {}): MethodDecorator {
 
       const startTime = Date.now();
       const operationName = options.operation || String(propertyKey);
-      const className = target.constructor.name;
+      const className = target?.constructor?.name || 'Unknown';
 
       // Construir el trace
       const trace: Trace = {
@@ -75,7 +76,7 @@ export function Trace(options: TraceOptions = {}): MethodDecorator {
 
       // Loggear request si está configurado
       if (options.logRequest !== false && config.logLevel !== 'ERROR') {
-        trace.body = sanitizeData(args, { maxBodySize: config.maxBodySize });
+        trace.body = sanitizeData(args, { maxBodySize: config.maxBodySize }) as Record<string, unknown> | undefined;
       }
 
       try {
@@ -87,7 +88,7 @@ export function Trace(options: TraceOptions = {}): MethodDecorator {
         if (options.logResponse && config.logLevel !== 'ERROR') {
           trace.response = sanitizeData(result, {
             maxBodySize: config.maxBodySize,
-          });
+          }) as Record<string, unknown> | undefined;
         }
 
         persistTrace(trace);
@@ -96,11 +97,12 @@ export function Trace(options: TraceOptions = {}): MethodDecorator {
       } catch (error: unknown) {
       // Error
         trace.duration = Date.now() - startTime;
+        const errCode = error && typeof error === 'object' && 'code' in error ? (error as { code: unknown }).code : undefined;
         trace.error = {
           name: (error instanceof Error ? error.name : "Error"),
           message: (error instanceof Error ? error.message : String(error)),
           stack: config.includeStackTrace ? (error instanceof Error ? error.stack : undefined) : undefined,
-          code: (error as Record<string, unknown>).code,
+          code: errCode ? String(errCode) : undefined,
         };
 
         persistTrace(trace);

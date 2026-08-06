@@ -1,6 +1,7 @@
 import { Controller, NotFoundException } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { UserPattern } from '@app/shared/enums/message-patterns.enum';
+import { SharedMessages } from '@app/shared';
 import { UserCoreService } from './user-core.service';
 import { UserInfo } from './infrastructure/adapters/mock-user.adapter';
 
@@ -23,7 +24,7 @@ export class UserCoreMessageController {
         throw error;
       }
       throw new NotFoundException(
-        `Error al buscar usuario con documento ${data.document}`,
+        SharedMessages.UserCore.SEARCH_ERROR(data.document),
       );
     }
   }

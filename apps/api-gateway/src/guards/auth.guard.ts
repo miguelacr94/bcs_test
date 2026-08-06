@@ -8,6 +8,7 @@ import {
 import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
 import { AuthPattern } from '@app/shared/enums';
+import { SharedMessages } from '@app/shared';
 import { Reflector } from '@nestjs/core';
 
 @Injectable()
@@ -31,7 +32,7 @@ export class AuthGuard implements CanActivate {
     }
 
     if (!authHeader) {
-      throw new UnauthorizedException('Token no provisto.');
+      throw new UnauthorizedException(SharedMessages.Auth.TOKEN_NOT_PROVIDED);
     }
 
     const [type, token] = authHeader.split(' ');
@@ -39,7 +40,7 @@ export class AuthGuard implements CanActivate {
     if (type !== 'Bearer' || !token) {
       if (isPublic) return true;
       throw new UnauthorizedException(
-        'Formato de token inválido. Debe ser Bearer <token>.',
+        SharedMessages.Auth.INVALID_TOKEN_FORMAT,
       );
     }
 
@@ -51,7 +52,7 @@ export class AuthGuard implements CanActivate {
       if (!result || !result.isValid) {
         if (isPublic) return true;
         throw new UnauthorizedException(
-          result?.error || 'Token inválido o expirado.',
+          result?.error || SharedMessages.Auth.INVALID_OR_EXPIRED_TOKEN,
         );
       }
 
@@ -60,7 +61,7 @@ export class AuthGuard implements CanActivate {
     } catch (error: unknown) {
       if (isPublic) return true;
       throw new UnauthorizedException(
-        (error instanceof Error ? error.message : String(error)) || 'Error de autenticación.',
+        (error instanceof Error ? error.message : String(error)) || SharedMessages.Auth.AUTH_ERROR,
       );
     }
   }
