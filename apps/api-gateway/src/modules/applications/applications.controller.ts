@@ -15,6 +15,12 @@ import { ApplicationsGatewayService } from './services/applications-gateway.serv
 import {
   ApiResponse as SharedApiResponse,
   ApplicationResponse,
+  PaginatedResponse,
+  EnrichedApplicationResponse,
+  SimulationResponse,
+  AcceptOfferResponse,
+  AbandonApplicationResponse,
+  ApplicationEventResponse,
 } from '@app/shared';
 
 @ApiTags('Solicitudes de Financiación (Applications)')
@@ -44,7 +50,7 @@ export class ApplicationsController {
   @Post('admin/list')
   async getApplications(
     @Body() paginationDto: PaginationDto,
-  ): Promise<SharedApiResponse<any>> {
+  ): Promise<SharedApiResponse<PaginatedResponse<EnrichedApplicationResponse>>> {
     return await this.applicationsGatewayService.getApplications(paginationDto);
   }
 
@@ -98,7 +104,7 @@ export class ApplicationsController {
   @ApiBody({ type: SimulateOfferDto })
   async simulateOffer(
     @Body() body: { id: string; simulateDto: SimulateOfferDto },
-  ): Promise<SharedApiResponse<any>> {
+  ): Promise<SharedApiResponse<SimulationResponse>> {
     return await this.applicationsGatewayService.simulateOffer(
       body.id,
       body.simulateDto,
@@ -110,7 +116,7 @@ export class ApplicationsController {
   @Post('accept-offer')
   async acceptOffer(
     @Body() body: { id: string; channel?: string },
-  ): Promise<SharedApiResponse<any>> {
+  ): Promise<SharedApiResponse<AcceptOfferResponse>> {
     return await this.applicationsGatewayService.acceptOffer(
       body.id,
       body.channel,
@@ -127,7 +133,7 @@ export class ApplicationsController {
       id: string;
       reasonDto: AbandonApplicationDto & { channel?: string };
     },
-  ): Promise<SharedApiResponse<any>> {
+  ): Promise<SharedApiResponse<AbandonApplicationResponse>> {
     return await this.applicationsGatewayService.abandonApplication(
       body.id,
       body.reasonDto,
@@ -141,7 +147,7 @@ export class ApplicationsController {
   @Post('events')
   async getApplicationEvents(
     @Body() body: { id: string },
-  ): Promise<SharedApiResponse<any[]>> {
+  ): Promise<SharedApiResponse<ApplicationEventResponse[]>> {
     return await this.applicationsGatewayService.getApplicationEvents(body.id);
   }
 
@@ -149,7 +155,7 @@ export class ApplicationsController {
   @Post('events')
   async getPublicApplicationEvents(
     @Body() body: { id: string },
-  ): Promise<SharedApiResponse<any[]>> {
+  ): Promise<SharedApiResponse<ApplicationEventResponse[]>> {
     return await this.applicationsGatewayService.getPublicApplicationEvents(
       body.id,
     );
@@ -162,7 +168,7 @@ export class ApplicationsController {
   @Post('validate')
   async validateApplication(
     @Body() body: { id: string; validationData: Record<string, unknown> },
-  ): Promise<SharedApiResponse<any>> {
+  ): Promise<SharedApiResponse<ApplicationResponse>> {
     return await this.applicationsGatewayService.validateApplication(
       body.id,
       body.validationData,
@@ -177,7 +183,7 @@ export class ApplicationsController {
   @Post('finalize')
   async finalizeApplication(
     @Body() body: FinalizeApplicationDto,
-  ): Promise<SharedApiResponse<any>> {
+  ): Promise<SharedApiResponse<ApplicationResponse>> {
     return await this.applicationsGatewayService.finalizeApplication(body);
   }
 }

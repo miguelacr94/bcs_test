@@ -1,9 +1,4 @@
-import {
-  Injectable,
-  Inject,
-  Logger,
-  BadRequestException,
-} from '@nestjs/common';
+import { Injectable, Inject, Logger, BadRequestException } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
 import { timeout, retry } from 'rxjs/operators';
@@ -18,6 +13,13 @@ import { SensitiveDataMaskAdapter } from '../adapters/sensitive-data-mask.adapte
 import {
   ApiResponse as SharedApiResponse,
   ApplicationResponse,
+  CustomerResponse,
+  PaginatedResponse,
+  EnrichedApplicationResponse,
+  SimulationResponse,
+  AcceptOfferResponse,
+  AbandonApplicationResponse,
+  ApplicationEventResponse,
 } from '@app/shared';
 
 @Injectable()
@@ -32,18 +34,16 @@ export class ApplicationsGatewayService {
     private readonly sensitiveDataMask: SensitiveDataMaskAdapter,
   ) {}
 
-  async createApplication(
-    createDto: CreateApplicationDto,
-  ): Promise<SharedApiResponse<ApplicationResponse>> {
+  async createApplication(createDto: CreateApplicationDto): Promise<SharedApiResponse<ApplicationResponse>> {
     this.logger.log(`Orchestrator: Solicitud para crear aplicación`);
 
     let finalClientId = createDto.clientId;
 
     if (finalClientId && finalClientId.length !== 24) {
       try {
-        const customer = await firstValueFrom<{ id: string }>(
+        const customer = await firstValueFrom<CustomerResponse>(
           this.customerClient
-            .send(
+            .send<CustomerResponse>(
               { cmd: CustomerPattern.GET_CUSTOMER_BY_DOCUMENT },
               { document: finalClientId },
             )
@@ -72,7 +72,7 @@ export class ApplicationsGatewayService {
 
     const result = await firstValueFrom<ApplicationResponse>(
       this.applicationsClient
-        .send(
+        .send<ApplicationResponse>(
           { cmd: ApplicationPattern.CREATE_APPLICATION },
           { createDto: payload },
         )
@@ -86,23 +86,21 @@ export class ApplicationsGatewayService {
     };
   }
 
-  async getApplications(
-    paginationDto: PaginationDto,
-  ): Promise<SharedApiResponse<any>> {
+  async getApplications(paginationDto: PaginationDto): Promise<SharedApiResponse<PaginatedResponse<EnrichedApplicationResponse>>> {
     this.logger.log('Orchestrator: Solicitando listar solicitudes');
-    const applications = await firstValueFrom<any>(
+    const applications = await firstValueFrom<PaginatedResponse<ApplicationResponse>>(
       this.applicationsClient
-        .send({ cmd: ApplicationPattern.GET_APPLICATIONS }, { paginationDto })
+        .send<PaginatedResponse<ApplicationResponse>>({ cmd: ApplicationPattern.GET_APPLICATIONS }, { paginationDto })
         .pipe(timeout(5000), retry(3)),
     );
 
     if (applications && applications.data) {
       const enrichedApplications = await Promise.all(
-        applications.data.map(async (app: Record<string, unknown>) => {
+        applications.data.map(async (app: ApplicationResponse) => {
           try {
-            const customer = await firstValueFrom<any>(
+            const customer = await firstValueFrom<CustomerResponse>(
               this.customerClient
-                .send(
+                .send<CustomerResponse>(
                   { cmd: CustomerPattern.GET_CUSTOMER_BY_ID },
                   { id: app.clientId },
                 )
@@ -114,7 +112,7 @@ export class ApplicationsGatewayService {
             return {
               ...appWithoutSensitiveData,
               customer:
-                this.sensitiveDataMask.sanitizeCustomerForList(customer),
+                this.sensitiveDataMask.sanitizeCustomerForList(customer as any) as unknown as CustomerResponse,
             };
           } catch (error) {
             this.logger.error(
@@ -142,17 +140,27 @@ export class ApplicationsGatewayService {
     return {
       success: true,
       message: 'Solicitudes listadas con éxito.',
-      data: applications,
+      data: {
+        data: [],
+        meta: {
+          totalItems: 0,
+          itemCount: 0,
+          itemsPerPage: paginationDto.limit || 10,
+          totalPages: 0,
+          currentPage: paginationDto.page || 1,
+        },
+      },
     };
   }
 
-  async getApplicationById(
-    id: string,
-  ): Promise<SharedApiResponse<ApplicationResponse>> {
+  async getApplicationById(id: string): Promise<SharedApiResponse<ApplicationResponse>> {
     this.logger.log(`Orchestrator: Petición para consultar solicitud ${id}`);
-    const application = await firstValueFrom<any>(
+    const application = await firstValueFrom<ApplicationResponse>(
       this.applicationsClient
-        .send({ cmd: ApplicationPattern.GET_APPLICATION_BY_ID }, { id })
+        .send<ApplicationResponse>(
+          { cmd: ApplicationPattern.GET_APPLICATION_BY_ID },
+          { id },
+        )
         .pipe(timeout(5000), retry(3)),
     );
 
@@ -167,23 +175,24 @@ export class ApplicationsGatewayService {
     };
   }
 
-  async getApplicationByIdAdmin(
-    id: string,
-  ): Promise<SharedApiResponse<ApplicationResponse>> {
+  async getApplicationByIdAdmin(id: string): Promise<SharedApiResponse<ApplicationResponse>> {
     this.logger.log(
       `Orchestrator: Petición ADMIN para consultar solicitud ${id}`,
     );
     const application = await firstValueFrom<any>(
       this.applicationsClient
-        .send({ cmd: ApplicationPattern.GET_APPLICATION_BY_ID }, { id })
+        .send<ApplicationResponse>(
+          { cmd: ApplicationPattern.GET_APPLICATION_BY_ID },
+          { id },
+        )
         .pipe(timeout(5000), retry(3)),
     );
 
     if (application && application.clientId) {
       try {
-        const customer = await firstValueFrom<any>(
+        const customer = await firstValueFrom<CustomerResponse>(
           this.customerClient
-            .send(
+            .send<CustomerResponse>(
               { cmd: CustomerPattern.GET_CUSTOMER_BY_ID },
               { id: application.clientId },
             )
@@ -210,18 +219,18 @@ export class ApplicationsGatewayService {
     return {
       success: true,
       message: 'Detalle administrativo de la solicitud obtenido con éxito.',
-      data: application,
+      data: application as ApplicationResponse,
     };
   }
 
-  async updateApplication(
-    id: string,
-    updateDto: UpdateApplicationDto,
-  ): Promise<SharedApiResponse<ApplicationResponse>> {
+  async updateApplication(id: string, updateDto: UpdateApplicationDto): Promise<SharedApiResponse<ApplicationResponse>> {
     this.logger.log(`Orchestrator: Petición para actualizar solicitud ${id}`);
     const result = await firstValueFrom<ApplicationResponse>(
       this.applicationsClient
-        .send({ cmd: ApplicationPattern.UPDATE_APPLICATION }, { id, updateDto })
+        .send<ApplicationResponse>(
+          { cmd: ApplicationPattern.UPDATE_APPLICATION },
+          { id, updateDto },
+        )
         .pipe(timeout(5000), retry(3)),
     );
 
@@ -232,16 +241,16 @@ export class ApplicationsGatewayService {
     };
   }
 
-  async simulateOffer(
-    id: string,
-    simulateDto: SimulateOfferDto,
-  ): Promise<SharedApiResponse<any>> {
+  async simulateOffer(id: string, simulateDto: SimulateOfferDto): Promise<SharedApiResponse<SimulationResponse>> {
     this.logger.log(
       `Orchestrator: Petición para simular oferta para solicitud ${id}`,
     );
-    const result = await firstValueFrom<any>(
+    const result = await firstValueFrom<SimulationResponse>(
       this.applicationsClient
-        .send({ cmd: ApplicationPattern.SIMULATE_OFFER }, { id, simulateDto })
+        .send<SimulationResponse>(
+          { cmd: ApplicationPattern.SIMULATE_OFFER },
+          { id, simulateDto },
+        )
         .pipe(timeout(5000), retry(3)),
     );
 
@@ -252,13 +261,13 @@ export class ApplicationsGatewayService {
     };
   }
 
-  async acceptOffer(
-    id: string,
-    channel?: string,
-  ): Promise<SharedApiResponse<any>> {
-    const result = await firstValueFrom<any>(
+  async acceptOffer(id: string, channel?: string): Promise<SharedApiResponse<AcceptOfferResponse>> {
+    const result = await firstValueFrom<AcceptOfferResponse>(
       this.applicationsClient
-        .send({ cmd: ApplicationPattern.ACCEPT_OFFER }, { id, channel })
+        .send<AcceptOfferResponse>(
+          { cmd: ApplicationPattern.ACCEPT_OFFER },
+          { id, channel },
+        )
         .pipe(timeout(5000), retry(3)),
     );
 
@@ -269,13 +278,10 @@ export class ApplicationsGatewayService {
     };
   }
 
-  async abandonApplication(
-    id: string,
-    reasonDto: AbandonApplicationDto & { channel?: string },
-  ): Promise<SharedApiResponse<any>> {
-    const result = await firstValueFrom<any>(
+  async abandonApplication(id: string, reasonDto: AbandonApplicationDto & { channel?: string }): Promise<SharedApiResponse<AbandonApplicationResponse>> {
+    const result = await firstValueFrom<AbandonApplicationResponse>(
       this.applicationsClient
-        .send(
+        .send<AbandonApplicationResponse>(
           { cmd: ApplicationPattern.ABANDON_APPLICATION },
           { id, reasonDto },
         )
@@ -289,13 +295,16 @@ export class ApplicationsGatewayService {
     };
   }
 
-  async getApplicationEvents(id: string): Promise<SharedApiResponse<any[]>> {
+  async getApplicationEvents(id: string): Promise<SharedApiResponse<ApplicationEventResponse[]>> {
     this.logger.log(
       `Orchestrator: Petición para consultar eventos de solicitud ${id}`,
     );
-    const result = await firstValueFrom<any[]>(
+    const result = await firstValueFrom<ApplicationEventResponse[]>(
       this.applicationsClient
-        .send({ cmd: ApplicationPattern.GET_APPLICATION_EVENTS }, { id })
+        .send<ApplicationEventResponse[]>(
+          { cmd: ApplicationPattern.GET_APPLICATION_EVENTS },
+          { id },
+        )
         .pipe(timeout(5000), retry(3)),
     );
 
@@ -306,15 +315,16 @@ export class ApplicationsGatewayService {
     };
   }
 
-  async getPublicApplicationEvents(
-    id: string,
-  ): Promise<SharedApiResponse<any[]>> {
+  async getPublicApplicationEvents(id: string): Promise<SharedApiResponse<ApplicationEventResponse[]>> {
     this.logger.log(
       `Orchestrator: Petición para consultar eventos de solicitud ${id}`,
     );
-    const result = await firstValueFrom<any[]>(
+    const result = await firstValueFrom<ApplicationEventResponse[]>(
       this.applicationsClient
-        .send({ cmd: ApplicationPattern.GET_PUBLIC_APPLICATION_EVENTS }, { id })
+        .send<ApplicationEventResponse[]>(
+          { cmd: ApplicationPattern.GET_PUBLIC_APPLICATION_EVENTS },
+          { id },
+        )
         .pipe(timeout(5000), retry(3)),
     );
 
@@ -325,13 +335,10 @@ export class ApplicationsGatewayService {
     };
   }
 
-  async validateApplication(
-    id: string,
-    validationData: Record<string, unknown>,
-  ): Promise<SharedApiResponse<any>> {
-    const result = await firstValueFrom<any>(
+  async validateApplication(id: string, validationData: Record<string, unknown>): Promise<SharedApiResponse<ApplicationResponse>> {
+    const result = await firstValueFrom<ApplicationResponse>(
       this.applicationsClient
-        .send(
+        .send<ApplicationResponse>(
           { cmd: ApplicationPattern.VALIDATE_APPLICATION },
           { id, validationData },
         )
@@ -345,12 +352,10 @@ export class ApplicationsGatewayService {
     };
   }
 
-  async finalizeApplication(
-    body: FinalizeApplicationDto,
-  ): Promise<SharedApiResponse<any>> {
-    const result = await firstValueFrom<any>(
+  async finalizeApplication(body: FinalizeApplicationDto): Promise<SharedApiResponse<ApplicationResponse>> {
+    const result = await firstValueFrom<ApplicationResponse>(
       this.applicationsClient
-        .send(
+        .send<ApplicationResponse>(
           { cmd: ApplicationPattern.FINALIZE_APPLICATION },
           {
             id: body.id,

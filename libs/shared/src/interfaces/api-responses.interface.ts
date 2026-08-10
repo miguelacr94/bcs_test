@@ -19,7 +19,7 @@ export interface CustomerResponse {
 export interface ApplicationResponse {
   id: string;
   radicado: string;
-  clientId: string;
+  clientId?: string;
   channel: string;
   status: ApplicationStatus;
   createdAt: string | Date;
@@ -68,3 +68,38 @@ export interface UserValidationResponse {
   existsInDb: boolean;
   activeApplicationId?: string | null;
 }
+
+export interface SimulationResponse {
+  approvedAmount: number;
+  interestRate: number;
+  monthlyPayment: number;
+  termMonths: number;
+}
+
+export interface AcceptOfferResponse {
+  id: string;
+  status: ApplicationStatus;
+  acceptedAt: string | Date;
+}
+
+export interface AbandonApplicationResponse {
+  id: string;
+  status: ApplicationStatus;
+  abandonedAt: string | Date;
+  reason: string;
+}
+
+export interface ApplicationEventResponse {
+  id: string;
+  applicationId: string;
+  eventType: string;
+  description: string;
+  createdAt: string | Date;
+}
+
+export interface EnrichedApplicationResponse extends Omit<ApplicationResponse, 'clientId' | 'offerResult'> {
+  customer: CustomerResponse | null;
+}
+
+
+
