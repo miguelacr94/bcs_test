@@ -50,7 +50,9 @@ export class ApplicationsController {
   @Post('admin/list')
   async getApplications(
     @Body() paginationDto: PaginationDto,
-  ): Promise<SharedApiResponse<PaginatedResponse<EnrichedApplicationResponse>>> {
+  ): Promise<
+    SharedApiResponse<PaginatedResponse<EnrichedApplicationResponse>>
+  > {
     return await this.applicationsGatewayService.getApplications(paginationDto);
   }
 

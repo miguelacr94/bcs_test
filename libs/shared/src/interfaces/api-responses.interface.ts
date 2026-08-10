@@ -97,9 +97,9 @@ export interface ApplicationEventResponse {
   createdAt: string | Date;
 }
 
-export interface EnrichedApplicationResponse extends Omit<ApplicationResponse, 'clientId' | 'offerResult'> {
+export interface EnrichedApplicationResponse extends Omit<
+  ApplicationResponse,
+  'clientId' | 'offerResult'
+> {
   customer: CustomerResponse | null;
 }
-
-
-

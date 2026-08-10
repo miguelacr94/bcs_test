@@ -1,4 +1,9 @@
-import { Injectable, Inject, Logger, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  Inject,
+  Logger,
+  BadRequestException,
+} from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
 import { timeout, retry } from 'rxjs/operators';
@@ -34,7 +39,9 @@ export class ApplicationsGatewayService {
     private readonly sensitiveDataMask: SensitiveDataMaskAdapter,
   ) {}
 
-  async createApplication(createDto: CreateApplicationDto): Promise<SharedApiResponse<ApplicationResponse>> {
+  async createApplication(
+    createDto: CreateApplicationDto,
+  ): Promise<SharedApiResponse<ApplicationResponse>> {
     this.logger.log(`Orchestrator: Solicitud para crear aplicación`);
 
     let finalClientId = createDto.clientId;
@@ -86,11 +93,20 @@ export class ApplicationsGatewayService {
     };
   }
 
-  async getApplications(paginationDto: PaginationDto): Promise<SharedApiResponse<PaginatedResponse<EnrichedApplicationResponse>>> {
+  async getApplications(
+    paginationDto: PaginationDto,
+  ): Promise<
+    SharedApiResponse<PaginatedResponse<EnrichedApplicationResponse>>
+  > {
     this.logger.log('Orchestrator: Solicitando listar solicitudes');
-    const applications = await firstValueFrom<PaginatedResponse<ApplicationResponse>>(
+    const applications = await firstValueFrom<
+      PaginatedResponse<ApplicationResponse>
+    >(
       this.applicationsClient
-        .send<PaginatedResponse<ApplicationResponse>>({ cmd: ApplicationPattern.GET_APPLICATIONS }, { paginationDto })
+        .send<PaginatedResponse<ApplicationResponse>>(
+          { cmd: ApplicationPattern.GET_APPLICATIONS },
+          { paginationDto },
+        )
         .pipe(timeout(5000), retry(3)),
     );
 
@@ -111,8 +127,9 @@ export class ApplicationsGatewayService {
 
             return {
               ...appWithoutSensitiveData,
-              customer:
-                this.sensitiveDataMask.sanitizeCustomerForList(customer as any) as unknown as CustomerResponse,
+              customer: this.sensitiveDataMask.sanitizeCustomerForList(
+                customer as any,
+              ) as unknown as CustomerResponse,
             };
           } catch (error) {
             this.logger.error(
@@ -153,7 +170,9 @@ export class ApplicationsGatewayService {
     };
   }
 
-  async getApplicationById(id: string): Promise<SharedApiResponse<ApplicationResponse>> {
+  async getApplicationById(
+    id: string,
+  ): Promise<SharedApiResponse<ApplicationResponse>> {
     this.logger.log(`Orchestrator: Petición para consultar solicitud ${id}`);
     const application = await firstValueFrom<ApplicationResponse>(
       this.applicationsClient
@@ -175,7 +194,9 @@ export class ApplicationsGatewayService {
     };
   }
 
-  async getApplicationByIdAdmin(id: string): Promise<SharedApiResponse<ApplicationResponse>> {
+  async getApplicationByIdAdmin(
+    id: string,
+  ): Promise<SharedApiResponse<ApplicationResponse>> {
     this.logger.log(
       `Orchestrator: Petición ADMIN para consultar solicitud ${id}`,
     );
@@ -223,7 +244,10 @@ export class ApplicationsGatewayService {
     };
   }
 
-  async updateApplication(id: string, updateDto: UpdateApplicationDto): Promise<SharedApiResponse<ApplicationResponse>> {
+  async updateApplication(
+    id: string,
+    updateDto: UpdateApplicationDto,
+  ): Promise<SharedApiResponse<ApplicationResponse>> {
     this.logger.log(`Orchestrator: Petición para actualizar solicitud ${id}`);
     const result = await firstValueFrom<ApplicationResponse>(
       this.applicationsClient
@@ -241,7 +265,10 @@ export class ApplicationsGatewayService {
     };
   }
 
-  async simulateOffer(id: string, simulateDto: SimulateOfferDto): Promise<SharedApiResponse<SimulationResponse>> {
+  async simulateOffer(
+    id: string,
+    simulateDto: SimulateOfferDto,
+  ): Promise<SharedApiResponse<SimulationResponse>> {
     this.logger.log(
       `Orchestrator: Petición para simular oferta para solicitud ${id}`,
     );
@@ -261,7 +288,10 @@ export class ApplicationsGatewayService {
     };
   }
 
-  async acceptOffer(id: string, channel?: string): Promise<SharedApiResponse<AcceptOfferResponse>> {
+  async acceptOffer(
+    id: string,
+    channel?: string,
+  ): Promise<SharedApiResponse<AcceptOfferResponse>> {
     const result = await firstValueFrom<AcceptOfferResponse>(
       this.applicationsClient
         .send<AcceptOfferResponse>(
@@ -278,7 +308,10 @@ export class ApplicationsGatewayService {
     };
   }
 
-  async abandonApplication(id: string, reasonDto: AbandonApplicationDto & { channel?: string }): Promise<SharedApiResponse<AbandonApplicationResponse>> {
+  async abandonApplication(
+    id: string,
+    reasonDto: AbandonApplicationDto & { channel?: string },
+  ): Promise<SharedApiResponse<AbandonApplicationResponse>> {
     const result = await firstValueFrom<AbandonApplicationResponse>(
       this.applicationsClient
         .send<AbandonApplicationResponse>(
@@ -295,7 +328,9 @@ export class ApplicationsGatewayService {
     };
   }
 
-  async getApplicationEvents(id: string): Promise<SharedApiResponse<ApplicationEventResponse[]>> {
+  async getApplicationEvents(
+    id: string,
+  ): Promise<SharedApiResponse<ApplicationEventResponse[]>> {
     this.logger.log(
       `Orchestrator: Petición para consultar eventos de solicitud ${id}`,
     );
@@ -315,7 +350,9 @@ export class ApplicationsGatewayService {
     };
   }
 
-  async getPublicApplicationEvents(id: string): Promise<SharedApiResponse<ApplicationEventResponse[]>> {
+  async getPublicApplicationEvents(
+    id: string,
+  ): Promise<SharedApiResponse<ApplicationEventResponse[]>> {
     this.logger.log(
       `Orchestrator: Petición para consultar eventos de solicitud ${id}`,
     );
@@ -335,7 +372,10 @@ export class ApplicationsGatewayService {
     };
   }
 
-  async validateApplication(id: string, validationData: Record<string, unknown>): Promise<SharedApiResponse<ApplicationResponse>> {
+  async validateApplication(
+    id: string,
+    validationData: Record<string, unknown>,
+  ): Promise<SharedApiResponse<ApplicationResponse>> {
     const result = await firstValueFrom<ApplicationResponse>(
       this.applicationsClient
         .send<ApplicationResponse>(
@@ -352,7 +392,9 @@ export class ApplicationsGatewayService {
     };
   }
 
-  async finalizeApplication(body: FinalizeApplicationDto): Promise<SharedApiResponse<ApplicationResponse>> {
+  async finalizeApplication(
+    body: FinalizeApplicationDto,
+  ): Promise<SharedApiResponse<ApplicationResponse>> {
     const result = await firstValueFrom<ApplicationResponse>(
       this.applicationsClient
         .send<ApplicationResponse>(
