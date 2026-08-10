@@ -14,9 +14,7 @@ export class CreateCustomerUseCase {
   async execute(dto: CreateCustomerDto): Promise<Customer> {
     const exists = await this.customerRepository.findByDocument(dto.document);
     if (exists) {
-      throw new ConflictException(
-        SharedMessages.Customer.ALREADY_REGISTERED,
-      );
+      throw new ConflictException(SharedMessages.Customer.ALREADY_REGISTERED);
     }
 
     const newCustomer = new Customer(
@@ -26,7 +24,9 @@ export class CreateCustomerUseCase {
       dto.document,
       dto.email,
       dto.phone,
+      dto.status,
     );
+    newCustomer.checkInvalidEmail();
 
     return await this.customerRepository.save(newCustomer);
   }

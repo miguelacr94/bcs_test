@@ -31,7 +31,9 @@ describe('UserCoreController', () => {
   describe('getByDocument', () => {
     it('should return a user if it exists', async () => {
       const mockUser = { id: '1', document: '111111111' };
-      jest.spyOn(service, 'getUserByDocument').mockResolvedValue(mockUser as unknown as UserInfo);
+      jest
+        .spyOn(service, 'getUserByDocument')
+        .mockResolvedValue(mockUser as unknown as UserInfo);
 
       const result = await controller.getByDocument({ document: '111111111' });
       expect(result).toEqual(mockUser);
@@ -39,7 +41,9 @@ describe('UserCoreController', () => {
     });
 
     it('should return null if user does not exist', async () => {
-      jest.spyOn(service, 'getUserByDocument').mockResolvedValue(null as unknown as UserInfo);
+      jest
+        .spyOn(service, 'getUserByDocument')
+        .mockResolvedValue(null as unknown as UserInfo);
 
       const result = await controller.getByDocument({ document: '000000000' });
       expect(result).toBeNull();

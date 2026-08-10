@@ -126,4 +126,12 @@ export class MongooseApplicationRepository implements ApplicationRepositoryPort 
       .sort({ createdAt: 1 })
       .exec();
   }
+
+  async findAllByClientId(clientId: string): Promise<Application[]> {
+    const docs = await this.applicationModel
+      .find({ clientId: new Types.ObjectId(clientId) })
+      .sort({ createdAt: -1 })
+      .exec();
+    return docs.map((doc) => ApplicationMapper.toDomain(doc));
+  }
 }

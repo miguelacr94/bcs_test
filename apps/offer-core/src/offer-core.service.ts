@@ -16,7 +16,6 @@ export class OfferCoreService {
 
   async simulateOffer(
     applicationId: string,
-    clientId: string,
     amount: number,
     termMonths: number,
   ): Promise<OfferSimulationResult> {

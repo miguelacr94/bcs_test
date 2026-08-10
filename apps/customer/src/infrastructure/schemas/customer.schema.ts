@@ -21,6 +21,9 @@ export class CustomerDocument extends Document {
   @Prop({ required: true })
   phone!: string;
 
+  @Prop({ type: Boolean, default: true })
+  status!: boolean;
+
   @Prop({ type: Object })
   familyReference1?: { name: string; phone: string; relationship: string };
 }

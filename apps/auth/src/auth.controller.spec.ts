@@ -1,6 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AuthController } from './auth.controller';
-import { RegisterUserUseCase, LoginUserUseCase, RefreshTokenUseCase, LogoutUseCase, UpdateUserUseCase } from './application/use-cases';
+import {
+  RegisterUserUseCase,
+  LoginUserUseCase,
+  RefreshTokenUseCase,
+  LogoutUseCase,
+  UpdateUserUseCase,
+} from './application/use-cases';
 import { AuthService } from './auth.service';
 import { RpcException } from '@nestjs/microservices';
 
@@ -36,8 +42,17 @@ describe('AuthController', () => {
   describe('loginUser', () => {
     it('should login and return tokens', async () => {
       const dto = { email: 'admin@test.com', password: 'password' };
-      const expectedTokens = { accessToken: 'token123', refreshToken: 'refresh123', user: { id: '1', name: 'Admin', email: 'admin@test.com', role: 'admin' } };
-      
+      const expectedTokens = {
+        accessToken: 'token123',
+        refreshToken: 'refresh123',
+        user: {
+          id: '1',
+          name: 'Admin',
+          email: 'admin@test.com',
+          role: 'admin',
+        },
+      };
+
       jest.spyOn(loginUseCase, 'execute').mockResolvedValue(expectedTokens);
 
       const result = await controller.loginUser(dto);
@@ -47,7 +62,9 @@ describe('AuthController', () => {
 
     it('should throw RpcException if credentials are bad', async () => {
       const dto = { email: 'admin@test.com', password: 'bad' };
-      jest.spyOn(loginUseCase, 'execute').mockRejectedValue(new Error('Invalid credentials'));
+      jest
+        .spyOn(loginUseCase, 'execute')
+        .mockRejectedValue(new Error('Invalid credentials'));
 
       await expect(controller.loginUser(dto)).rejects.toThrow(RpcException);
     });

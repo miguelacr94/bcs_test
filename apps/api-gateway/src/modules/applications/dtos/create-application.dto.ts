@@ -5,7 +5,6 @@ import {
   IsIn,
   IsObject,
   IsOptional,
-  IsMongoId,
 } from 'class-validator';
 
 export class CreateApplicationDto {

@@ -20,4 +20,5 @@ export interface ApplicationRepositoryPort {
     metadata?: Record<string, unknown>,
   ): Promise<void>;
   findAuditsByOfferId(offerId: string): Promise<unknown[]>;
+  findAllByClientId(clientId: string): Promise<Application[]>;
 }

@@ -1,6 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ApplicationRepositoryPort } from '../../domain/ports/application-repository.port';
-import { ApplicationEvent } from '../../domain/models/application.entity';
 
 @Injectable()
 export class GetApplicationEventsUseCase {

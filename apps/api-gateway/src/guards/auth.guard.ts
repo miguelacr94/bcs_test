@@ -1,20 +1,17 @@
 import {
   CanActivate,
   ExecutionContext,
-  Inject,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import { ClientProxy } from '@nestjs/microservices';
-import { firstValueFrom } from 'rxjs';
-import { AuthPattern } from '@app/shared/enums';
+import { JwtService } from '@nestjs/jwt';
 import { SharedMessages } from '@app/shared';
 import { Reflector } from '@nestjs/core';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
   constructor(
-    @Inject('AUTH_SERVICE') private readonly authClient: ClientProxy,
+    private readonly jwtService: JwtService,
     private reflector: Reflector,
   ) {}
 
@@ -39,29 +36,17 @@ export class AuthGuard implements CanActivate {
 
     if (type !== 'Bearer' || !token) {
       if (isPublic) return true;
-      throw new UnauthorizedException(
-        SharedMessages.Auth.INVALID_TOKEN_FORMAT,
-      );
+      throw new UnauthorizedException(SharedMessages.Auth.INVALID_TOKEN_FORMAT);
     }
 
     try {
-      const result = await firstValueFrom(
-        this.authClient.send({ cmd: AuthPattern.VALIDATE_TOKEN }, { token }),
-      );
-
-      if (!result || !result.isValid) {
-        if (isPublic) return true;
-        throw new UnauthorizedException(
-          result?.error || SharedMessages.Auth.INVALID_OR_EXPIRED_TOKEN,
-        );
-      }
-
-      request['user'] = result.user;
+      const payload = await this.jwtService.verifyAsync(token);
+      request['user'] = payload;
       return true;
     } catch (error: unknown) {
       if (isPublic) return true;
       throw new UnauthorizedException(
-        (error instanceof Error ? error.message : String(error)) || SharedMessages.Auth.AUTH_ERROR,
+        SharedMessages.Auth.INVALID_OR_EXPIRED_TOKEN,
       );
     }
   }

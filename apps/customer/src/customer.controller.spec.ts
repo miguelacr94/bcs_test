@@ -30,7 +30,9 @@ describe('CustomerController', () => {
 
     controller = module.get<CustomerController>(CustomerController);
     createUseCase = module.get<CreateCustomerUseCase>(CreateCustomerUseCase);
-    findUseCase = module.get<FindCustomerByDocumentUseCase>(FindCustomerByDocumentUseCase);
+    findUseCase = module.get<FindCustomerByDocumentUseCase>(
+      FindCustomerByDocumentUseCase,
+    );
   });
 
   it('should be defined', () => {
@@ -39,10 +41,22 @@ describe('CustomerController', () => {
 
   describe('create', () => {
     it('should create a customer successfully', async () => {
-      const dto = { name: 'Juan', lastName: 'Perez', document: '123', email: 'a@a.com', phone: '123' };
+      const dto = {
+        name: 'Juan',
+        lastName: 'Perez',
+        document: '123',
+        email: 'a@a.com',
+        phone: '123',
+      };
       const expectedResult = { id: '1', ...dto };
-      
-      jest.spyOn(createUseCase, 'execute').mockResolvedValue(expectedResult as unknown as Awaited<ReturnType<typeof createUseCase.execute>>);
+
+      jest
+        .spyOn(createUseCase, 'execute')
+        .mockResolvedValue(
+          expectedResult as unknown as Awaited<
+            ReturnType<typeof createUseCase.execute>
+          >,
+        );
 
       const result = await controller.create(dto);
       expect(result).toEqual(expectedResult);
@@ -50,8 +64,16 @@ describe('CustomerController', () => {
     });
 
     it('should throw RpcException on error', async () => {
-      const dto = { name: 'Juan', lastName: 'Perez', document: '123', email: 'a@a.com', phone: '123' };
-      jest.spyOn(createUseCase, 'execute').mockRejectedValue(new Error('Validation error'));
+      const dto = {
+        name: 'Juan',
+        lastName: 'Perez',
+        document: '123',
+        email: 'a@a.com',
+        phone: '123',
+      };
+      jest
+        .spyOn(createUseCase, 'execute')
+        .mockRejectedValue(new Error('Validation error'));
 
       await expect(controller.create(dto)).rejects.toThrow(RpcException);
     });
@@ -60,7 +82,13 @@ describe('CustomerController', () => {
   describe('findByDocument', () => {
     it('should find a customer', async () => {
       const mockCustomer = { id: '1', document: '123' };
-      jest.spyOn(findUseCase, 'execute').mockResolvedValue(mockCustomer as unknown as Awaited<ReturnType<typeof findUseCase.execute>>);
+      jest
+        .spyOn(findUseCase, 'execute')
+        .mockResolvedValue(
+          mockCustomer as unknown as Awaited<
+            ReturnType<typeof findUseCase.execute>
+          >,
+        );
 
       const result = await controller.findByDocument({ document: '123' });
       expect(result).toEqual(mockCustomer);
@@ -69,7 +97,9 @@ describe('CustomerController', () => {
     it('should throw RpcException (404) if not found', async () => {
       jest.spyOn(findUseCase, 'execute').mockResolvedValue(null);
 
-      await expect(controller.findByDocument({ document: '123' })).rejects.toThrow(RpcException);
+      await expect(
+        controller.findByDocument({ document: '123' }),
+      ).rejects.toThrow(RpcException);
     });
   });
 });

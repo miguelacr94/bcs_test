@@ -14,11 +14,7 @@ import {
   extractTraceIdFromHeaders,
   extractParentSpanIdFromHeaders,
 } from './utils/trace-id.generator';
-import {
-  sanitizeData,
-  sanitizeHeaders,
-  safeStringify,
-} from './utils/data-sanitizer';
+import { sanitizeData, sanitizeHeaders } from './utils/data-sanitizer';
 import { getTracingConfig, shouldSample } from './tracing.config';
 
 @Injectable()
@@ -70,7 +66,8 @@ export class TracingInterceptor implements NestInterceptor {
       queryParams: sanitizeData(request.query, {
         maxBodySize: config.maxBodySize,
       }) as Record<string, unknown> | undefined,
-      body: sanitizeData(request.body, { maxBodySize: config.maxBodySize }) as Record<string, unknown> | undefined,
+      body: sanitizeData(request.body, { maxBodySize: config.maxBodySize }) as
+        Record<string, unknown> | undefined,
       userId: request.user?.id || request.headers['x-user-id'],
       correlationId: request.headers['x-correlation-id'],
       tags: [`method:${request.method}`, `path:${request.url}`],

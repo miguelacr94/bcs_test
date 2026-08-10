@@ -41,7 +41,9 @@ export class EncryptIdInterceptor implements NestInterceptor {
       return obj.map((item) => this.decryptObjectIds(item));
     }
 
-    const newObj: Record<string, unknown> = { ...(obj as Record<string, unknown>) };
+    const newObj: Record<string, unknown> = {
+      ...(obj as Record<string, unknown>),
+    };
     for (const key of Object.keys(newObj)) {
       if (
         (key === 'id' ||
@@ -68,7 +70,9 @@ export class EncryptIdInterceptor implements NestInterceptor {
     // Preservar instancias de Date, RegExp, etc.
     if (obj instanceof Date || obj instanceof RegExp) return obj;
 
-    const newObj: Record<string, unknown> = { ...(obj as Record<string, unknown>) };
+    const newObj: Record<string, unknown> = {
+      ...(obj as Record<string, unknown>),
+    };
     for (const key of Object.keys(newObj)) {
       if (
         (key === 'id' ||

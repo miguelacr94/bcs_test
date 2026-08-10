@@ -37,9 +37,13 @@ export class CustomerRepositoryAdapter implements CustomerRepositoryPort {
 
   async save(customer: Customer): Promise<Customer> {
     const encryptedCustomerData = {
-      ...customer,
+      name: customer.name,
+      lastName: customer.lastName,
+      email: customer.email,
+      phone: customer.phone,
       document: this.cryptoAdapter.encrypt(customer.document),
       documentHash: this.cryptoAdapter.hash(customer.document),
+      familyReference1: customer.familyReference1,
     };
 
     let doc;
@@ -51,7 +55,7 @@ export class CustomerRepositoryAdapter implements CustomerRepositoryPort {
       const newCustomer = new this.customerModel(encryptedCustomerData);
       doc = await newCustomer.save();
     }
-    
+
     if (!doc) {
       throw new Error(`Customer with id ${customer.id} not found`);
     }
@@ -61,7 +65,13 @@ export class CustomerRepositoryAdapter implements CustomerRepositoryPort {
 
   async update(document: string, data: Partial<Customer>): Promise<Customer> {
     const documentHash = this.cryptoAdapter.hash(document);
-    const updateData = { ...data } as Record<string, unknown>;
+    const updateData: Record<string, unknown> = {};
+    if (data.name !== undefined) updateData.name = data.name;
+    if (data.lastName !== undefined) updateData.lastName = data.lastName;
+    if (data.email !== undefined) updateData.email = data.email;
+    if (data.phone !== undefined) updateData.phone = data.phone;
+    if (data.familyReference1 !== undefined)
+      updateData.familyReference1 = data.familyReference1;
     if (data.document) {
       updateData.documentHash = this.cryptoAdapter.hash(data.document);
       updateData.document = this.cryptoAdapter.encrypt(data.document);
@@ -93,9 +103,11 @@ export class CustomerRepositoryAdapter implements CustomerRepositoryPort {
       this.cryptoAdapter.decrypt(docObj.document as string),
       docObj.email as string,
       docObj.phone as string,
+      docObj.status as boolean,
       docObj.createdAt as Date,
       docObj.updatedAt as Date,
-      docObj.familyReference1 as { name: string; phone: string; relationship: string } | undefined,
+      docObj.familyReference1 as
+        { name: string; phone: string; relationship: string } | undefined,
     );
   }
 }

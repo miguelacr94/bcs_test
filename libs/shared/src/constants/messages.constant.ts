@@ -6,7 +6,8 @@ export const SharedMessages = {
     AUTH_ERROR: 'Error de autenticación.',
   },
   Customer: {
-    ALREADY_REGISTERED: 'El cliente ya se encuentra registrado con este documento.',
+    ALREADY_REGISTERED:
+      'El cliente ya se encuentra registrado con este documento.',
     NOT_FOUND: 'Cliente no encontrado.',
   },
   Application: {
@@ -14,9 +15,11 @@ export const SharedMessages = {
       `Tiene una solicitud finalizada recientemente. Podrá iniciar un nuevo proceso a partir del ${dateStr}.`,
     AUDIT_CREATED: (channel: string) =>
       `Solicitud creada por el cliente desde el canal: ${channel}`,
+    AUDIT_SPECIAL_OFFERT: `Solicitud Web de alto monto requiere validación analista`,
     NOT_FOUND: 'Solicitud no encontrada.',
   },
   UserCore: {
-    SEARCH_ERROR: (doc: string) => `Error al buscar usuario con documento ${doc}`,
-  }
+    SEARCH_ERROR: (doc: string) =>
+      `Error al buscar usuario con documento ${doc}`,
+  },
 };

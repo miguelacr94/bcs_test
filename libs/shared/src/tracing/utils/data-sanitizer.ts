@@ -30,7 +30,10 @@ interface SanitizerConfig {
 /**
  * Sanitiza datos sensibles de un objeto
  */
-export function sanitizeData(data: unknown, config: SanitizerConfig = {}): unknown {
+export function sanitizeData(
+  data: unknown,
+  config: SanitizerConfig = {},
+): unknown {
   const {
     sensitiveFields = DEFAULT_SENSITIVE_FIELDS,
     maxBodySize = 1024 * 10, // 10KB por defecto
@@ -57,7 +60,7 @@ export function sanitizeData(data: unknown, config: SanitizerConfig = {}): unkno
   // Si es objeto, sanitizar campos sensibles
   const sanitized: Record<string, unknown> = {};
   const dataRecord = data as Record<string, unknown>;
-  
+
   for (const key in dataRecord) {
     if (Object.prototype.hasOwnProperty.call(dataRecord, key)) {
       const lowerKey = key.toLowerCase();
@@ -115,7 +118,10 @@ export function truncateString(str: string, maxSize: number): string {
 /**
  * Convierte un objeto a string de forma segura
  */
-export function safeStringify(data: unknown, maxSize: number = 1024 * 10): string {
+export function safeStringify(
+  data: unknown,
+  maxSize: number = 1024 * 10,
+): string {
   try {
     const str = JSON.stringify(data);
     return truncateString(str, maxSize);

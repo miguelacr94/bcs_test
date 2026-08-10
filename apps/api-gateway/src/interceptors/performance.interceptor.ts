@@ -16,15 +16,13 @@ export class PerformanceInterceptor implements NestInterceptor {
 
     const now = Date.now();
 
-    return next
-      .handle()
-      .pipe(
-        tap(() => {
-          const executionTime = Date.now() - now;
-          console.log(
-            `[INTERCEPTOR] ⏱️ Ejecución de ${className}.${methodName}() tomó: ${executionTime}ms`,
-          );
-        }),
-      );
+    return next.handle().pipe(
+      tap(() => {
+        const executionTime = Date.now() - now;
+        console.log(
+          `[INTERCEPTOR] ⏱️ Ejecución de ${className}.${methodName}() tomó: ${executionTime}ms`,
+        );
+      }),
+    );
   }
 }

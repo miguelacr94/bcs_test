@@ -39,8 +39,13 @@ export class DisbursementsController {
       this.logger.log(`Disbursement scheduled with ID ${saved._id}`);
       return saved;
     } catch (error: unknown) {
-      this.logger.error(`Error scheduling disbursement: ${(error instanceof Error ? error.message : String(error))}`);
-      throw new RpcException({ error: (error instanceof Error ? error.message : String(error)), statusCode: 400 });
+      this.logger.error(
+        `Error scheduling disbursement: ${error instanceof Error ? error.message : String(error)}`,
+      );
+      throw new RpcException({
+        error: error instanceof Error ? error.message : String(error),
+        statusCode: 400,
+      });
     }
   }
 }

@@ -25,6 +25,8 @@ import {
   ValidateApplicationUseCase,
   FinalizeApplicationUseCase,
   CheckRecentFinalizedApplicationUseCase,
+  GetPublicApplicationEventsUseCase,
+  GetApplicationByClientIdUseCase,
 } from './application/use-cases';
 
 @Module({
@@ -67,11 +69,13 @@ import {
     CreateApplicationUseCase,
     GetApplicationsUseCase,
     GetApplicationByIdUseCase,
+    GetApplicationByClientIdUseCase,
     UpdateApplicationUseCase,
     SimulateOfferUseCase,
     AcceptOfferUseCase,
     AbandonApplicationUseCase,
     GetApplicationEventsUseCase,
+    GetPublicApplicationEventsUseCase,
     ValidateApplicationUseCase,
     FinalizeApplicationUseCase,
     CheckRecentFinalizedApplicationUseCase,

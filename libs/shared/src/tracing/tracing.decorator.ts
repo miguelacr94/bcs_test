@@ -7,7 +7,7 @@ import {
   extractTraceIdFromHeaders,
   extractParentSpanIdFromHeaders,
 } from './utils/trace-id.generator';
-import { sanitizeData, safeStringify } from './utils/data-sanitizer';
+import { sanitizeData } from './utils/data-sanitizer';
 import { getTracingConfig, shouldSample } from './tracing.config';
 
 /**
@@ -76,7 +76,8 @@ export function Trace(options: TraceOptions = {}): MethodDecorator {
 
       // Loggear request si está configurado
       if (options.logRequest !== false && config.logLevel !== 'ERROR') {
-        trace.body = sanitizeData(args, { maxBodySize: config.maxBodySize }) as Record<string, unknown> | undefined;
+        trace.body = sanitizeData(args, { maxBodySize: config.maxBodySize }) as
+          Record<string, unknown> | undefined;
       }
 
       try {
@@ -95,13 +96,20 @@ export function Trace(options: TraceOptions = {}): MethodDecorator {
 
         return result;
       } catch (error: unknown) {
-      // Error
+        // Error
         trace.duration = Date.now() - startTime;
-        const errCode = error && typeof error === 'object' && 'code' in error ? (error as { code: unknown }).code : undefined;
+        const errCode =
+          error && typeof error === 'object' && 'code' in error
+            ? error.code
+            : undefined;
         trace.error = {
-          name: (error instanceof Error ? error.name : "Error"),
-          message: (error instanceof Error ? error.message : String(error)),
-          stack: config.includeStackTrace ? (error instanceof Error ? error.stack : undefined) : undefined,
+          name: error instanceof Error ? error.name : 'Error',
+          message: error instanceof Error ? error.message : String(error),
+          stack: config.includeStackTrace
+            ? error instanceof Error
+              ? error.stack
+              : undefined
+            : undefined,
           code: errCode ? String(errCode) : undefined,
         };
 
@@ -124,12 +132,16 @@ function persistTrace(trace: Trace): void {
   if (config.persistAsync) {
     setImmediate(() => {
       saveTrace(trace).catch((error) => {
-        console.error(`Failed to persist trace: ${(error instanceof Error ? error.message : String(error))}`);
+        console.error(
+          `Failed to persist trace: ${error instanceof Error ? error.message : String(error)}`,
+        );
       });
     });
   } else {
     saveTrace(trace).catch((error) => {
-      console.error(`Failed to persist trace: ${(error instanceof Error ? error.message : String(error))}`);
+      console.error(
+        `Failed to persist trace: ${error instanceof Error ? error.message : String(error)}`,
+      );
     });
   }
 }

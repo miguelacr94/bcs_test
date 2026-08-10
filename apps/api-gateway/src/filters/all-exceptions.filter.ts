@@ -32,7 +32,8 @@ export class AllExceptionsFilter implements ExceptionFilter {
     if (exc.getStatus && typeof exc.getStatus === 'function') {
       status = exc.getStatus();
       const res = exc.getResponse ? exc.getResponse() : null;
-      message = typeof res === 'object' && res !== null ? res.message : String(res);
+      message =
+        typeof res === 'object' && res !== null ? res.message : String(res);
     } else if (exc.code) {
       // Mapeo de códigos de error de negocio a HTTP status
       if (exc.code === 4001) {

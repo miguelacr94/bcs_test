@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { UserCoreGatewayController } from './user-core.controller';
+import { UserCoreGatewayService } from './services/user-core-gateway.service';
 import { envs } from '@app/shared/config/envs';
 
 @Module({
@@ -33,5 +34,6 @@ import { envs } from '@app/shared/config/envs';
     ]),
   ],
   controllers: [UserCoreGatewayController],
+  providers: [UserCoreGatewayService],
 })
 export class UserCoreGatewayModule {}
