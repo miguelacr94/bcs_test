@@ -45,7 +45,7 @@ export class RedisOfferServiceAdapter implements OfferServicePort {
       );
 
       return result;
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error(
         `Error al comunicarse con Offer-Core: ${error.message}`,
         error.stack,
