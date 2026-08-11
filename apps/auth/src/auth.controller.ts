@@ -2,7 +2,6 @@ import { Controller, Inject, Logger } from '@nestjs/common';
 import { AuthPattern } from '@app/shared/enums';
 import type { TokenServicePort } from './domain/ports/token-service.port';
 import type { UserRepositoryPort } from './domain/ports/user-repository.port';
-import { AuthService } from './auth.service';
 import { MessagePattern, Payload, RpcException } from '@nestjs/microservices';
 import {
   RegisterUserUseCase,
@@ -20,7 +19,6 @@ import {
 @Controller()
 export class AuthController {
   constructor(
-    private readonly authService: AuthService,
     private readonly registerUserUseCase: RegisterUserUseCase,
     private readonly loginUserUseCase: LoginUserUseCase,
     private readonly refreshTokenUseCase: RefreshTokenUseCase,

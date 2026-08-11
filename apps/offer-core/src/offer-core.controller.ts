@@ -1,11 +1,12 @@
 import { Controller } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
-import { OfferCoreService, OfferSimulationResult } from './offer-core.service';
 import { OfferPattern } from '@app/shared/enums/message-patterns.enum';
+import { OfferSimulationResult } from '@app/shared';
+import { SimulateOfferUseCase } from './application/use-cases';
 
 @Controller()
 export class OfferCoreController {
-  constructor(private readonly offerCoreService: OfferCoreService) {}
+  constructor(private readonly simulateOfferUseCase: SimulateOfferUseCase) {}
 
   @MessagePattern({ cmd: OfferPattern.SIMULATE_OFFER })
   async simulateOffer(
@@ -17,9 +18,8 @@ export class OfferCoreController {
       termMonths: number;
     },
   ): Promise<OfferSimulationResult> {
-    return this.offerCoreService.simulateOffer(
+    return this.simulateOfferUseCase.execute(
       data.applicationId,
-      data.clientId,
       data.amount,
       data.termMonths,
     );

@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AuthController } from './auth.controller';
-import { AuthService } from './auth.service';
 import { UserDocument, UserSchema } from './infrastructure/schemas/user.schema';
 import { MongooseUserRepository } from './infrastructure/adapters/mongoose-user.repository';
 import { BcryptHasherAdapter } from './infrastructure/adapters/bcrypt-hasher.adapter';
@@ -32,7 +31,6 @@ import { envs } from '@app/shared/config/envs';
   ],
   controllers: [AuthController],
   providers: [
-    AuthService,
     RegisterUserUseCase,
     LoginUserUseCase,
     RefreshTokenUseCase,

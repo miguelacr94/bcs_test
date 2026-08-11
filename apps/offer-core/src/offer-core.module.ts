@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
 import { OfferCoreController } from './offer-core.controller';
-import { OfferCoreService } from './offer-core.service';
+import { SimulateOfferUseCase } from './application/use-cases';
 
 @Module({
   imports: [],
   controllers: [OfferCoreController],
-  providers: [OfferCoreService],
+  providers: [SimulateOfferUseCase],
 })
 export class OfferCoreModule {}
