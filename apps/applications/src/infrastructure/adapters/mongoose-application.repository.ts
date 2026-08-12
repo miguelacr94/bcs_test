@@ -120,7 +120,9 @@ export class MongooseApplicationRepository implements ApplicationRepositoryPort 
     await audit.save();
   }
 
-  async findAuditsByApplicationId(applicationId: string): Promise<unknown[]> {
+  async findAuditsByApplicationId(
+    applicationId: string,
+  ): Promise<AuditOfferDocument[]> {
     return await this.auditOfferModel
       .find({ applicationId: new Types.ObjectId(applicationId) })
       .sort({ createdAt: 1 })

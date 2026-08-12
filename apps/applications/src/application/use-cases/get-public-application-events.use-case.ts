@@ -11,7 +11,9 @@ export class GetPublicApplicationEventsUseCase {
 
   async execute(id: string): Promise<unknown[]> {
     return (
-      (await this.applicationRepository.findAuditsByApplicationId(id)) as sortDate[]
+      (await this.applicationRepository.findAuditsByApplicationId(
+        id,
+      )) as sortDate[]
     ).sort(
       (a: sortDate, b: sortDate) =>
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),

@@ -21,9 +21,10 @@ export class CheckRecentFinalizedApplicationUseCase {
       );
 
     if (finalizedApp) {
-      const audits = (await this.applicationRepository.findAuditsByApplicationId(
-        finalizedApp.id,
-      )) as { createdAt?: string | Date }[];
+      const audits =
+        (await this.applicationRepository.findAuditsByApplicationId(
+          finalizedApp.id,
+        )) as { createdAt?: string | Date }[];
       let finalizedDate = finalizedApp.createdAt;
 
       if (audits && audits.length > 0) {
