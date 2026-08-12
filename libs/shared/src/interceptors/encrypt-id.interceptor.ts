@@ -49,7 +49,9 @@ export class EncryptIdInterceptor implements NestInterceptor {
         (key === 'id' ||
           key === '_id' ||
           key === 'applicationId' ||
-          key === 'activeApplicationId') &&
+          key === 'activeApplicationId' ||
+          key === 'clientId' ||
+          key === 'document') &&
         typeof newObj[key] === 'string'
       ) {
         newObj[key] = this.cryptoAdapter.decryptId(newObj[key]);
@@ -78,7 +80,9 @@ export class EncryptIdInterceptor implements NestInterceptor {
         (key === 'id' ||
           key === '_id' ||
           key === 'applicationId' ||
-          key === 'activeApplicationId') &&
+          key === 'activeApplicationId' ||
+          key === 'clientId' ||
+          key === 'document') &&
         typeof newObj[key] === 'string'
       ) {
         newObj[key] = this.cryptoAdapter.encryptId(newObj[key]);
