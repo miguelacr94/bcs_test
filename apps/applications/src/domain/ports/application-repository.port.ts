@@ -12,13 +12,13 @@ export interface ApplicationRepositoryPort {
     status: string | string[],
   ): Promise<Application | null>;
   saveAudit(
-    offerId: string,
+    applicationId: string,
     type: string,
     message: string,
     previousStatus?: string,
     nextStatus?: string,
     metadata?: Record<string, unknown>,
   ): Promise<void>;
-  findAuditsByOfferId(offerId: string): Promise<unknown[]>;
+  findAuditsByApplicationId(applicationId: string): Promise<unknown[]>;
   findAllByClientId(clientId: string): Promise<Application[]>;
 }

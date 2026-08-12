@@ -4,7 +4,7 @@ import { Document, Types } from 'mongoose';
 @Schema({ collection: 'audit_offert' })
 export class AuditOfferDocument extends Document {
   @Prop({ required: true, type: Types.ObjectId, ref: 'Application' })
-  offerId!: Types.ObjectId;
+  applicationId!: Types.ObjectId;
 
   @Prop({ required: false })
   previousStatus?: string;

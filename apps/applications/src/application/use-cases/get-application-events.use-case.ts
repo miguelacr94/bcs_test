@@ -9,6 +9,6 @@ export class GetApplicationEventsUseCase {
   ) {}
 
   async execute(id: string): Promise<unknown[]> {
-    return await this.applicationRepository.findAuditsByOfferId(id);
+    return await this.applicationRepository.findAuditsByApplicationId(id);
   }
 }

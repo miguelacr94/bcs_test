@@ -102,7 +102,7 @@ export class MongooseApplicationRepository implements ApplicationRepositoryPort 
   }
 
   async saveAudit(
-    offerId: string,
+    applicationId: string,
     type: string,
     message: string,
     previousStatus?: string,
@@ -110,7 +110,7 @@ export class MongooseApplicationRepository implements ApplicationRepositoryPort 
     metadata?: Record<string, unknown>,
   ): Promise<void> {
     const audit = new this.auditOfferModel({
-      offerId: new Types.ObjectId(offerId),
+      applicationId: new Types.ObjectId(applicationId),
       type,
       message,
       previousStatus,
@@ -120,9 +120,9 @@ export class MongooseApplicationRepository implements ApplicationRepositoryPort 
     await audit.save();
   }
 
-  async findAuditsByOfferId(offerId: string): Promise<unknown[]> {
+  async findAuditsByApplicationId(applicationId: string): Promise<unknown[]> {
     return await this.auditOfferModel
-      .find({ offerId: new Types.ObjectId(offerId) })
+      .find({ applicationId: new Types.ObjectId(applicationId) })
       .sort({ createdAt: 1 })
       .exec();
   }
