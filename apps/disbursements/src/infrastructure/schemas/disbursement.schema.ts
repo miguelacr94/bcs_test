@@ -1,13 +1,13 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, Types } from 'mongoose';
 
 @Schema({ timestamps: true })
 export class DisbursementDocument extends Document {
-  @Prop({ required: true })
-  applicationId!: string;
+  @Prop({ required: true, type: Types.ObjectId, ref: 'Application' })
+  applicationId!: Types.ObjectId;
 
-  @Prop({ required: true })
-  clientId!: string;
+  @Prop({ required: true, type: Types.ObjectId, ref: 'Customer' })
+  clientId!: Types.ObjectId;
 
   @Prop({ required: true })
   amount!: number;
