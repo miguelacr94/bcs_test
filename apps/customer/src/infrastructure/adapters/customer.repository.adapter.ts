@@ -95,19 +95,17 @@ export class CustomerRepositoryAdapter implements CustomerRepositoryPort {
   }
 
   private mapToDomain(doc: CustomerDocument): Customer {
-    const docObj = doc as unknown as Record<string, unknown>;
     return new Customer(
-      (docObj._id as { toString(): string }).toString(),
-      docObj.name as string,
-      docObj.lastName as string,
-      this.cryptoAdapter.decrypt(docObj.document as string),
-      docObj.email as string,
-      docObj.phone as string,
-      docObj.status as boolean,
-      docObj.createdAt as Date,
-      docObj.updatedAt as Date,
-      docObj.familyReference1 as
-        { name: string; phone: string; relationship: string } | undefined,
+      doc._id.toString(),
+      doc.name,
+      doc.lastName,
+      this.cryptoAdapter.decrypt(doc.document),
+      doc.email,
+      doc.phone,
+      doc.status,
+      (doc as any).createdAt,
+      (doc as any).updatedAt,
+      doc.familyReference1,
     );
   }
 }
