@@ -110,7 +110,7 @@ export class MongooseApplicationRepository implements ApplicationRepositoryPort 
     metadata?: Record<string, unknown>,
   ): Promise<void> {
     const audit = new this.auditOfferModel({
-      offerId,
+      offerId: new Types.ObjectId(offerId),
       type,
       message,
       previousStatus,
@@ -122,7 +122,7 @@ export class MongooseApplicationRepository implements ApplicationRepositoryPort 
 
   async findAuditsByOfferId(offerId: string): Promise<unknown[]> {
     return await this.auditOfferModel
-      .find({ offerId })
+      .find({ offerId: new Types.ObjectId(offerId) })
       .sort({ createdAt: 1 })
       .exec();
   }
