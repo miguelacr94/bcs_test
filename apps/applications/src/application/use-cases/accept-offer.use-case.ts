@@ -1,5 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ApplicationRepositoryPort } from '../../domain/ports/application-repository.port';
+import { Channel } from '@app/shared/enums';
 
 @Injectable()
 export class AcceptOfferUseCase {
@@ -10,7 +11,7 @@ export class AcceptOfferUseCase {
 
   async execute(
     id: string,
-    channel?: string,
+    channel?: Channel,
   ): Promise<{ success: boolean; message: string }> {
     const application = await this.applicationRepository.findById(id);
     if (!application) {

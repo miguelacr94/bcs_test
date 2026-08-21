@@ -1,6 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ApplicationRepositoryPort } from '../../domain/ports/application-repository.port';
 import { ClientProxy } from '@nestjs/microservices';
+import { ValidateApplicationData } from '@app/shared';
+import { Channel } from '@app/shared/enums';
 
 @Injectable()
 export class ValidateApplicationUseCase {
@@ -13,8 +15,8 @@ export class ValidateApplicationUseCase {
 
   async execute(
     id: string,
-    validationData: Record<string, unknown>,
-    channel?: string,
+    validationData: ValidateApplicationData,
+    channel?: Channel,
   ): Promise<{ success: boolean; message: string }> {
     const application = await this.applicationRepository.findById(id);
     if (!application) {

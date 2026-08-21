@@ -47,6 +47,7 @@ describe('CustomerController', () => {
         document: '123',
         email: 'a@a.com',
         phone: '123',
+        status: true,
       };
       const expectedResult = { id: '1', ...dto };
 
@@ -70,6 +71,7 @@ describe('CustomerController', () => {
         document: '123',
         email: 'a@a.com',
         phone: '123',
+        status: true,
       };
       jest
         .spyOn(createUseCase, 'execute')

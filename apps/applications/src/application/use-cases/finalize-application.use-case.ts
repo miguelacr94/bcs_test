@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ApplicationRepositoryPort } from '../../domain/ports/application-repository.port';
 import { ClientProxy } from '@nestjs/microservices';
-import { DisbursementPattern } from '@app/shared/enums';
+import { DisbursementPattern, Channel } from '@app/shared/enums';
 import { firstValueFrom } from 'rxjs';
 
 @Injectable()
@@ -16,7 +16,7 @@ export class FinalizeApplicationUseCase {
   async execute(
     id: string,
     withDisbursement: boolean,
-    channel?: string,
+    channel?: Channel,
     reason?: string,
   ): Promise<{ success: boolean; message: string }> {
     const application = await this.applicationRepository.findById(id);

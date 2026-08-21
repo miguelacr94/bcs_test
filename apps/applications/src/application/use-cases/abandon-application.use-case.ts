@@ -2,7 +2,7 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ApplicationRepositoryPort } from '../../domain/ports/application-repository.port';
 import { OfferAmount } from '@app/shared/constants/offertAmount.constanst';
 import { ClientProxy } from '@nestjs/microservices';
-import { CustomerPattern } from '@app/shared/enums';
+import { CustomerPattern, Channel } from '@app/shared/enums';
 import { firstValueFrom, retry, timeout } from 'rxjs';
 import { ApplicationsController } from '../../applications.controller';
 
@@ -19,7 +19,7 @@ export class AbandonApplicationUseCase {
   async execute(
     id: string,
     reason: string,
-    channel?: string,
+    channel?: Channel,
   ): Promise<{ success: boolean; message: string }> {
     const application = await this.applicationRepository.findById(id);
     if (!application) {

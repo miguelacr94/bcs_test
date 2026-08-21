@@ -1,4 +1,5 @@
 import { ApplicationStatus } from '@app/shared/enums';
+import { OfferResult, ValidateApplicationData } from '@app/shared';
 
 export interface ApplicationEvent {
   type: string;
@@ -15,8 +16,8 @@ export class Application {
     public readonly channel: string,
     public status: ApplicationStatus,
     public readonly createdAt: Date,
-    public offerResult?: Record<string, unknown>,
-    public validationData?: Record<string, unknown>,
+    public offerResult?: OfferResult,
+    public validationData?: ValidateApplicationData,
     public statusReason?: string,
   ) {}
 
@@ -48,7 +49,7 @@ export class Application {
     this.statusReason = reason;
   }
 
-  validateApplication(validationData: Record<string, unknown>): void {
+  validateApplication(validationData: ValidateApplicationData): void {
     if (this.status !== ApplicationStatus.PENDING_VALIDATION) {
       throw new Error(
         'La solicitud debe estar pendiente de validación para poder validarla.',

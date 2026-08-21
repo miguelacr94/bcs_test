@@ -1,15 +1,15 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { OfferCoreService } from './offer-core.service';
+import { SimulateOfferUseCase } from './application/use-cases/simulate-offer.use-case';
 
-describe('OfferCoreService', () => {
-  let service: OfferCoreService;
+describe('SimulateOfferUseCase', () => {
+  let useCase: SimulateOfferUseCase;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [OfferCoreService],
+      providers: [SimulateOfferUseCase],
     }).compile();
 
-    service = module.get<OfferCoreService>(OfferCoreService);
+    useCase = module.get<SimulateOfferUseCase>(SimulateOfferUseCase);
 
     // Evitar demoras en tests por el setTimeout de 1 segundo
     jest.useFakeTimers();
@@ -21,13 +21,13 @@ describe('OfferCoreService', () => {
   });
 
   it('should be defined', () => {
-    expect(service).toBeDefined();
+    expect(useCase).toBeDefined();
   });
 
   it('should return error when random < 0.33', async () => {
     jest.spyOn(Math, 'random').mockReturnValue(0.2);
 
-    const promise = service.simulateOffer('app-1', 'client-1', 10000, 12);
+    const promise = useCase.execute('app-1', 10000, 12);
     jest.runAllTimers();
 
     await expect(promise).rejects.toThrow(
@@ -38,7 +38,7 @@ describe('OfferCoreService', () => {
   it('should return partial offer when 0.33 <= random < 0.66', async () => {
     jest.spyOn(Math, 'random').mockReturnValue(0.5);
 
-    const promise = service.simulateOffer('app-1', 'client-1', 10000, 24);
+    const promise = useCase.execute('app-1', 10000, 24);
     jest.runAllTimers();
 
     const result = await promise;
@@ -50,7 +50,7 @@ describe('OfferCoreService', () => {
   it('should return full offer when random >= 0.66', async () => {
     jest.spyOn(Math, 'random').mockReturnValue(0.8);
 
-    const promise = service.simulateOffer('app-1', 'client-1', 10000, 24);
+    const promise = useCase.execute('app-1', 10000, 24);
     jest.runAllTimers();
 
     const result = await promise;

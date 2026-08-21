@@ -1,6 +1,6 @@
 import { Controller, Logger, Inject } from '@nestjs/common';
 import { MessagePattern, Payload, RpcException } from '@nestjs/microservices';
-import { ApplicationPattern } from '@app/shared/enums';
+import { ApplicationPattern, Channel } from '@app/shared/enums';
 import { RestrictionException } from '@app/shared';
 import {
   CreateApplicationUseCase,
@@ -47,7 +47,7 @@ export class ApplicationsController {
     data: {
       createDto: {
         clientId: string;
-        channel: string;
+        channel: Channel;
         offerResult?: Record<string, unknown>;
       };
     },
@@ -220,7 +220,7 @@ export class ApplicationsController {
   }
 
   @MessagePattern({ cmd: ApplicationPattern.ACCEPT_OFFER })
-  async acceptOffer(@Payload() data: { id: string; channel?: string }) {
+  async acceptOffer(@Payload() data: { id: string; channel?: Channel }) {
     try {
       return await this.acceptOfferUseCase.execute(data.id, data.channel);
     } catch (error: unknown) {
@@ -240,7 +240,7 @@ export class ApplicationsController {
     @Payload()
     data: {
       id: string;
-      reasonDto: { reason: string; channel?: string };
+      reasonDto: { reason: string; channel?: Channel };
     },
   ) {
     try {
@@ -295,14 +295,14 @@ export class ApplicationsController {
 
   @MessagePattern({ cmd: ApplicationPattern.VALIDATE_APPLICATION })
   async validateApplication(
-    @Payload() data: { id: string; validationData: Record<string, unknown> },
+    @Payload() data: { id: string; validationData: Record<string, any> },
   ) {
     try {
       const { channel, ...rest } = data.validationData;
       return await this.validateApplicationUseCase.execute(
         data.id,
         rest,
-        channel as string | undefined,
+        channel as Channel | undefined,
       );
     } catch (error: unknown) {
       this.logger.error(
@@ -322,7 +322,7 @@ export class ApplicationsController {
     data: {
       id: string;
       withDisbursement: boolean;
-      channel?: string;
+      channel?: Channel;
       reason?: string;
     },
   ) {

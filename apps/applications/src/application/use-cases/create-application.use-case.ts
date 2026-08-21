@@ -2,8 +2,8 @@ import { Inject, Injectable } from '@nestjs/common';
 import { Types } from 'mongoose';
 import { ApplicationRepositoryPort } from '../../domain/ports/application-repository.port';
 import { Application } from '../../domain/models/application.entity';
-import { ApplicationStatus } from '@app/shared/enums';
-import { RestrictionException, SharedMessages } from '@app/shared';
+import { ApplicationStatus, Channel } from '@app/shared/enums';
+import { RestrictionException, SharedMessages, OfferResult } from '@app/shared';
 import { OfferAmount } from '@app/shared/constants/offertAmount.constanst';
 
 @Injectable()
@@ -15,8 +15,8 @@ export class CreateApplicationUseCase {
 
   async execute(
     clientId: string,
-    channel: string,
-    offerResult?: Record<string, unknown>,
+    channel: Channel,
+    offerResult?: OfferResult,
   ): Promise<Application> {
     const secureId = new Types.ObjectId().toString();
 
@@ -82,7 +82,7 @@ export class CreateApplicationUseCase {
 
   private async validateAmounts(
     clientId: string,
-    offerResult: Record<string, unknown>,
+    offerResult: OfferResult,
   ): Promise<void> {
     const applications =
       await this.applicationRepository.findAllByClientId(clientId);

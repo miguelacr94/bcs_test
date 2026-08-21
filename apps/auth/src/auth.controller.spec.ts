@@ -7,7 +7,6 @@ import {
   LogoutUseCase,
   UpdateUserUseCase,
 } from './application/use-cases';
-import { AuthService } from './auth.service';
 import { RpcException } from '@nestjs/microservices';
 
 describe('AuthController', () => {
@@ -19,7 +18,6 @@ describe('AuthController', () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AuthController],
       providers: [
-        { provide: AuthService, useValue: {} },
         { provide: RegisterUserUseCase, useValue: { execute: jest.fn() } },
         { provide: LoginUserUseCase, useValue: { execute: jest.fn() } },
         { provide: RefreshTokenUseCase, useValue: { execute: jest.fn() } },
