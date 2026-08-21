@@ -1,34 +1,16 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Inject,
-  Post,
-  Query,
-  UseGuards,
-  Request,
-  Patch,
-  Logger,
-} from '@nestjs/common';
-import { Role, AuthPattern } from '@app/shared/enums';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiBearerAuth,
-} from '@nestjs/swagger';
+import { Body, Controller, Post, UseGuards, Logger } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { AuthGuard } from '../../guards/auth.guard';
-import { RolesGuard } from '../../guards/roles.guard';
-import { Roles } from '../../decorators/roles.decorator';
-import { ClientProxy } from '@nestjs/microservices';
-import { firstValueFrom } from 'rxjs';
-import { timeout, retry } from 'rxjs/operators';
 import { RegisterUserDto } from './dtos/register-user.dto';
 import { LoginUserDto } from './dtos/login-user.dto';
-import { UpdateUserProfileDto } from './dtos/update-user-profile.dto';
-import { CurrentUser } from '@app/shared/decorator/current-user.decorator';
-import { CurrentUserInterface } from '@app/shared/interfaces';
 import { Public } from '@app/shared/decorator/public.decorator';
+import { AuthGatewayService } from './services/auth-gateway.service';
+
+import {
+  ApiResponse as SharedApiResponse,
+  RegisterResponse,
+  LoginResponse,
+} from '@app/shared';
 
 @ApiTags('Autenticación')
 @UseGuards(AuthGuard)
@@ -36,9 +18,7 @@ import { Public } from '@app/shared/decorator/public.decorator';
 export class AuthController {
   private readonly logger = new Logger(AuthController.name);
 
-  constructor(
-    @Inject('AUTH_SERVICE') private readonly authClient: ClientProxy,
-  ) {}
+  constructor(private readonly authGatewayService: AuthGatewayService) {}
 
   @ApiOperation({
     summary: 'Registrar un nuevo usuario',
@@ -49,21 +29,11 @@ export class AuthController {
   @ApiResponse({ status: 409, description: 'El correo ya está registrado' })
   @Public()
   @Post('register')
-  async registerUser(@Body() dto: RegisterUserDto) {
-    this.logger.log(
-      'Gateway: Enviando petición de registro a Auth por Redis...',
-    );
-
-    const result = await firstValueFrom(
-      this.authClient
-        .send({ cmd: AuthPattern.REGISTER_USER }, dto)
-        .pipe(timeout(5000), retry(3)),
-    );
-
-    this.logger.log(
-      `Gateway: Respuesta de registro recibida del microservicio: ${JSON.stringify(result)}`,
-    );
-    return result;
+  async registerUser(
+    @Body() dto: RegisterUserDto,
+  ): Promise<SharedApiResponse<RegisterResponse>> {
+    this.logger.log('Gateway: Petición para registrar usuario recibida');
+    return await this.authGatewayService.register(dto);
   }
 
   @ApiOperation({ summary: 'Iniciar sesión' })
@@ -71,23 +41,10 @@ export class AuthController {
   @ApiResponse({ status: 401, description: 'Credenciales inválidas' })
   @Public()
   @Post('login')
-  async loginUser(@Body() dto: LoginUserDto) {
-    this.logger.log('Gateway: Enviando petición de login a Auth por Redis...');
-
-    const result = await firstValueFrom(
-      this.authClient
-        .send({ cmd: AuthPattern.LOGIN_USER }, dto)
-        .pipe(timeout(5000), retry(3)),
-    );
-
-    this.logger.log(
-      `Gateway: Respuesta de login recibida del microservicio: ${JSON.stringify(result)}`,
-    );
-    return result;
+  async loginUser(
+    @Body() dto: LoginUserDto,
+  ): Promise<SharedApiResponse<LoginResponse>> {
+    this.logger.log('Gateway: Petición de login recibida');
+    return await this.authGatewayService.login(dto);
   }
-
-
-
-
-
 }

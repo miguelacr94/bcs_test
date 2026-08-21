@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { AuthController } from './auth.controller';
+import { AuthGatewayService } from './services/auth-gateway.service';
 import { envs } from '@app/shared/config/envs';
 
 @Module({
@@ -17,5 +18,6 @@ import { envs } from '@app/shared/config/envs';
     ]),
   ],
   controllers: [AuthController],
+  providers: [AuthGatewayService],
 })
 export class AuthModule {}

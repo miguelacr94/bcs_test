@@ -97,7 +97,9 @@ export class TracingInterceptor implements NestInterceptor {
       queryParams: sanitizeData(request.query, {
         maxBodySize: config.maxBodySize,
       }) as Record<string, unknown>,
-      body: sanitizeData(request.body, { maxBodySize: config.maxBodySize }) as Record<string, unknown>,
+      body: sanitizeData(request.body, {
+        maxBodySize: config.maxBodySize,
+      }) as Record<string, unknown>,
       userId: request.user?.id || request.headers?.['x-user-id'],
       correlationId: request.headers?.['x-correlation-id'],
       tags: [`method:${request.method}`, `path:${request.url}`],
@@ -126,21 +128,28 @@ export class TracingInterceptor implements NestInterceptor {
           );
         }
       }),
-      catchError((error) => {
+      catchError((error: unknown) => {
+        const err = error as {
+          status?: number;
+          code?: unknown;
+          name?: string;
+          message?: string;
+          stack?: string;
+        };
         trace.duration = Date.now() - startTime;
-        trace.statusCode = error.status || 500;
+        trace.statusCode = err.status || 500;
         trace.error = {
-          name: (error instanceof Error ? error.name : "Error"),
-          message: (error instanceof Error ? error.message : String(error)),
-          stack: config.includeStackTrace ? (error instanceof Error ? error.stack : undefined) : undefined,
-          code: (error as any).code ? String((error as any).code) : undefined,
+          name: err.name || 'Error',
+          message: err.message || String(error),
+          stack: config.includeStackTrace ? err.stack : undefined,
+          code: err.code ? String(err.code) : undefined,
         };
 
         this.persistTrace(trace);
 
         if (config.logToConsole) {
           this.logger.error(
-            `[TRACE] Failed ${trace.operation} - Error: ${(error instanceof Error ? error.message : String(error))}`,
+            `[TRACE] Failed ${trace.operation} - Error: ${error instanceof Error ? error.message : String(error)}`,
           );
         }
 
@@ -155,12 +164,16 @@ export class TracingInterceptor implements NestInterceptor {
     if (config.persistAsync) {
       setImmediate(() => {
         this.saveTrace(trace).catch((error) => {
-          this.logger.error(`Failed to persist trace: ${(error instanceof Error ? error.message : String(error))}`);
+          this.logger.error(
+            `Failed to persist trace: ${error instanceof Error ? error.message : String(error)}`,
+          );
         });
       });
     } else {
       this.saveTrace(trace).catch((error) => {
-        this.logger.error(`Failed to persist trace: ${(error instanceof Error ? error.message : String(error))}`);
+        this.logger.error(
+          `Failed to persist trace: ${error instanceof Error ? error.message : String(error)}`,
+        );
       });
     }
   }
@@ -174,7 +187,9 @@ export class TracingInterceptor implements NestInterceptor {
             this.logger.error(`Error emitting trace: ${err.message}`),
         });
     } catch (error: unknown) {
-      this.logger.error(`Failed to emit trace: ${(error instanceof Error ? error.message : String(error))}`);
+      this.logger.error(
+        `Failed to emit trace: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 }

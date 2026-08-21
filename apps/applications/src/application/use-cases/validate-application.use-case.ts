@@ -24,7 +24,6 @@ export class ValidateApplicationUseCase {
     const previousStatus = application.status;
     application.validateApplication(validationData);
 
-    // Update customer with validation data (family references) via microservice
     if (validationData.familyReference1) {
       try {
         await this.customerClient
@@ -35,7 +34,6 @@ export class ValidateApplicationUseCase {
           .toPromise();
       } catch (error) {
         console.error('Failed to update customer:', error);
-        // Continue even if customer update fails
       }
     }
 

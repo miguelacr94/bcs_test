@@ -2,7 +2,6 @@ import { Controller, Inject, Logger } from '@nestjs/common';
 import { AuthPattern } from '@app/shared/enums';
 import type { TokenServicePort } from './domain/ports/token-service.port';
 import type { UserRepositoryPort } from './domain/ports/user-repository.port';
-import { AuthService } from './auth.service';
 import { MessagePattern, Payload, RpcException } from '@nestjs/microservices';
 import {
   RegisterUserUseCase,
@@ -20,7 +19,6 @@ import {
 @Controller()
 export class AuthController {
   constructor(
-    private readonly authService: AuthService,
     private readonly registerUserUseCase: RegisterUserUseCase,
     private readonly loginUserUseCase: LoginUserUseCase,
     private readonly refreshTokenUseCase: RefreshTokenUseCase,
@@ -50,8 +48,12 @@ export class AuthController {
         createdAt: user.createdAt,
       };
     } catch (error: unknown) {
-      this.logger.error(`Microservicio Auth Error: ${(error instanceof Error ? error.message : String(error))}`);
-      throw new RpcException((error instanceof Error ? error.message : String(error)));
+      this.logger.error(
+        `Microservicio Auth Error: ${error instanceof Error ? error.message : String(error)}`,
+      );
+      throw new RpcException(
+        error instanceof Error ? error.message : String(error),
+      );
     }
   }
 
@@ -64,8 +66,12 @@ export class AuthController {
     try {
       return await this.loginUserUseCase.execute(dto);
     } catch (error: unknown) {
-      this.logger.error(`Microservicio Auth Login Error: ${(error instanceof Error ? error.message : String(error))}`);
-      throw new RpcException((error instanceof Error ? error.message : String(error)));
+      this.logger.error(
+        `Microservicio Auth Login Error: ${error instanceof Error ? error.message : String(error)}`,
+      );
+      throw new RpcException(
+        error instanceof Error ? error.message : String(error),
+      );
     }
   }
 
@@ -95,7 +101,9 @@ export class AuthController {
         },
       };
     } catch (error: unknown) {
-      this.logger.error(`Error al validar token: ${(error instanceof Error ? error.message : String(error))}`);
+      this.logger.error(
+        `Error al validar token: ${error instanceof Error ? error.message : String(error)}`,
+      );
       return {
         isValid: false,
         error: 'Token inválido o expirado.',
@@ -110,8 +118,12 @@ export class AuthController {
     try {
       return await this.refreshTokenUseCase.execute(data.refreshToken);
     } catch (error: unknown) {
-      this.logger.error(`Microservicio Auth Refresh Error: ${(error instanceof Error ? error.message : String(error))}`);
-      throw new RpcException((error instanceof Error ? error.message : String(error)));
+      this.logger.error(
+        `Microservicio Auth Refresh Error: ${error instanceof Error ? error.message : String(error)}`,
+      );
+      throw new RpcException(
+        error instanceof Error ? error.message : String(error),
+      );
     }
   }
 
@@ -124,8 +136,12 @@ export class AuthController {
     try {
       return await this.logoutUseCase.execute(data.userId);
     } catch (error: unknown) {
-      this.logger.error(`Microservicio Auth Logout Error: ${(error instanceof Error ? error.message : String(error))}`);
-      throw new RpcException((error instanceof Error ? error.message : String(error)));
+      this.logger.error(
+        `Microservicio Auth Logout Error: ${error instanceof Error ? error.message : String(error)}`,
+      );
+      throw new RpcException(
+        error instanceof Error ? error.message : String(error),
+      );
     }
   }
 
@@ -139,9 +155,11 @@ export class AuthController {
       return await this.updateUserUseCase.execute(dto);
     } catch (error: unknown) {
       this.logger.error(
-        `Microservicio Auth Update Profile Error: ${(error instanceof Error ? error.message : String(error))}`,
+        `Microservicio Auth Update Profile Error: ${error instanceof Error ? error.message : String(error)}`,
       );
-      throw new RpcException((error instanceof Error ? error.message : String(error)));
+      throw new RpcException(
+        error instanceof Error ? error.message : String(error),
+      );
     }
   }
 }

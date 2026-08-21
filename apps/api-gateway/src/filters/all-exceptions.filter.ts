@@ -32,7 +32,8 @@ export class AllExceptionsFilter implements ExceptionFilter {
     if (exc.getStatus && typeof exc.getStatus === 'function') {
       status = exc.getStatus();
       const res = exc.getResponse ? exc.getResponse() : null;
-      message = typeof res === 'object' && res !== null ? res.message : String(res);
+      message =
+        typeof res === 'object' && res !== null ? res.message : String(res);
     } else if (exc.code) {
       // Mapeo de códigos de error de negocio a HTTP status
       if (exc.code === 4001) {
@@ -66,7 +67,14 @@ export class AllExceptionsFilter implements ExceptionFilter {
       }
     }
 
-    const responsePayload: any = {
+    const responsePayload: {
+      statusCode: number;
+      timestamp: string;
+      path: string;
+      message: string | string[];
+      availableDate?: string;
+      daysRemaining?: number;
+    } = {
       statusCode: status,
       timestamp: new Date().toISOString(),
       path: request.url,

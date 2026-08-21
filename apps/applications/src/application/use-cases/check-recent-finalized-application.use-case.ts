@@ -9,16 +9,24 @@ export class CheckRecentFinalizedApplicationUseCase {
     private readonly applicationRepository: ApplicationRepositoryPort,
   ) {}
 
-  async execute(clientId: string): Promise<{ restricted: boolean; availableDate?: string; daysRemaining?: number }> {
-    const finalizedApp = await this.applicationRepository.findByClientIdAndStatus(
-      clientId,
-      ApplicationStatus.FINALIZED,
-    );
+  async execute(clientId: string): Promise<{
+    restricted: boolean;
+    availableDate?: string;
+    daysRemaining?: number;
+  }> {
+    const finalizedApp =
+      await this.applicationRepository.findByClientIdAndStatus(
+        clientId,
+        ApplicationStatus.FINALIZED,
+      );
 
     if (finalizedApp) {
-      const audits = await this.applicationRepository.findAuditsByOfferId(finalizedApp.id) as any[];
+      const audits =
+        (await this.applicationRepository.findAuditsByApplicationId(
+          finalizedApp.id,
+        )) as { createdAt?: string | Date }[];
       let finalizedDate = finalizedApp.createdAt;
-      
+
       if (audits && audits.length > 0) {
         const lastAudit = audits[audits.length - 1];
         if (lastAudit.createdAt) {
@@ -29,19 +37,23 @@ export class CheckRecentFinalizedApplicationUseCase {
       const thirtyDaysInMs = 30 * 24 * 60 * 60 * 1000;
       const now = new Date();
       const diffMs = now.getTime() - finalizedDate.getTime();
-      
+
       if (diffMs < thirtyDaysInMs) {
-        const availableDate = new Date(finalizedDate.getTime() + thirtyDaysInMs);
-        const daysRemaining = Math.ceil((thirtyDaysInMs - diffMs) / (1000 * 60 * 60 * 24));
-        
+        const availableDate = new Date(
+          finalizedDate.getTime() + thirtyDaysInMs,
+        );
+        const daysRemaining = Math.ceil(
+          (thirtyDaysInMs - diffMs) / (1000 * 60 * 60 * 24),
+        );
+
         return {
           restricted: true,
           availableDate: availableDate.toISOString(),
-          daysRemaining
+          daysRemaining,
         };
       }
     }
-    
+
     return { restricted: false };
   }
 }

@@ -102,7 +102,7 @@ export class MongooseApplicationRepository implements ApplicationRepositoryPort 
   }
 
   async saveAudit(
-    offerId: string,
+    applicationId: string,
     type: string,
     message: string,
     previousStatus?: string,
@@ -110,7 +110,7 @@ export class MongooseApplicationRepository implements ApplicationRepositoryPort 
     metadata?: Record<string, unknown>,
   ): Promise<void> {
     const audit = new this.auditOfferModel({
-      offerId,
+      applicationId: new Types.ObjectId(applicationId),
       type,
       message,
       previousStatus,
@@ -120,10 +120,20 @@ export class MongooseApplicationRepository implements ApplicationRepositoryPort 
     await audit.save();
   }
 
-  async findAuditsByOfferId(offerId: string): Promise<unknown[]> {
+  async findAuditsByApplicationId(
+    applicationId: string,
+  ): Promise<AuditOfferDocument[]> {
     return await this.auditOfferModel
-      .find({ offerId })
+      .find({ applicationId: new Types.ObjectId(applicationId) })
       .sort({ createdAt: 1 })
       .exec();
+  }
+
+  async findAllByClientId(clientId: string): Promise<Application[]> {
+    const docs = await this.applicationModel
+      .find({ clientId: new Types.ObjectId(clientId) })
+      .sort({ createdAt: -1 })
+      .exec();
+    return docs.map((doc) => ApplicationMapper.toDomain(doc));
   }
 }

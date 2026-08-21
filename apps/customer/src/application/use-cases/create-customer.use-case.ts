@@ -2,6 +2,7 @@ import { Inject, Injectable, ConflictException } from '@nestjs/common';
 import { CustomerRepositoryPort } from '../../domain/ports/customer.repository.port';
 import { Customer } from '../../domain/models/customer.entity';
 import { CreateCustomerDto } from '../dtos/create-customer.dto';
+import { SharedMessages } from '@app/shared';
 
 @Injectable()
 export class CreateCustomerUseCase {
@@ -13,9 +14,7 @@ export class CreateCustomerUseCase {
   async execute(dto: CreateCustomerDto): Promise<Customer> {
     const exists = await this.customerRepository.findByDocument(dto.document);
     if (exists) {
-      throw new ConflictException(
-        'El cliente ya se encuentra registrado con este documento.',
-      );
+      throw new ConflictException(SharedMessages.Customer.ALREADY_REGISTERED);
     }
 
     const newCustomer = new Customer(
@@ -25,7 +24,9 @@ export class CreateCustomerUseCase {
       dto.document,
       dto.email,
       dto.phone,
+      dto.status,
     );
+    newCustomer.checkInvalidEmail();
 
     return await this.customerRepository.save(newCustomer);
   }

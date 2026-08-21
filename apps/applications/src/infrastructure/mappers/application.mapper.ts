@@ -5,14 +5,14 @@ import { Types } from 'mongoose';
 export class ApplicationMapper {
   static toDomain(doc: ApplicationDocument): Application {
     return new Application(
-      (doc._id as unknown as Types.ObjectId).toString(),
+      doc._id.toString(),
       doc.radicado,
       doc.clientId ? doc.clientId.toString() : '',
       doc.channel,
       doc.status,
       doc.createdAt,
       doc.offerResult as Record<string, unknown>,
-      doc.validationData as Record<string, unknown>,
+      doc.validationData,
       doc.statusReason,
     );
   }

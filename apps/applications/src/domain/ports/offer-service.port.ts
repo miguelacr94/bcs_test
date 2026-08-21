@@ -1,8 +1,5 @@
-export interface OfferSimulationResult {
-  success: boolean;
-  message: string;
-  offerDetails?: Record<string, unknown>;
-}
+import { OfferSimulationResult } from '@app/shared';
+export type { OfferSimulationResult };
 
 export interface OfferServicePort {
   simulateOffer(

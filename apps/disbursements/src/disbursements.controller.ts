@@ -1,7 +1,7 @@
 import { Controller, Logger } from '@nestjs/common';
 import { MessagePattern, Payload, RpcException } from '@nestjs/microservices';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { DisbursementDocument } from './infrastructure/schemas/disbursement.schema';
 import { DisbursementPattern } from '@app/shared/enums';
 
@@ -29,8 +29,8 @@ export class DisbursementsController {
       );
 
       const newDisbursement = new this.disbursementModel({
-        applicationId: data.applicationId,
-        clientId: data.clientId,
+        applicationId: new Types.ObjectId(data.applicationId),
+        clientId: new Types.ObjectId(data.clientId),
         amount: data.amount,
         status: 'SCHEDULED',
       });
@@ -39,8 +39,13 @@ export class DisbursementsController {
       this.logger.log(`Disbursement scheduled with ID ${saved._id}`);
       return saved;
     } catch (error: unknown) {
-      this.logger.error(`Error scheduling disbursement: ${(error instanceof Error ? error.message : String(error))}`);
-      throw new RpcException({ error: (error instanceof Error ? error.message : String(error)), statusCode: 400 });
+      this.logger.error(
+        `Error scheduling disbursement: ${error instanceof Error ? error.message : String(error)}`,
+      );
+      throw new RpcException({
+        error: error instanceof Error ? error.message : String(error),
+        statusCode: 400,
+      });
     }
   }
 }

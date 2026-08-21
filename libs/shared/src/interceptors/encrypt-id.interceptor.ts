@@ -41,13 +41,17 @@ export class EncryptIdInterceptor implements NestInterceptor {
       return obj.map((item) => this.decryptObjectIds(item));
     }
 
-    const newObj: Record<string, unknown> = { ...(obj as Record<string, unknown>) };
+    const newObj: Record<string, unknown> = {
+      ...(obj as Record<string, unknown>),
+    };
     for (const key of Object.keys(newObj)) {
       if (
         (key === 'id' ||
           key === '_id' ||
           key === 'applicationId' ||
-          key === 'activeApplicationId') &&
+          key === 'activeApplicationId' ||
+          key === 'clientId' ||
+          key === 'document') &&
         typeof newObj[key] === 'string'
       ) {
         newObj[key] = this.cryptoAdapter.decryptId(newObj[key]);
@@ -68,13 +72,17 @@ export class EncryptIdInterceptor implements NestInterceptor {
     // Preservar instancias de Date, RegExp, etc.
     if (obj instanceof Date || obj instanceof RegExp) return obj;
 
-    const newObj: Record<string, unknown> = { ...(obj as Record<string, unknown>) };
+    const newObj: Record<string, unknown> = {
+      ...(obj as Record<string, unknown>),
+    };
     for (const key of Object.keys(newObj)) {
       if (
         (key === 'id' ||
           key === '_id' ||
           key === 'applicationId' ||
-          key === 'activeApplicationId') &&
+          key === 'activeApplicationId' ||
+          key === 'clientId' ||
+          key === 'document') &&
         typeof newObj[key] === 'string'
       ) {
         newObj[key] = this.cryptoAdapter.encryptId(newObj[key]);

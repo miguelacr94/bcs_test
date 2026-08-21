@@ -37,12 +37,15 @@ export class RedisOfferServiceAdapter implements OfferServicePort {
     try {
       const result = await firstValueFrom(
         this.offerCoreClient
-          .send<OfferSimulationResult>({ cmd: OfferPattern.SIMULATE_OFFER }, payload)
+          .send<OfferSimulationResult>(
+            { cmd: OfferPattern.SIMULATE_OFFER },
+            payload,
+          )
           .pipe(timeout(5000), retry(3)),
       );
 
       return result;
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error(
         `Error al comunicarse con Offer-Core: ${error.message}`,
         error.stack,

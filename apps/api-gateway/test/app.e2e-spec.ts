@@ -36,7 +36,7 @@ describe('API Gateway (e2e)', () => {
       .compile();
 
     app = moduleFixture.createNestApplication();
-    
+
     // Aplicamos los mismos pipes y filtros que main.ts
     app.setGlobalPrefix('api/v1');
     app.useGlobalPipes(
@@ -71,7 +71,7 @@ describe('API Gateway (e2e)', () => {
         accessToken: 'mocked_jwt_token',
         user: { email: 'admin@banco.com', role: 'ADMIN' },
       };
-      
+
       mockAuthClient.send.mockReturnValue(of(mockLoginResponse));
 
       return request(app.getHttpServer())

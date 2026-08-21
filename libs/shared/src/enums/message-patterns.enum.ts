@@ -2,12 +2,14 @@ export enum ApplicationPattern {
   CREATE_APPLICATION = 'create_application',
   GET_APPLICATIONS = 'get_applications',
   GET_APPLICATION_BY_ID = 'get_application_by_id',
+  GET_APPLICATIONS_BY_CLIENT_ID = 'get_applications_by_client_id',
   GET_ACTIVE_APPLICATION_BY_CLIENT_ID = 'get_active_application_by_client_id',
   UPDATE_APPLICATION = 'update_application',
   SIMULATE_OFFER = 'simulate_offer',
   ACCEPT_OFFER = 'accept_offer',
   ABANDON_APPLICATION = 'abandon_application',
   GET_APPLICATION_EVENTS = 'get_application_events',
+  GET_PUBLIC_APPLICATION_EVENTS = 'get_public_application_events',
   VALIDATE_APPLICATION = 'validate_application',
   FINALIZE_APPLICATION = 'finalize_application',
   CHECK_RECENT_FINALIZED_APPLICATION_BY_CLIENT_ID = 'check_recent_finalized_application_by_client_id',
@@ -26,6 +28,9 @@ export enum CustomerPattern {
   CREATE_CUSTOMER = 'create_customer',
   GET_CUSTOMER_BY_DOCUMENT = 'get_customer_by_document',
   GET_CUSTOMER_BY_ID = 'get_customer_by_id',
+  DEACTIVATE_CUSTOMER = 'customer.deactivate',
+  CUSTOMER_HEALTH = 'customer.health',
+  GET_USER_BY_DOCUMENT_ALL_DATA = 'get_user_by_document_all_data',
 }
 
 export enum UserPattern {

@@ -1,27 +1,17 @@
 import { Injectable, Logger } from '@nestjs/common';
-
-export interface OfferSimulationResult {
-  success: boolean;
-  message: string;
-  offerDetails?: {
-    approvedAmount: number;
-    interestRate: number;
-    termMonths: number;
-  };
-}
+import { OfferSimulationResult } from '@app/shared';
 
 @Injectable()
-export class OfferCoreService {
-  private readonly logger = new Logger(OfferCoreService.name);
+export class SimulateOfferUseCase {
+  private readonly logger = new Logger(SimulateOfferUseCase.name);
 
-  async simulateOffer(
+  async execute(
     applicationId: string,
-    clientId: string,
     amount: number,
     termMonths: number,
   ): Promise<OfferSimulationResult> {
     this.logger.log(
-      `Offer-Core: Iniciando simulación para la solicitud ${applicationId} por monto ${amount} y plazo ${termMonths}...`,
+      `Offer-Core-UseCase: Iniciando simulación para la solicitud ${applicationId} por monto ${amount} y plazo ${termMonths}...`,
     );
 
     // Simulamos latencia de red (1 segundo)

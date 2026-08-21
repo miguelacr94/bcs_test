@@ -31,7 +31,10 @@ export class LogoutUseCase {
 
       return { success: true };
     } catch (error: unknown) {
-      throw new RpcException((error instanceof Error ? error.message : String(error)) || 'Error al cerrar sesión.');
+      throw new RpcException(
+        (error instanceof Error ? error.message : String(error)) ||
+          'Error al cerrar sesión.',
+      );
     }
   }
 }

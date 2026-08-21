@@ -64,7 +64,10 @@ export class RefreshTokenUseCase {
         refreshToken: newRefreshToken,
       };
     } catch (error: unknown) {
-      throw new RpcException((error instanceof Error ? error.message : String(error)) || 'Refresh token inválido.');
+      throw new RpcException(
+        (error instanceof Error ? error.message : String(error)) ||
+          'Refresh token inválido.',
+      );
     }
   }
 }

@@ -8,7 +8,7 @@ export class FinalizeApplicationDto {
   })
   @IsString()
   @IsNotEmpty()
-  id: string;
+  id!: string;
 
   @ApiProperty({
     description: 'Indica si la finalización incluye un desembolso',
@@ -16,7 +16,7 @@ export class FinalizeApplicationDto {
   })
   @IsBoolean()
   @IsNotEmpty()
-  withDisbursement: boolean;
+  withDisbursement!: boolean;
 
   @ApiProperty({
     description: 'Canal por el cual se finaliza',

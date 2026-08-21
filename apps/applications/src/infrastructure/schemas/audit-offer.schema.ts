@@ -1,10 +1,10 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, Types } from 'mongoose';
 
 @Schema({ collection: 'audit_offert' })
 export class AuditOfferDocument extends Document {
-  @Prop({ required: true })
-  offerId!: string;
+  @Prop({ required: true, type: Types.ObjectId, ref: 'Application' })
+  applicationId!: Types.ObjectId;
 
   @Prop({ required: false })
   previousStatus?: string;

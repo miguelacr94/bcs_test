@@ -15,7 +15,9 @@ export class TracingController {
     try {
       await this.traceRepository.create(trace);
     } catch (error: unknown) {
-      this.logger.error(`Failed to persist trace event: ${(error instanceof Error ? error.message : String(error))}`);
+      this.logger.error(
+        `Failed to persist trace event: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 }
